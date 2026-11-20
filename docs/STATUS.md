@@ -4,6 +4,13 @@ Updated 20 November 2026 (Australia/Melbourne).
 
 ## Current position
 
+The [Controller layout update](#controller-layout-update-on-dashboard-updates),
+[Notebooks overview](#notebooks-overview-update) and
+[trading journal](#trading-journal-layout-update) are merged into `main` from
+`dashboard-updates`. Their latest 41 focused offline checks and browser
+checks at 320, 716 and 1280 pixels pass. This checkout change is not deployed;
+the installed dashboard on 8879 and trading controls were not changed by this work.
+
 M10's [guarded qualification service integration](#guarded-m10-service-integration-and-deployment-handoff)
 is now installed and has [passed repeated broker-free system verification](#verified-guarded-system-deployment-and-disabled-plan-preparation);
 actual practice qualification is **pending and incomplete**. On 19 November the owner approved M09 for deployment and broker-free
@@ -744,6 +751,181 @@ dispatch and maintenance exclusion remain M09. Two-leg execution, account
 restrictions, broker margin validation and actual charge mapping remain M10,
 under separate authority. A14–A16 still require their applicable host/practice
 evidence before full acceptance and ordinary activation.
+
+### Controller layout update on dashboard-updates
+
+On 20 November 2026 the owner accepted the account-first layout preview and
+requested implementation on `dashboard-updates`. The Controller page now leads
+with the notebook name, account-data freshness and outstanding issues, then the
+latest run and two responsive stage summaries. Empty issue tables are replaced
+by a short message. Native expandable details retain the original exact records;
+history opens automatically when older runs contain errors or unfinished records.
+The [detailed design](DETAILED_DESIGN.md#7-monetary-records-and-the-read-only-dashboard)
+owns the accepted presentation and conservative summary rules.
+
+The [37 focused checks](../var/verification/dashboard-layout-20261120/focused-checks-final.log)
+pass: the 30 existing M08 tests, six new presentation/data-safety cases and the
+M09 retained-WAL reader check. Coverage includes incomplete pair counts,
+non-signal skip reasons, uncertain trade sets, referenced reconciliation state,
+unhidden failures/unfinished history, exact values alongside rounded display,
+New York DST offsets, escaping, rejected mutation routes and notebook isolation.
+The [saved fixture pages and records](../var/verification/dashboard-layout-20261120/cases/)
+are controlled offline data, not practice execution evidence.
+
+The [browser checks](../var/verification/dashboard-layout-20261120/browser-checks.json)
+pass at 320, 716 and 1280 pixels with no page-level horizontal overflow, both
+with details collapsed and expanded. Keyboard disclosure, open-issue visibility,
+failed-refresh visibility and expanded unfinished history were checked.
+The [716-pixel preview](../var/verification/dashboard-layout-20261120/controller-716.png)
+and [320-pixel preview](../var/verification/dashboard-layout-20261120/controller-320.png)
+were visually reviewed. The existing lab's installed browser was used only as a
+verification tool; no application dependency or lab change was introduced.
+The [verification manifest](../var/verification/dashboard-layout-20261120/verification.json)
+retains source identities and scope; full-system deployment and the complete
+offline suite were not rerun for this presentation change.
+
+No installed source, service, timer, actual notebook, credential or broker state
+was changed. Other in-progress branch edits are preserved. Deployment of this
+layout remains pending; loading the existing 8879 URL still shows the installed
+version. Qualification and ordinary-activation gates retain their existing state.
+
+The owner's subsequent history refinement is also implemented on this branch:
+**Previous run history** now sits immediately below the latest run's **Run and
+reconciliation details**, with **Account data details** following it. The option
+shows the older-run count even when it is zero, with an expandable empty message.
+Older runs remain newest-first, exclude the latest run and retain their full
+details; error/unfinished history still opens by default. The
+[36 dashboard checks](../var/verification/dashboard-history-20261120/checks.log)
+pass after this change. The [focused browser checks](../var/verification/dashboard-history-20261120/browser-checks.json)
+pass at 320, 716 and 1280 pixels for placement, empty-state keyboard access,
+completed-history toggling, visible unfinished history and no horizontal overflow.
+The [expanded-history preview](../var/verification/dashboard-history-20261120/history-expanded.png)
+uses offline fixtures. The installed dashboard remains unchanged.
+
+#### On-demand historical run pages
+
+The owner then requested that each previous run open separately and load only
+when opened. History now contains linked summary metadata (date/time, status,
+duration, mode and problem flags), without embedded stage/decision/reconciliation
+content. The initial request loads full detail only for the latest run. A new
+GET-only route, `/controllers/<controller_id>/runs/<run_id>`, reads just the
+selected run from its registered notebook in one read transaction. Links use a
+new window/tab target with an isolated opener; browser preference determines
+window versus tab. Historical errors/unfinished states remain flagged in the
+summary list, which still opens automatically when attention is needed.
+
+The [39 focused checks](../var/verification/dashboard-run-window-20261120/checks.log)
+pass (38 M08 and the M09 retained-WAL check). Query traces confirm that historical
+stages, decision reasons and reconciliation details are absent from the initial
+load and read only for the selected run. Route tests cover missing/foreign IDs,
+unavailable notebooks without file creation, escaping, no-store responses,
+credential/broker/controller isolation and rejected mutation methods.
+The [browser checks](../var/verification/dashboard-run-window-20261120/browser-checks.json)
+used a temporary offline fixture server at 320, 716 and 1280 pixels: no run-page
+request before selection, exactly one after the click, a separate window/tab,
+unchanged original page, keyboard disclosure and no horizontal overflow.
+The [history list](../var/verification/dashboard-run-window-20261120/history-links.png)
+and [selected run](../var/verification/dashboard-run-window-20261120/previous-run-window.png)
+are sample-data renders. The shared [rendered preview](../var/previews/controller-dashboard.html)
+was updated with a linked [sample previous run](../var/previews/controller-previous-run.html);
+these are rendered files, not Jinja source. The
+[verification manifest](../var/verification/dashboard-run-window-20261120/verification.json)
+records source identities. The temporary server was stopped. No production
+service, trading control, actual notebook or broker state changed; deployment
+of the dashboard branch remains pending.
+
+### Notebooks overview update
+
+On 20 November 2026 the owner requested the same usability review and improvement
+for `/notebooks`. The overview now leads with the notebook/journal link, data
+freshness and visible warnings/open-issue count, then balance, realised profit
+and realised loss. It explains qualification versus ordinary reporting in plain
+language. Balance is neutral; positive/negative trading results retain their
+colours and signs, while zero stays neutral. Thousands separators preserve all
+monetary decimals. Ordinary results remain separate from capped qualification
+results after activation. Latest saved-run status and a controller link follow;
+strategy/indicator names remain visible below. Full signal rules, parameters and
+exact snapshot records move into native expandable details. Ledger calculations,
+stored rules and trading behaviour are unchanged. The subsequent journal layout
+update is recorded below.
+
+The [40 focused checks](../var/verification/notebook-overview-20261120/checks.log)
+pass (39 M08 plus the M09 retained-WAL reader check). Added/extended coverage
+verifies exact balance precision and neutral presentation, qualification context,
+open-issue visibility, separate ordinary/qualification results and retention of
+the previous reconciled balance/results after a failed refresh. Existing isolation,
+missing-data, escaping, history loading and rejected-mutation checks still pass.
+
+The [browser checks](../var/verification/notebook-overview-20261120/browser-checks.json)
+pass at 320, 716 and 1280 pixels: results appear above strategy settings, the full
+balance remains visible, keyboard disclosures and journal navigation work, and
+neither collapsed nor expanded details cause horizontal page overflow. A stale
+fixture preserves the displayed balance and shows the warning. The
+[716-pixel preview](../var/verification/notebook-overview-20261120/notebooks-716.png)
+was visually reviewed. The [rendered sample preview](../var/previews/notebooks-overview.html)
+links to sample journal/controller pages. These are offline fixture observations,
+not new OANDA evidence; the [verification manifest](../var/verification/notebook-overview-20261120/verification.json)
+retains source identities. The temporary preview server was stopped. No installed
+dashboard, service, timer, credentials or actual notebook was modified. Dashboard
+deployment remains pending on `dashboard-updates`.
+
+### Trading journal layout update
+
+On 20 November 2026 the owner requested a journal usability update consistent
+with the Controller and Notebooks layouts. The journal now leads with freshness,
+visible issues/latest saved-run status, balance, unrealised result and separate
+realised profit/loss. Qualification and ordinary reporting remain separate;
+charge/balance components and exact snapshot records are expandable.
+
+Trades appear in compact paired sets, newest first within open/unconfirmed and
+finished groups. A closed leg stays with its open partner; only sets whose legs
+are all closed or confirmed not opened enter the finished group. Pair, direction,
+entry time/status, prices/units, protection and final results are easy to scan.
+Closed trades show that protection is no longer active rather than a misleading
+missing-protection warning. Original protection, exact times, identifiers, final
+exit evidence, charges and fills remain in per-trade disclosures. Phone layouts
+stack labelled fields without a wide scrolling table. Strategy/configuration
+details follow the trades, account activity and request outcomes.
+
+Post-snapshot activity has a visible top warning and an expanded activity section;
+uncertain/unsuccessful requests expand automatically. Stop-to-entry failures and
+unknown statuses stay visible. Account postings remain distinct from informational
+trade allocations. No accounting, broker, schema or trading behaviour changed.
+
+The [41 focused checks](../var/verification/journal-layout-20261120/checks.log)
+pass (40 M08 plus the M09 retained-WAL reader check). Added coverage verifies
+mixed-state paired grouping and finished-set separation. Extended cases check
+open/partially reduced trades have no final result, precise neutral balances,
+newer-activity/request visibility and qualification/ordinary identity. Existing
+snapshot-boundary, missing-data, isolation, escaping, lazy run-history and
+read-only checks remain passing.
+
+The [browser checks](../var/verification/journal-layout-20261120/browser-checks.json)
+pass at 320, 716 and 1280 pixels with populated and empty sample notebooks.
+Collapsed and expanded records fit without horizontal overflow; keyboard
+disclosures and notebook navigation work. Unconfirmed requests, planned targets,
+stop-to-entry uncertainty and newer-activity warnings remain visible. The
+account summary retains its previous reconciled balance after a newer closure.
+The [716-pixel render](../var/verification/journal-layout-20261120/journal-716.png)
+was visually reviewed. A [rendered sample journal](../var/previews/trading-journal.html)
+and the earlier [notebook-linked journal preview](../var/previews/notebook-journal.html)
+show the new layout without opening template source. The
+[verification manifest](../var/verification/journal-layout-20261120/verification.json)
+retains source identities. Temporary preview servers were stopped. These are
+offline fixture checks; the installed dashboard and actual notebooks are unchanged.
+Deployment of `dashboard-updates` remains pending.
+
+### Dashboard merge to main
+
+On 20 November 2026 the owner approved merging the dashboard changes into `main`.
+The merge contains the Controller, on-demand run history, Notebooks overview,
+trading journal, focused tests and their documentation. Separate concurrent M10
+changes remain uncommitted in the checkout, including their portions of shared
+documents. The [41 focused checks](../var/verification/dashboard-merge-20261120/checks.log)
+passed against an isolated copy of the exact dashboard merge contents, without
+those concurrent changes. Existing responsive/browser evidence remains recorded
+above. The merge changes the local Git history; live dashboard deployment remains
+pending.
 
 ## M09 host operation and maintenance exclusion
 

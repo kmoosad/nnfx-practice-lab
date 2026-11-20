@@ -1,7 +1,59 @@
-{% extends 'base.html' %}{% from 'macros.html' import rules, refresh, value %}
+{% extends 'base.html' %}
+{% from 'macros.html' import rules %}
+{% from 'controller_macros.html' import freshness %}
+{% from 'notebook_macros.html' import results, strategy_overview, reporting_details %}
 {% block content %}
-{% for v in views %}<section class="panel"><h2><a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
-{% if v.error %}<p class="error">{{ v.error }}</p>{% else %}{{ rules(v) }}{{ refresh(v) }}
-<div class="table-wrap"><table><thead><tr><th>Reporting period</th><th>Balance</th><th>Realised profit</th><th>Realised loss</th><th>Common snapshot / refresh</th></tr></thead><tbody>
-{% for period, report in v.reports.items() %}<tr><td>{{ period|title }}</td>{% if report %}<td>{{ value(report.balance) }} {{ report.home_currency }}</td><td>{{ value(report.realised_profit) }} {{ report.home_currency }}</td><td>{{ value(report.realised_loss) }} {{ report.home_currency }}</td><td>{{ report.snapshot_id }} / {{ report.boundary }}<br>{{ report.refreshed_at|ny }}</td>{% else %}<td colspan="4">Unavailable{% if period == 'ordinary' %} — notebook unactivated{% endif %}</td>{% endif %}</tr>{% endfor %}
-</tbody></table></div>{% endif %}</section>{% endfor %}{% endblock %}
+{% for v in views %}
+<section class="panel notebook-card" id="{{ v.experiment.notebook_id }}">
+  <div class="notebook-heading">
+    <div>
+      <h2><a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
+      <p class="muted">Practice account · Controller <a href="{{ url_for('controllers') }}#{{ v.experiment.controller_id }}">{{ v.experiment.controller_id }}</a></p>
+    </div>
+    <a class="journal-link" href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">Open trading journal</a>
+  </div>
+  {% if v.error %}<p class="controller-alert error">{{ v.error }}</p>
+  {% else %}
+    {{ freshness(v) }}
+    {% set open_issues = v.issues|selectattr('status', 'equalto', 'open')|list %}
+    {% if open_issues %}<p class="controller-alert error">{{ open_issues|length }} open issue{{ '' if open_issues|length == 1 else 's' }}. <a href="{{ url_for('controllers') }}#{{ v.experiment.controller_id }}">Review in the controller</a>.</p>{% endif %}
+    {% set report = v.report %}
+    <section class="notebook-results" aria-label="{{ report.period|title if report else 'Account' }} results">
+      <div class="results-heading"><h3>{{ report.period|title if report else 'Account' }} results</h3></div>
+      {% if not v.binding.activated_at %}
+        <p class="reporting-note">Ordinary trading has not been activated.{% if report %} These are qualification results.{% else %} Awaiting a reconciled reporting baseline.{% endif %}</p>
+      {% else %}<p class="reporting-note">Results since ordinary activation. Qualification results are kept separately below.</p>{% endif %}
+      {{ results(report, v.binding.home_currency) }}
+      <p class="muted result-note">Trading profit and loss exclude financing and other charges. See the journal for the breakdown.</p>
+    </section>
+    <div class="notebook-run">
+      <div>
+        <h3>Latest recorded run</h3>
+        {% if v.latest_run %}
+          <p class="{{ 'warning' if v.latest_run.needs_attention else '' }}">{{ v.latest_run.status|replace('_', ' ')|capitalize }}{% if not v.latest_run.ended_at %} · Unfinished{% endif %}{% if v.latest_run.duration_seconds is not none %} · {{ v.latest_run.duration_seconds|duration }}{% endif %}</p>
+          <p class="muted">{{ (v.latest_run.mode or 'Unclassified invocation')|title }} · {{ v.latest_run.started_at|ny_short }}</p>
+          {% if not v.latest_run.ended_at %}<p class="muted">Saved status; current activity is unconfirmed.</p>{% endif %}
+        {% else %}<p class="muted">No recorded runs.</p>{% endif %}
+      </div>
+      <a href="{{ url_for('controllers') }}#{{ v.experiment.controller_id }}">View controller</a>
+    </div>
+    {{ strategy_overview(v) }}
+    <details class="notebook-details strategy-details">
+      <summary>Strategy settings and signal rules</summary>
+      {{ rules(v) }}
+    </details>
+    {% if v.binding.activated_at %}
+      <details class="notebook-details qualification-history">
+        <summary>Qualification results before activation</summary>
+        {% if v.reports.qualification %}
+          <p class="muted">Qualification ends at the ordinary activation snapshot.</p>
+          {{ results(v.reports.qualification, v.binding.home_currency) }}
+          <p class="muted">Account data at {{ v.reports.qualification.refreshed_at|ny_short }}</p>
+        {% else %}<p class="error">Qualification figures unavailable.</p>{% endif %}
+      </details>
+    {% endif %}
+    {{ reporting_details(v) }}
+  {% endif %}
+</section>
+{% else %}<p>No notebooks configured.</p>{% endfor %}
+{% endblock %}

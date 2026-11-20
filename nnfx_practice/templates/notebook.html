@@ -1,15 +1,72 @@
-{% extends 'base.html' %}{% from 'macros.html' import rules, refresh, summary, issues, value %}
-{% block content %}<a class="back" href="{{ url_for('notebook_list') }}">← Notebooks</a>
-{% if view.error %}<section class="panel"><p class="error">{{ view.error }}</p></section>{% else %}
-<section class="panel">{{ rules(view) }}<p>Manifest {{ view.binding.manifest_hash }}</p><p>Q0 {{ view.binding.qualification_snapshot_id or 'Unavailable' }} / {{ view.binding.qualification_transaction_id or 'Unavailable' }} · A0 {{ view.binding.activation_snapshot_id or 'Unavailable' }} / {{ view.binding.activation_transaction_id or 'Unavailable' }} · Activated {{ view.binding.activated_at|ny }}</p>{{ refresh(view) }}</section>
-{{ summary(view.reports.ordinary, 'Ordinary experiment') }}{{ summary(view.reports.qualification, 'Qualification (capped at A0 after activation)') }}
-<section class="panel"><h2>Trading journal</h2><p class="muted">Current confirmed state and all recorded activity. “After account snapshot” rows are excluded from account totals until a covering refresh. Missing amounts are unavailable; posted reductions remain in activity while an open leg has no final outcome. Financing and charge columns sum available trade allocations; unallocated amounts remain in the dated ledger.</p>
-<div class="table-wrap"><table class="journal"><thead><tr><th>Set ID</th><th>Broker trade ID</th><th>Leg</th><th>Period</th><th>Pair</th><th>Direction</th><th>Initial / current units</th><th>Entry time</th><th>Status</th><th>Actual entry</th><th>Original stop</th><th>Current stop</th><th>Trade 1 target</th><th>Final exit time</th><th>Exit price</th><th>Exit reason</th><th>Signed pips</th><th>Trading result ({{ view.binding.home_currency }})</th><th>Financing ({{ view.binding.home_currency }})</th><th>Commission ({{ view.binding.home_currency }})</th><th>Other charges ({{ view.binding.home_currency }})</th></tr></thead><tbody>
-{% for leg in view.journal %}<tr><td>{{ leg.set_id }}</td><td>{{ leg.broker_trade_id or 'Unavailable' }}</td><td>{{ leg.leg_no }}</td><td>{{ leg.period }}</td><td>{{ leg.pair }}</td><td>{{ leg.direction }}</td><td>{{ leg.initial_units|number }} / {{ leg.current_units|number }}{% if leg.broker_trade_id is none %}<small>Planned {{ leg.planned_units }}</small>{% endif %}</td><td>{{ leg.entry_at|ny }}</td><td>{{ leg.broker_state or 'Unconfirmed / planned' }} · Set {{ leg.establishment_status }}{% if leg.after_snapshot %}<small class="warning">After account snapshot</small>{% endif %}<small>State {{ leg.broker_state_at|ny }} · {{ leg.broker_state_transaction_id or '—' }}</small></td><td>{{ leg.entry_price|number }}</td><td>{{ leg.original_stop|number }}</td><td>{{ leg.current_stop|number }}<small>{{ leg.stop_to_entry_status }}</small></td><td>{% if leg.leg_no == 1 %}{{ leg.confirmed_target|number }}{% if leg.intended_target and not leg.confirmed_target %}<small>Planned target {{ leg.intended_target }}</small>{% endif %}{% else %}—{% endif %}</td><td>{{ leg.exit_at|ny }}</td><td>{{ leg.exit_price|number }}</td><td>{{ leg.exit_reason or 'Unavailable' }}</td><td>{{ value(leg.pips) }}{% if leg.pip_location is none %}<small>Pip metadata unavailable</small>{% endif %}</td><td>{{ value(leg.trading_pl) }}</td><td>{{ value(leg.financing) }}</td><td>{{ value(leg.commission) }}</td><td>{{ value(leg.other_charges) }}</td></tr>
-{% else %}<tr><td colspan="21">No registered legs.</td></tr>{% endfor %}</tbody></table></div>
-{% for leg in view.journal %}{% if leg.fills %}<details><summary>Fills · {{ leg.set_id }} / leg {{ leg.leg_no }} / {{ leg.period }}</summary><div class="table-wrap"><table><thead><tr><th>Transaction</th><th>Effect</th><th>Units</th><th>Price</th><th>Broker time</th><th>Reason</th><th>Snapshot relation</th></tr></thead><tbody>{% for fill in leg.fills %}<tr><td>{{ fill.transaction_id }}</td><td>{{ fill.effect }}</td><td>{{ fill.units }}</td><td>{{ fill.price|number }}</td><td>{{ fill.filled_at|ny }}</td><td>{{ fill.reason }}</td><td>{{ 'After account snapshot' if fill.after_snapshot else 'At/before account snapshot' if view.report else 'No account snapshot' }}</td></tr>{% endfor %}</tbody></table></div></details>{% endif %}{% endfor %}</section>
-<section class="panel"><h2>Dated ledger activity ({{ view.binding.home_currency }})</h2><p class="muted">Posted account amounts count once. Informational trade allocations explain the postings. Unallocated charges remain at account level. Activity after A0 is Ordinary; qualification totals stop at A0.</p><div class="table-wrap"><table><thead><tr><th>Transaction / broker time</th><th>Period</th><th>Trade</th><th>Category / source</th><th>Signed amount</th><th>Role</th><th>Snapshot relation</th></tr></thead><tbody>
-{% for row in view.activity %}<tr><td>{{ row.transaction_id }}<br>{{ row.broker_at|ny }}</td><td>{{ row.period }}</td><td>{{ row.broker_trade_id or 'Unallocated account posting' }}</td><td>{{ row.category }} / {{ row.source_field }}</td><td>{{ value(row.amount) }}</td><td>{{ 'Posted account amount' if row.posted else 'Informational allocation' }}</td><td>{{ 'After account snapshot' if row.after_snapshot else 'At/before account snapshot' if view.report else 'No account snapshot' }}</td></tr>{% else %}<tr><td colspan="7">No recorded ledger activity.</td></tr>{% endfor %}</tbody></table></div></section>
-<section class="panel">{{ issues(view) }}</section>
-<section class="panel"><h2>Request outcomes</h2><div class="table-wrap"><table><thead><tr><th>Attempt / run / purpose</th><th>Pair / set / leg</th><th>Request / response times</th><th>Outcome / HTTP / error</th><th>Broker order / trade / transaction / request IDs</th></tr></thead><tbody>{% for row in view.attempts %}<tr><td>{{ row.attempt_id }} / {{ row.run_id }} / {{ row.purpose }}<small>{{ row.method }} {{ row.path }}</small></td><td>{{ row.pair or '—' }} / {{ row.set_id or '—' }} / {{ row.leg_no or '—' }}</td><td>{{ row.prepared_at|ny }}<br>{{ row.responded_at|ny }}</td><td>{{ row.outcome }} / {{ row.http_status or '—' }}<br>{{ row.error or '' }}</td><td>{{ row.broker_order_id or '—' }} / {{ row.broker_trade_id or '—' }} / {{ row.broker_transaction_id or '—' }} / {{ row.request_id or '—' }}</td></tr>{% else %}<tr><td colspan="5">No recorded requests.</td></tr>{% endfor %}</tbody></table></div></section>
-{% endif %}{% endblock %}
+{% extends 'base.html' %}
+{% from 'macros.html' import rules %}
+{% from 'controller_macros.html' import freshness, controller_issues %}
+{% from 'notebook_macros.html' import strategy_overview, reporting_details %}
+{% from 'journal_macros.html' import account_figures, balance_breakdown, trade_set, ledger_activity, request_outcomes %}
+{% block content %}
+<a class="back" href="{{ url_for('notebook_list') }}">Back to notebooks</a>
+{% if view.error %}<section class="panel"><p class="controller-alert error">{{ view.error }}</p></section>
+{% else %}
+{% set currency = view.binding.home_currency %}
+{% set newer = (view.journal|selectattr('after_snapshot')|list) or (view.activity|selectattr('after_snapshot')|list) %}
+<section class="panel notebook-card controller-card journal-account">
+  <div class="notebook-heading">
+    <div><h2>Trading journal</h2><p class="muted">Practice account · {{ currency }} · Controller {{ view.experiment.controller_id }}</p></div>
+    <a class="journal-link" href="{{ url_for('controllers') }}#{{ view.experiment.controller_id }}">View controller</a>
+  </div>
+  {{ freshness(view) }}
+  {% if view.latest_run %}<p class="muted journal-run">Latest saved run: <strong>{{ view.latest_run.status|replace('_', ' ')|capitalize }}</strong> · {{ (view.latest_run.mode or 'Unclassified invocation')|title }}</p>{% endif %}
+  {{ controller_issues(view) }}
+  {% if newer %}<p class="journal-warning"><strong>After account snapshot:</strong> newer trade or ledger activity is recorded below. Account totals retain the last reconciled snapshot until a covering refresh.</p>{% endif %}
+  <section class="notebook-results" aria-label="{{ view.report.period|title if view.report else 'Account' }} summary">
+    <h3>{{ view.report.period|title if view.report else 'Account' }} account summary</h3>
+    {% if not view.binding.activated_at %}<p class="reporting-note">Ordinary trading has not been activated.{% if view.report %} These are qualification results.{% else %} Awaiting a reconciled reporting baseline.{% endif %}</p>
+    {% else %}<p class="reporting-note">Results since ordinary activation. Qualification results are kept separately below.</p>{% endif %}
+    {{ account_figures(view.report, currency) }}
+    <p class="muted">Trading profit and loss exclude financing and other charges. Open or partly reduced trades have no final exit result.</p>
+  </section>
+  <details class="notebook-details balance-details"><summary>Balance and charges breakdown</summary>{{ balance_breakdown(view.report, currency) }}</details>
+  {% if view.binding.activated_at %}<details class="notebook-details qualification-history">
+    <summary>Qualification results before activation</summary>
+    {% if view.reports.qualification %}<p class="muted">Qualification ends at the ordinary activation snapshot.</p>{{ account_figures(view.reports.qualification, currency) }}{{ balance_breakdown(view.reports.qualification, currency) }}
+    {% else %}<p class="error">Qualification figures unavailable.</p>{% endif %}
+  </details>{% endif %}
+  {{ reporting_details(view) }}
+</section>
+<section class="panel notebook-card journal-trades" id="trades">
+  <h2>Trades</h2>
+  <p class="muted">Trade 1 and Trade 2 stay together in each set. Results below exclude charges; exact records and fills are available under each trade.</p>
+  {% set active = view.journal_groups|rejectattr('finished')|list %}
+  {% set finished = view.journal_groups|selectattr('finished')|list %}
+  {% if not view.journal_groups %}<p class="journal-empty">No trades recorded yet.</p>
+  {% else %}
+    <section class="trade-group active-trades" aria-label="Open or unconfirmed trade sets">
+      <h3>Open or unconfirmed sets ({{ active|length }})</h3>
+      {% for group in active %}{{ trade_set(group, currency, view.report) }}{% else %}<p class="muted">No open or unconfirmed trade sets.</p>{% endfor %}
+    </section>
+    <section class="trade-group finished-trades" aria-label="Finished trade sets">
+      <h3>Finished sets ({{ finished|length }})</h3>
+      <p class="muted">All legs are closed or confirmed not opened.</p>
+      {% for group in finished %}{{ trade_set(group, currency, view.report) }}{% else %}<p class="muted">No finished trade sets.</p>{% endfor %}
+    </section>
+  {% endif %}
+</section>
+<section class="panel notebook-card journal-records">
+  <h2>Activity and request records</h2>
+  {{ ledger_activity(view) }}
+  {{ request_outcomes(view) }}
+</section>
+<section class="panel notebook-card journal-strategy">
+  {{ strategy_overview(view) }}
+  <details class="notebook-details strategy-details"><summary>Strategy settings and signal rules</summary>{{ rules(view) }}</details>
+  <details class="notebook-details"><summary>Notebook configuration and activation</summary>
+    <dl class="record-grid">
+      <dt>Manifest</dt><dd>{{ view.binding.manifest_hash }}</dd>
+      <dt>Qualification baseline (Q0)</dt><dd>{{ view.binding.qualification_snapshot_id or 'Unavailable' }} / {{ view.binding.qualification_transaction_id or 'Unavailable' }}</dd>
+      <dt>Ordinary baseline (A0)</dt><dd>{{ view.binding.activation_snapshot_id or 'Unavailable' }} / {{ view.binding.activation_transaction_id or 'Unavailable' }}</dd>
+      <dt>Ordinary activation</dt><dd>{{ view.binding.activated_at|ny }}</dd>
+    </dl>
+  </details>
+</section>
+{% endif %}
+{% endblock %}

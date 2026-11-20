@@ -2,6 +2,6 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{ title }} · NNFX Practice</title><style>{% include 'dashboard.css' %}</style></head>
 <body><header class="shell"><a class="brand" href="{{ url_for('controllers') }}">NNFX <span>practice trading</span></a><span>Observation only</span></header>
-<nav class="shell" aria-label="Primary"><a href="{{ url_for('controllers') }}" {% if request.endpoint == 'controllers' %}aria-current="page"{% endif %}>Controller</a><a href="{{ url_for('notebook_list') }}" {% if request.endpoint != 'controllers' %}aria-current="page"{% endif %}>Notebooks</a></nav>
-<main><div class="heading"><div><p class="eyebrow">COMMITTED NOTEBOOK RECORDS</p><h1>{{ title }}</h1><p class="muted">Times shown in America/New_York with UTC offset. Reload to read newly committed records.</p></div></div>
+<nav class="shell" aria-label="Primary"><a href="{{ url_for('controllers') }}" {% if request.endpoint in ('controllers', 'controller_run') %}aria-current="page"{% endif %}>Controller</a><a href="{{ url_for('notebook_list') }}" {% if request.endpoint not in ('controllers', 'controller_run') %}aria-current="page"{% endif %}>Notebooks</a></nav>
+<main class="overview-page"><div class="heading"><div><p class="eyebrow">COMMITTED NOTEBOOK RECORDS</p><h1>{{ title }}</h1><p class="muted">Times shown in America/New_York with UTC offset. Reload to read newly committed records.</p></div></div>
 {% block content %}{% endblock %}</main><footer class="shell">Observational practice notebook · Saved running state is not a liveness claim.</footer></body></html>

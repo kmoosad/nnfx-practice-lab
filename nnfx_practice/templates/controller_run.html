@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% from 'controller_macros.html' import run_card %}
+{% block content %}
+<a class="back" href="{{ url_for('controllers') }}#{{ view.experiment.controller_id }}">Back to controllers</a>
+<section class="panel controller-card">
+  <header class="controller-heading">
+    <h2>{{ view.experiment.notebook_name }}</h2>
+    <p class="muted">Controller: {{ view.experiment.controller_id }} · Observation only</p>
+  </header>
+  {% if view.error %}<p class="controller-alert error">{{ view.error }}</p>
+  {% else %}{{ run_card(view.run) }}{% endif %}
+</section>
+{% endblock %}

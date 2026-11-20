@@ -1,12 +1,40 @@
-{% extends 'base.html' %}{% from 'macros.html' import refresh, issues %}
+{% extends 'base.html' %}
+{% from 'controller_macros.html' import freshness, account_records, controller_issues, run_card %}
 {% block content %}
-<p class="muted">Finished counts include committed completed, skipped and failed pair outcomes. Unfinished decisions do not count.</p>
-{% for v in views %}<section class="panel" id="{{ v.experiment.controller_id }}"><h2>{{ v.experiment.controller_id }} · <a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
-{% if v.error %}<p class="error">{{ v.error }}</p>{% else %}{{ refresh(v) }}{{ issues(v) }}
-{% for run in v.runs %}<article class="run"><div class="section-heading"><h3>Master {{ run.run_id }} · {{ run.mode or 'Unclassified invocation' }}</h3><span class="badge">{{ run.status }}{% if not run.ended_at %} · Unfinished{% endif %}</span></div>
-<p>Started {{ run.started_at|ny }} · Ended {{ run.ended_at|ny }} · Duration {{ run.duration_seconds if run.duration_seconds is not none else 'Unavailable' }} seconds · Session {{ run.session_date }}</p>
-<p>Last progress {{ run.last_progress_at|ny }}</p>{% if run.refresh_error %}<p class="error">Refresh failure: {{ run.refresh_error }}</p>{% endif %}
-<div class="table-wrap"><table><thead><tr><th>Stage / status</th><th>Progress</th><th>Step / pair</th><th>Timing</th><th>Reconciliation / failure</th></tr></thead><tbody>
-{% for stage in run.stages %}<tr><td>{{ '1 · Manage Open Trades' if stage.stage == 'manage_open' else '2 · Manage New Trades' }}<br>{{ stage.status }}{% if stage.started_at and not stage.ended_at %} · Unfinished{% endif %}</td><td>{{ stage.finished }} / {{ stage.expected_pair_count if stage.expected_pair_count is not none else 'Unavailable' }} {{ 'surviving pairs' if stage.stage == 'manage_open' else 'pairs' }}<br>{{ stage.skipped }} skipped · {{ stage.failed }} failed</td><td>{{ stage.current_step or '—' }} / {{ stage.current_pair or '—' }}</td><td>{{ stage.started_at|ny }}<br>{{ stage.ended_at|ny }}<br>{{ stage.duration_seconds if stage.duration_seconds is not none else 'Unavailable' }} seconds</td><td>{% if stage.stage == 'manage_open' %}<b>Reconciliation:</b> {{ stage.reconciliation_progress_json or 'Unavailable' }}<br>{% endif %}<span class="error">{{ stage.failure_summary or '' }}</span></td></tr>{% endfor %}</tbody></table></div>
-{% for decision in run.decisions %}<p class="{{ 'error' if decision.outcome == 'failed' else 'muted' }}">{{ decision.stage }} · {{ decision.pair }} · {{ decision.outcome or 'Unfinished decision' }} · {{ decision.reason or 'No final outcome committed' }}</p>{% endfor %}</article>{% else %}<p>No recorded master runs.</p>{% endfor %}
-{% endif %}</section>{% endfor %}{% endblock %}
+<div class="controller-list">
+{% for v in views %}
+<section class="panel controller-card" id="{{ v.experiment.controller_id }}">
+  <header class="controller-heading">
+    <h2><a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
+    {% if not v.error and v.latest_run %}<span class="badge">{{ (v.latest_run.mode or 'Unclassified invocation')|title }}</span>{% endif %}
+    <p class="muted">Controller: {{ v.experiment.controller_id }} · Observation only</p>
+  </header>
+  {% if v.error %}<p class="controller-alert error">{{ v.error }}</p>
+  {% else %}
+    {{ freshness(v) }}
+    {{ controller_issues(v) }}
+    {% if v.latest_run %}
+      {{ run_card(v.latest_run, latest=true) }}
+      {% set earlier = v.runs[1:] %}
+      {% set attention = earlier|selectattr('needs_attention')|list %}
+      <details class="run-history"{% if attention %} open{% endif %}>
+        <summary>Previous run history ({{ earlier|length }}){% if attention %} · {{ attention|length }} with errors or unfinished records{% endif %}</summary>
+        {% if earlier %}
+          <p class="muted">Open a run to load its details in a new window or tab.</p>
+          <ul class="run-history-list">
+          {% for run in earlier %}
+            <li>
+              <a href="{{ url_for('controller_run', controller_id=v.experiment.controller_id, run_id=run.run_id) }}" target="_blank" rel="noopener noreferrer">{{ run.started_at|ny_short }}<span class="sr-only"> · Open run details in a new window or tab</span></a>
+              <p class="{{ 'warning' if run.needs_attention else 'muted' }}">{{ run.status|replace('_', ' ')|capitalize }}{% if not run.ended_at %} · Unfinished{% endif %}{% if run.duration_seconds is not none %} · {{ run.duration_seconds|duration }}{% endif %} · {{ (run.mode or 'Unclassified invocation')|title }}{% if run.refresh_failed %} · Refresh failed{% elif run.needs_attention and run.status == 'completed' %} · Errors or unfinished records{% endif %}</p>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}<p class="muted">No previous runs recorded.</p>{% endif %}
+      </details>
+    {% else %}<p class="empty-run">No recorded master runs.</p>{% endif %}
+    {% if v.report or v.refresh_problem %}{{ account_records(v) }}{% endif %}
+  {% endif %}
+</section>
+{% endfor %}
+</div>
+{% endblock %}

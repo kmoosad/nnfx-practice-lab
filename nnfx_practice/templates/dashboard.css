@@ -3,3 +3,147 @@
 @media(max-width:800px){main{padding:22px 16px}.shell{padding-left:16px;padding-right:16px}.panel{padding:16px}.section-heading{align-items:flex-start;flex-direction:column}h1{font-size:24px}.brand span{display:none}}
 h1,h2,h3,p{overflow-wrap:anywhere}.panel{min-width:0}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+
+/* Controller overview: outcomes first, exact records in native disclosures. */
+.overview-page{max-width:1040px}
+.controller-card{padding:26px}
+.controller-card .controller-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;background:transparent;color:var(--ink)}
+.controller-heading h2{font-size:24px;margin:0;min-width:0}
+.controller-heading h2 a{color:var(--ink);text-decoration:none}
+.controller-heading h2 a:hover{text-decoration:underline}
+.controller-heading>p{flex-basis:100%;margin:0}
+.controller-card .badge{display:inline-block;font-size:14px;max-width:100%;overflow-wrap:anywhere}
+.controller-freshness{margin-top:22px;padding:12px 16px;background:#f1f5f8;border-radius:6px}
+.controller-freshness p{margin:0}
+.controller-freshness p+p{margin-top:4px}
+.controller-freshness strong{margin-right:6px}
+.controller-alert{padding:10px 14px;border-left:3px solid var(--loss);background:#fff3f3;border-radius:0 5px 5px 0;margin:12px 0}
+.controller-card .issue-summary{margin:16px 0}
+.controller-card .issue-summary h3{margin:0 0 8px}
+.controller-issues{list-style:none;margin:0;padding:0}
+.controller-issue{padding:12px 0;border-top:1px solid var(--line)}
+.controller-issue p{margin:4px 0}
+.controller-run{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+.run-heading,.stage-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px}
+.run-heading h3{margin:0;font-size:18px}
+.controller-card .run-success{background:#edf7f0;border-color:#c5dfce;color:#17603c}
+.controller-card .run-attention{background:#fff4df;border-color:#e8d7b2;color:#705000}
+.controller-card .run-outcome{font-size:20px;font-weight:600;margin:14px 0 4px}
+.controller-card .run-meta{margin:8px 0 0}
+.run-stages{list-style:none;padding:0;margin:20px 0 0}
+.run-stages>li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 0;border-top:1px solid var(--line)}
+.stage-number{color:var(--muted);font-variant-numeric:tabular-nums}
+.stage-heading h4{margin:0;font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.stage-content{min-width:0}
+.stage-content p{margin:5px 0 0}
+.stage-status{font-size:14px}
+.stage-content progress{display:block;appearance:none;width:100%;height:6px;margin:12px 0 0;border:0;border-radius:4px;background:#e8eef2;color:var(--accent);accent-color:var(--accent);overflow:hidden}
+.stage-content progress::-webkit-progress-bar{background:#e8eef2;border-radius:4px}
+.stage-content progress::-webkit-progress-value{background:var(--accent);border-radius:4px}
+.stage-content progress::-moz-progress-bar{background:var(--accent);border-radius:4px}
+.controller-card .record-details{margin-top:8px;border-top:1px solid var(--line)}
+.controller-card summary{padding:11px 0;min-height:44px;color:var(--accent);font-size:14px;font-weight:500;overflow-wrap:anywhere}
+.record-grid{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,3fr);gap:10px 20px;margin:8px 0 16px}
+.record-grid dt,.record-grid dd{font-size:14px;margin:0;overflow-wrap:anywhere}
+.record-grid dd{font-variant-numeric:tabular-nums}
+.record-grid pre{margin:4px 0 0}
+.record-grid p{margin:8px 0 0}
+.controller-card .run-history{border-top:1px solid var(--line);margin-top:16px}
+.run-history-list{list-style:none;padding:0;margin:0}
+.run-history-list li{border-top:1px solid var(--line);padding:10px 0;overflow-wrap:anywhere}
+.run-history-list a{display:inline-block;padding:10px 0;min-height:44px}
+.run-history-list p{margin:0 0 4px;font-size:14px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+.skip-reasons{margin-top:4px}
+.skip-reasons ul{padding-left:20px;overflow-wrap:anywhere}
+.empty-run{margin-top:20px}
+@media(max-width:600px){
+  .controller-card{padding:16px}
+  .run-heading,.stage-heading{align-items:flex-start;flex-direction:column;gap:5px}
+  .record-grid{grid-template-columns:minmax(0,1fr);gap:3px}
+  .record-grid dd{margin-bottom:10px}
+  .run-stages>li{gap:8px;grid-template-columns:18px minmax(0,1fr)}
+}
+
+/* Notebook overview: account results, run context, then strategy and audit detail. */
+.notebook-card{padding:26px}
+.notebook-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px 20px}
+.notebook-heading h2{font-size:24px;margin:0}
+.notebook-heading h2 a{color:var(--ink);text-decoration:none}
+.notebook-heading h2 a:hover{text-decoration:underline}
+.notebook-heading p{margin:5px 0 0}
+.journal-link{display:inline-block;padding:10px 16px;border:1px solid var(--accent);border-radius:6px;text-decoration:none;min-height:44px}
+.journal-link:hover{background:#eef5f8}
+.notebook-results{margin-top:22px}
+.notebook-card h3{font-size:18px;margin:0}
+.reporting-note{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.notebook-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:18px 0 12px}
+.notebook-metrics>div{border-top:1px solid var(--line);padding-top:12px;min-width:0}
+.notebook-metrics dt{font-size:14px}
+.notebook-metrics dd{font-size:24px;font-weight:500;margin:5px 0 0;overflow-wrap:anywhere}
+.notebook-results .result-note{margin:8px 0 0}
+.notebook-run{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px 20px;border-top:1px solid var(--line);padding-top:20px;margin-top:22px}
+.notebook-run p{margin:4px 0 0}
+.notebook-run>a{padding:10px 0;min-height:44px}
+.notebook-strategy{border-top:1px solid var(--line);padding-top:20px;margin-top:20px}
+.notebook-strategy>p{margin:6px 0 0}
+.signal-overview{display:grid;gap:14px;margin:16px 0}
+.signal-overview dt{font-size:14px}
+.signal-overview dd{font-size:16px;margin:3px 0 0;overflow-wrap:anywhere}
+.notebook-details{border-top:1px solid var(--line);margin-top:8px}
+.notebook-details summary{padding:11px 0;min-height:44px;color:var(--accent);font-size:14px;font-weight:500;overflow-wrap:anywhere}
+.notebook-details h4{font-size:16px;margin:12px 0}
+.notebook-details .rules>div+div{margin-top:18px}
+.notebook-details .rules dt{font-weight:600}
+.notebook-details .rules summary{color:var(--accent)}
+.period-records+.period-records{border-top:1px solid var(--line);padding-top:4px}
+@media(max-width:600px){
+  .notebook-card{padding:16px}
+  .notebook-metrics{grid-template-columns:minmax(0,1fr);gap:12px}
+  .notebook-heading,.notebook-run{align-items:flex-start;flex-direction:column}
+}
+
+/* Trading journal: paired legs in compact, responsive tables. */
+.journal-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
+.journal-warning{padding:12px 14px;border-left:3px solid #997126;background:#fff7e7;color:#705000;border-radius:0 5px 5px 0}
+.journal-trades>h2,.journal-records>h2{font-size:22px;margin-bottom:8px}
+.journal-empty{padding:20px 0;color:var(--muted)}
+.trade-group{margin-top:24px}
+.trade-set{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
+.trade-set-heading,.activity-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px}
+.trade-set-heading{margin-bottom:12px}
+.trade-set-heading h4{font-size:17px;margin:0}
+.trade-set-heading>span{font-size:14px}
+.trade-table{table-layout:fixed;width:100%}
+.trade-table th,.trade-table td{padding:12px 10px;overflow-wrap:anywhere;white-space:normal}
+.trade-table thead th:first-child{width:18%}
+.trade-table thead th:nth-child(2){width:16%}
+.trade-table thead th:nth-child(3){width:22%}
+.trade-table thead th:nth-child(4){width:24%}
+.trade-table thead th:last-child{width:20%}
+.trade-table tbody th{background:transparent;font-weight:600}
+.trade-table small{font-size:14px;font-weight:400}
+.trade-table p{margin:5px 0}
+.trade-table .leg-detail-row>td{padding:0 10px 6px}
+.leg-records{margin:0}
+.leg-records>summary,.journal-disclosure>summary,.evidence-list summary{padding:11px 0;min-height:44px;color:var(--accent);font-weight:500;font-size:14px;overflow-wrap:anywhere}
+.leg-records .record-grid{margin-top:10px}
+.leg-records h4{font-size:16px;margin:16px 0 8px}
+.leg-records .evidence-list{padding-left:0}
+.journal-disclosure{border-top:1px solid var(--line);margin-top:8px}
+.evidence-list{list-style:none;padding:0;margin:0}
+.evidence-list>li{padding:14px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.evidence-list p{margin:4px 0}
+.evidence-list details{margin-top:4px}
+.journal-strategy .notebook-strategy{margin-top:0;padding-top:0;border-top:0}
+@media(max-width:800px){.journal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+  .trade-table,.trade-table tbody,.trade-table tr,.trade-table th,.trade-table td{display:block;width:100%}
+  .trade-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .trade-table .leg-summary{border-top:1px solid var(--line);padding:10px 0}
+  .trade-table .leg-summary th,.trade-table .leg-summary td{border:0;padding:7px 0}
+  .trade-table .leg-summary th{font-size:16px}
+  .trade-table td[data-label]::before{content:attr(data-label);display:block;color:var(--muted);font-size:14px;margin-bottom:3px}
+  .trade-table .leg-detail-row>td{padding:0 0 8px}
+}
+@media(max-width:420px){.journal-metrics{grid-template-columns:minmax(0,1fr)}}

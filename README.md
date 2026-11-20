@@ -147,8 +147,9 @@ From the project root:
 ```
 
 Open <http://127.0.0.1:8879/controllers> or
-<http://127.0.0.1:8879/notebooks>. Notebook links open the journal. These are the
-only three views. Reload a page to see committed changes. The local command uses
+<http://127.0.0.1:8879/notebooks>. Notebook links open the journal. Previous-run
+links open a separate read-only page in a new window or tab; the selected run's
+details are loaded only when opened. Reload a page to see committed changes. The local command uses
 Flask's development server without debug, reloading or dotenv loading. The separate
 trusted-LAN service uses Waitress and the permissions described below.
 

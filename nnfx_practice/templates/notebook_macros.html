@@ -1,0 +1,50 @@
+{% macro amount(value, signed=false) -%}
+<span{% if signed %} class="{{ value|tone }}"{% endif %}>{{ value|number(signed=(signed and value != 0), grouped=true) }}</span>
+{%- endmacro %}
+
+{% macro results(report, currency) %}
+<dl class="notebook-metrics">
+  <div><dt>Account balance ({{ currency }})</dt><dd>{{ amount(report.balance if report else none) }}</dd></div>
+  <div><dt>Realised profit ({{ currency }})</dt><dd>{{ amount(report.realised_profit if report else none, signed=true) }}</dd></div>
+  <div><dt>Realised loss ({{ currency }})</dt><dd>{{ amount(report.realised_loss if report else none, signed=true) }}</dd></div>
+</dl>
+{% endmacro %}
+
+{% macro strategy_overview(v) %}
+<section class="notebook-strategy" aria-label="Strategy overview">
+  <h3>Strategy</h3>
+  <p class="muted">{{ v.binding.strategy_version }} · {{ v.binding.lookback_candles }} daily candles</p>
+  <dl class="signal-overview">
+    {% for name, rule in v.manifest.get('signal_rules', {}).items() %}
+      <div>
+        <dt>{{ 'Entry confirmation (C1)' if name == 'c1' else 'Exit signal' if name == 'exit' else name|upper }}</dt>
+        <dd>{% if rule is mapping %}{{ v.manifest.get('research_provenance', {}).get('roles', {}).get(name, {}).get('title', 'Indicator name unavailable') }}{% else %}{{ rule }}{% endif %}</dd>
+      </div>
+    {% else %}<div><dt>Signal rules</dt><dd>Unavailable</dd></div>{% endfor %}
+  </dl>
+</section>
+{% endmacro %}
+
+{% macro reporting_details(v) %}
+<details class="notebook-details reporting-details">
+  <summary>Reporting details</summary>
+  {% for period, report in v.reports.items() %}
+    <section class="period-records">
+      <h4>{{ period|title }}</h4>
+      {% if report %}
+        <dl class="record-grid">
+          <dt>Opening snapshot</dt><dd>{{ report.opening_snapshot_id }}</dd>
+          <dt>Reporting snapshot</dt><dd>{{ report.snapshot_id }}</dd>
+          <dt>Transaction boundary</dt><dd>{{ report.boundary }}</dd>
+          <dt>Last successful refresh</dt><dd>{{ report.refreshed_at|ny }}</dd>
+        </dl>
+      {% else %}<p>Unavailable{% if period == 'ordinary' and not v.binding.activated_at %} — notebook unactivated{% endif %}</p>{% endif %}
+    </section>
+  {% endfor %}
+  <dl class="record-grid">
+    <dt>Age at page load</dt><dd>{{ v.refresh_age }}</dd>
+    {% if v.latest_run %}<dt>Latest run ID</dt><dd>{{ v.latest_run.run_id }}</dd><dt>Last run progress</dt><dd>{{ v.latest_run.last_progress_at|ny }}</dd>{% endif %}
+    {% if v.refresh_problem %}<dt>Unsuccessful refresh snapshot</dt><dd>{{ v.refresh_problem.snapshot_id }}</dd><dt>Refresh requested</dt><dd>{{ v.refresh_problem.requested_at|ny }}</dd>{% endif %}
+  </dl>
+</details>
+{% endmacro %}

@@ -523,11 +523,70 @@ trade state or affects trading eligibility.
 
 | GET view | Content and source |
 | --- | --- |
-| `/controllers` | Controller/master runs, both child rows, durations, current step/pair, counts derived from pair decisions, skips/failures and outstanding issues. Stage 1 distinguishes reconciliation from surviving-pair progress; Stage 2 shows finished outcomes out of 28. Unfinished runs remain visible. |
+| `/controllers` | Latest controller/master run, both child stages, durations, current step/pair, counts derived from pair decisions, skips/failures and outstanding issues. Stage 1 distinguishes reconciliation from surviving-pair progress; Stage 2 shows finished outcomes out of 28. History lists only run metadata and problem indicators, with links to full details. |
+| `/controllers/<controller_id>/runs/<run_id>` | Read-only details for one run in the registered controller's notebook. Load its stages, decisions, exact timings and reconciliation records only when this separate page is requested. Unknown controllers/runs cannot select other notebooks; unavailable notebooks show an explicit error. |
 | `/notebooks` | Name, linked controller, immutable strategy and signal rules; balance and separate realised profit/loss at the common reporting boundary above, refresh time and failure/staleness indicators. |
-| `/notebooks/<id>` | Account-summary figures at that same reporting boundary, strategy/rules and qualification identity; complete journal columns below, issues, request outcomes and broker-backed activity detail, with newer activity labelled. |
+| `/notebooks/<id>` | Account-summary figures at that same reporting boundary, grouped trade sets with complete expandable records, issues, request outcomes and broker-backed activity detail, with newer activity labelled. Strategy/rules and qualification identity remain available below. |
 
-The journal columns are set ID, broker trade ID, leg number, pair, direction,
+The owner accepted the Controller layout update on 20 November 2026. Lead with
+the notebook name, secondary controller identity, account-data freshness and open
+issues, followed by the latest run and two stacked stage summaries. Empty issues
+use one line. Keep stale/failed refreshes, latest-run failed pair outcomes and
+unfinished decisions visible. Place “Previous run history” immediately beneath the latest
+run's “Run and reconciliation details”, ahead of account-data details. Show the
+previous-run count and an empty message when there is only one run; exclude the
+latest run from history. History lists dates, status, duration, invocation mode
+and error/unfinished indicators. Each run link opens a separate window or tab
+(browser preference), with no embedded or prefetched historical run content.
+The controller request reads summary metadata and problem flags only for older
+runs; it does not load their stages, decision reasons or reconciliation records.
+Expand the history list by default when it contains errors or unfinished records.
+The latest-run view and separate historical-run page use native expandable
+details to retain full IDs, exact timestamps
+and durations, current/last steps and pairs, reconciliation records and resolved
+issues. Main timestamps remain explicitly New York time with offset; readable
+duration rounding never changes stored values. Display recorded skip reasons,
+not an assumed lack of signals. “No new entries” requires a completed entry stage
+with all expected pairs skipped and no trade set recorded for that run. A stage's
+“Account reconciled” label requires its referenced snapshot to be reconciled.
+These summaries describe saved outcomes, not current service liveness.
+
+The Notebooks overview follows the same account-first order: notebook name and
+journal link, freshness/warnings and open-issue count, then account balance,
+realised profit and realised loss at the common reporting snapshot. Label the
+reporting period explicitly. Before ordinary activation, explain that the figures
+are qualification results; do not display unavailable ordinary totals as zero.
+After activation, show ordinary results first and retain capped qualification
+results in a separate disclosure. Balance is neutral, without a profit-style
+plus sign; result amounts retain signed green/red text and zero stays neutral.
+Thousands separators improve readability without rounding or dropping stored
+monetary precision. Financing and other charges remain separate in the journal.
+Latest saved-run status and a controller link follow the figures. Strategy version,
+candle count and indicator names stay visible below; full signal rules/parameters
+and exact reporting snapshot IDs/boundaries/times remain in expandable details.
+The trading journal follows the same presentation: freshness, visible issues and
+latest saved-run status, then balance, unrealised result and separate realised
+profit/loss. Balance/charge components and capped qualification results have
+their own disclosures. Group both legs by set, newest sets first, and keep mixed
+open/closed sets together under “Open or unconfirmed sets”. A set is “Finished”
+only when every leg is closed or confirmed not opened. Show pair, direction,
+recorded entry time and entry status above compact trade rows. Each row shows
+status, entry/current units, current protection and final result. Closed trades
+do not imply a missing active stop or unconfirmed planned target; their recorded
+protection remains in the details. Stop-to-entry failures/unknown outcomes stay
+visible. Small screens stack these fields with labels instead of requiring
+horizontal scrolling.
+
+Native per-trade disclosures retain identifiers, exact timestamps, original and
+current protection, final exit evidence, charges and fills. Account activity and
+request outcomes follow the trades in expandable sections. Show a top warning for
+activity after the account snapshot and expand its activity section by default;
+uncertain or unsuccessful requests also expand by default. Posted amounts remain
+distinct from informational allocations. Strategy settings and notebook activation
+records follow these sections. Presentation does not change accounting calculations
+or the reporting boundary.
+
+The complete journal fields are set ID, broker trade ID, leg number, pair, direction,
 initial/current units, entry time, status, actual entry, original/current stop,
 Trade 1 target, actual final exit time/price/reason, signed pips and home-currency
 trading result, financing and other charges. Planned/unconfirmed legs are clearly
