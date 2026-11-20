@@ -11,79 +11,44 @@ The [Controller layout update](#controller-layout-update-on-dashboard-updates),
 checks at 320, 716 and 1280 pixels pass. This checkout change is not deployed;
 the installed dashboard on 8879 and trading controls were not changed by this work.
 
-M10's [guarded qualification service integration](#guarded-m10-service-integration-and-deployment-handoff)
-is now installed and has [passed repeated broker-free system verification](#verified-guarded-system-deployment-and-disabled-plan-preparation);
-actual practice qualification is **pending and incomplete**. On 19 November the owner approved M09 for deployment and broker-free
-verification, retaining all outstanding qualification checks and keeping trading
-disabled. The [approval and deployment attempt](#m09-deployment-approval)
-close the owner-review prerequisite only. The owner has now successfully
-[completed installation](#installed-system-artifacts-and-prepared-system-probes)
-after resolving venv support and administrator-path failures. The installed
-package/units pass read-only inspection; ordinary scheduling remains disabled.
-The owner's [corrected system probe](#successful-system-fixture-verification)
-passed dispatch, exclusion/restoration, dashboard isolation and committed WAL
-visibility checks. The earlier probe failure remains retained. The
-[private deployment check](#private-connection-verification-and-observer-preparation)
-also passed: owner-only credentials, approved binding and reader denial are
-confirmed. The [boot/scheduled-window observer](#observer-armed-and-restart-coordination)
-dispatched at Friday 20 November 08:50 Melbourne and its monitor exited at 09:05.
-The [collected-results review](#reviewed-no-entry-session-and-observation-results)
-confirms scheduled dispatch and continuous wakefulness through the observation
-window. Four logged-in sessions were present; the owner's answer was **Unsure**
-about manual intervention, so unattended operation remains unconfirmed for that
-scheduled window. **Startup without login is now verified** after the administrator
-restart on 20 November: the boot marker recorded zero user sessions on kernel
-`7.0.0-43-generic`. The
-[post-restart review](#verified-post-restart-startup-and-kernel-refresh-handoff)
-preserves that pass, unchanged Q0/history and the remaining current-kernel
-host/dashboard checks. The
-[closeout/restart checkpoint](#ordinary-trading-target-and-immediate-restart-checkpoint)
-records remaining gates, host checks and a newly observed dashboard port conflict.
-Automatic approval review initially blocked the reboot pending approval that
-acknowledges the active research dashboards. The owner subsequently answered
-**"Restart now with those interruptions"**; informed approval is now recorded
-and no further confirmation is needed for that scope. The approved retry passed
-automatic review, but the host denied `codexdev`'s `sudo` reboot command. The
-administrator then completed the restart and evidence collection. Prepared dashboard-port
-and notebook-preserving probe updates passed offline tests, including the
-corrected fixture restriction sections. The administrator has now deployed the
-dashboard on **8879** and passed current-kernel system fixtures while preserving
-the actual notebook. Actual dashboard figures and LAN reachability also passed;
-the [current deployment/continuation handoff](#verified-current-kernel-dashboard-and-no-entry-continuation-handoff)
-records those outcomes and **427 passing offline tests**. Earlier sudo denials
-remain retained. The administrator has now
-[armed the next single qualification session](#verified-qualification-continuation-arming)
-for **21 November 08:50 Melbourne**, with one successful fresh account GET,
-unchanged boundary/balance and no mutations. Ordinary trading remains disabled.
-The owner has now [authorized controlled M10 practice execution on Python 01](#conditional-m10-execution-authorization)
-once the required prerequisites are met. Ordinary activation and scheduled
-trading remain unauthorized pending qualification and activation review. This
-session is still sudo-denied, but the owner has now completed installation,
-the updated M09 system fixtures and the actual unarmed-service gate probe, all
-with successful reports and no cleanup errors. The earlier denial is retained.
-The [fresh account clearance and disabled-plan preparation](#verified-account-clearance-and-q0-initialization-handoff)
-have now passed. The [actual qualification baseline Q0 is initialized and verified](#verified-q0-and-initial-session-arming-handoff),
-with cursor `2249` and ordinary activation unset. The administrator has now
-[armed the single initial qualification session](#verified-initial-session-arming),
-with its timer independently confirmed before dispatch. The service then started
-at 08:50:00 Melbourne and exited successfully at 08:50:15 with no restart.
-Its dated timer is elapsed, with no next expiry. Administrator collection and
-review now confirm a **completed 14.112-second no-entry run**: 28 ordered valid
-entry captures, no fresh C1 event on any pair, 31 successful broker GETs, zero
-mutations/fills/issues, and unchanged reconciled account boundary `2249`.
-Actual long/short/cross-currency execution qualification remains pending. The requested
-**319-test baseline passed**; the 347-test pre-integration baseline and latest
-**427-test offline suite passed** (413 before the continuation helper).
-The [M10 handoff](#m10-readiness-preparation-and-blocked-qualification)
-records the guard fix, fresh host inspection and remaining work. Actual Q0 is
-preserved; no A0 was committed and no ordinary timer was enabled or started.
-The first date-bound qualification plan/claim are retained. A new reviewed
-date/run identity is armed for the next qualification session; it preserves Q0,
-cursor and all prior history. Ordinary scheduling remains disabled/inactive with
-no pending job. No strategy or trade size was changed.
+M10 automatic weekday practice qualification and guarded native ordinary
+activation/dispatch are **deployed**, with the existing dashboard preserved. The
+owner ran the prepared migration from the serveradmin terminal on 20 November;
+the [deployment verification](#verified-m10-automatic-qualification-deployment)
+confirms its `armed` receipt, updated host-fixture pass and live schedule. The
+**427-test baseline** and **460-test isolated M10 suite** remain the offline
+verification; deployed source and package match all 43 recorded application files.
+
+Live read-only inspection confirms automatic qualification is `enabled/active/waiting`
+for Monday–Friday at 16:50 New York, next **21 November 08:50 Melbourne / 20 November
+16:50 New York**. The former dated timer is stopped with no next expiry. Ordinary
+timer remains `disabled/inactive`, the controller is idle, and the dashboard remains
+active on 8879 with unchanged files and process. The administrator receipt confirms
+Q0 `c245f517b15448cabb2edbb5336a53aa`, cursor `2249` and A0 unset, with all notebook,
+sidecar and claim files preserved. These protected notebook observations come from
+the deployment receipt; the unprivileged verifier did not reopen the notebook.
+
+The automatic plan keeps the same controller, strategy and 16:50 partial-candle
+workflow. It can wait for natural fresh signals and manage actual qualification
+trades on later regular runs without daily administrator arming. Durable date
+claims preserve the old one-shot's replay protection. The migration archived the
+old plan/code, preserved all history, checked current host controls and new dual-timer
+maintenance behavior, and enabled only qualification scheduling. Final host/window
+checks stay separate from initial execution prerequisites. Startup without login
+on -43 and prior essential host/dashboard checks remain retained; a refreshed
+current-kernel observer has not been found.
+
+M09 deployment and controlled Python 01 practice execution are already authorized.
+No repeat authorization or daily administrator arming is needed for those scopes.
+The agent's denied deployment attempt was followed by successful owner execution;
+do not repeat the migration.
+Actual eligible long/short/cross-currency fills, protection, scheduled stop-to-entry,
+targeted closes, margin/restrictions/charges, final integration and final ordinary
+authorization remain pending. Ordinary activation and scheduling have **not** been
+performed. **M10 is not complete.**
 
 M09's implementation is approved for deployment and broker-free verification,
-with unmet system deployment and host acceptance dependencies. Access to Ubuntu
+with remaining final host acceptance dependencies and new-version deployment checks. Access to Ubuntu
 `thinkbook-server` is confirmed. Its
 broker-free user-systemd dispatch and maintenance checks passed. Administrator
 installation completed. System controller/maintenance and dashboard sandbox/WAL
@@ -96,7 +61,7 @@ M08's prior offline suite passed 294 tests, including 30 dashboard checks. The
 [M08 verification record](#m08-observational-dashboard) retains rendered GET
 pages, committed fixture rows, package checks and visual review. No broker
 request was made for M08, no actual notebook was initialized or activated,
-and no trading timer was enabled. Live mutations remain disabled.
+and no trading timer was enabled. That M08 work enabled no live mutations.
 
 M04 is complete and ready for owner review. The
 [account and live candle passes](#m04-read-only-preflight) passed for Python 01
@@ -171,10 +136,19 @@ offline evidence. Actual two-leg execution and charge mapping remain pending.
 | M07 master workflow, entry loop and operator disposition | Implemented offline. All 264 baseline tests passed again before M08 |
 | M08 observational dashboard | Implemented offline. All 294 tests passed, including 30 M08 checks. Ready for owner review |
 | M09 host operation and maintenance exclusion | Startup, refreshed essential system/maintenance controls and dashboard isolation/WAL passed on -43; actual dashboard/notebook and LAN agreement passed. Prior -42 scheduled-window unattended context remains unconfirmed; keep kernel/window scopes separate. Ordinary timer disabled |
-| M10 practice qualification and ordinary activation | Prior no-entry run reviewed; Q0/cursor/history preserved. Continuation armed for 21 November 08:50 Melbourne after one fresh GET, zero trades/orders and unchanged boundary/balance. All 427 offline tests pass. Actual future execution/final qualification and guarded ordinary integration incomplete; no A0 or ordinary timer |
+| M10 practice qualification and ordinary activation | Automatic qualification deployed and enabled; next run 21 November 08:50 Melbourne. Old dated timer stopped, dashboard unchanged, notebook/claims preserved and updated host fixtures passed. Actual execution/final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
 
 ## Verification and limits
 
+- **GitHub publication preparation, 20 November 2026 (Melbourne).** The combined
+  checkout passed all 470 offline tests with `.venv/bin/python -m unittest discover -v`.
+  The local log is `var/verification/github-publication/unittest.log`. A credential
+  pattern scan of the 106 tracked files and 126 historical file versions found no
+  matches. Private configuration, runtime records and the virtual environment are
+  ignored and absent from Git history. All 397 local document file links resolve
+  in this checkout; 227 point to private artifacts that remain local. `AGENTS.md`
+  is 103 lines, within its 300-line limit. These are publication/offline checks,
+  not additional deployment or broker execution evidence.
 - **Source inspection.** Inspected the sibling indicator lab at commit
   `15e9a5beafe3c219eece80b6e7ebc35d236a00a4` for ATR, fresh signals,
   two-leg exit sequencing and server-rendered dashboard patterns. This inspection
@@ -2495,56 +2469,195 @@ is retained. No actual follow-up export has been collected before dispatch. The
 passes. Ordinary activation and all remaining actual execution/management and
 final integration gates stay open.
 
+### Automatic qualification and native ordinary handoff
+
+On **20 November 2026**, the owner requested automatic weekday qualification
+through the same controller, subsequent scheduled management of qualification
+trades, and completion of the guarded native ordinary path. This authorizes the
+implementation/preparation; it does not authorize ordinary activation or waive
+execution evidence. The request also retains existing M09 deployment and controlled
+Python 01 practice execution authority.
+
+**Observed before changes.** The project virtual environment passed all **427
+baseline tests**. A first run with the host Python lacked project dependencies and
+did not run the complete suite; its output is retained separately. Read-only system
+inspection confirmed kernel `7.0.0-43-generic`, inactive controller, disabled/inactive
+ordinary timer and active dashboard. Exact timer
+`nnfx-m10-qualify-m10-b51f50d1eae44c088721c3a675831798.timer` remained waiting for
+**21 November 08:50 Melbourne**, targeting the existing service with 1-second
+accuracy and no persistence. Only the old `nnfx-m09-observe-ba7d65c9bebd` observer
+was present; its scheduled timer was elapsed. No new observer preparation was
+observed, and no reboot or repeat startup check was requested.
+
+**Implementation.** Version-2 protected qualification plans use a separate automatic
+weekday timer targeting the original service. They require scoped automatic
+qualification authority and observed essential host controls, including independent
+maintenance restoration for both timers. Runs use the current day's New York slot,
+an exclusive durable date claim and a distinct daily run ID. Old claims, Q0,
+current import cursor and all activity survive plan changes; a second invocation,
+late dispatch, weekend or old claim cannot replay that session. Same-kernel reboot
+resumption is supported; changed kernel/code/configuration requires relevant review.
+Subsequent runs use the existing full master and manage open trades and issues;
+no strategy, ATR, sizing, protection, entry ordering or repair rule changed.
+
+Native ordinary activation now requires a protected final packet with completed
+prerequisite observations, the exact reviewed notebook record digest, A01–A16
+observations and named successful offline checks, final owner authorization,
+actual complete long/short/cross-currency sets, IDs/units/historical protection,
+margin records, TP/scheduled stop-to-entry and targeted-close attempts, daily
+financing, both-stage final run, session claims/raw broker responses, current-kernel
+host evidence and traded dashboard comparison. References/pass flags alone fail.
+Activation runs under maintenance, reconciles a fresh A0, requires no remaining
+trades/orders or unresolved activity, and commits atomically. Repetition preserves
+A0 and its review. Ordinary dispatch requires that committed record and shares the
+daily replay guard; it does not archive ordinary candles. Neither the new code nor
+any check grants real ordinary authorization.
+
+**Verification.** All **460 offline tests passed** in the isolated M10 source (33
+new checks); the final log records the measured duration.
+The prepared wheel matched all **43 application/strategy/resource files** and
+imported the new modules successfully from an isolated extracted package. Final
+read-only host inspection at **20 November 14:48 Melbourne** confirmed the dated
+timer still waiting, ordinary scheduling disabled, synchronized clock and all
+three dashboard ports listening. Test/package/document results and source identities
+are retained in
+[verification.json](../var/prepared/m10-automatic/var/verification/m10-automatic/verification.json) and its
+linked logs. The new cases cover recurring idle sessions, later TP/stop management,
+uncertain-stop non-retry, legacy/transition-day claims, DST/weekend/late launches,
+scoped authority, same-kernel reboot and kernel changes, two-timer exclusion,
+wrong/missing/stale/fixture evidence, final window gaps/intervention, native A0
+failure/atomicity/repetition, and ordinary dispatch after activation. All broker,
+service and activation successes in these tests are **offline fixtures**, not
+actual OANDA execution or deployed automatic-schedule verification.
+
+**Concurrent-work isolation.** During final verification, another chat began
+changing dashboard code/templates and tests. The owner answered **"Yes—keep the
+M10 deployment separate"**. That work was preserved in the shared checkout. M10
+now has a frozen source folder at
+`/home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic`, containing
+only M10 changes and the prior installed dashboard. Dashboard files match the
+retained M09 source hashes exactly; its original test file was recovered in the
+bundle and verified against its recorded hash. The shared file was not reverted.
+Intermediate verification affected by the concurrent edits is retained; final
+verification and deployment use this isolated source. The two extra final checks
+cover revocation during fresh A0 reads and rejection of simulated activation.
+
+**Concrete handoff.** The [single migration command](../README.md#deploy-automatic-qualification-once)
+uses a verified prebuilt wheel because the installed environment has pip but lacks
+setuptools/wheel. Installation needs no package-index access or dependency changes.
+It checks the exact existing protected plan, archives it with prior code/timer/policy,
+excludes the controller, stops the dated trigger and preserves notebook/sidecar/
+claim bytes and metadata. It installs the application and qualification timer,
+runs updated broker-free system fixtures, then enables only the regular qualifier.
+An active controller, imminent trading window, changed plan or failed check defers
+or stops deployment. Failures retain evidence and leave scheduling stopped for
+inspection; no automatic rollback/replay or history deletion occurs.
+
+The [new collector](../tests/collect_m10_automatic.py) exports existing notebook,
+claims and raw execution evidence without broker/control actions and independently
+of the final host observer. It also retains claims with no run row. This replaces
+the no-entry-only continuation workflow for future regular qualification sessions.
+The [README](../README.md#automatic-m10-qualification-and-ordinary-activation)
+documents deployment, collection, evidence schema and future gated activation.
+
+**Not performed.** No sudo command was retried, host package deployed, plan replaced,
+timer changed, notebook written, A0 initialized or broker request made in this turn.
+The agent's known host sudo denial remains the reason for the administrator handoff;
+no permission bypass was attempted. The old dated session stays armed until the
+owner runs the reviewed migration. Actual deployment/system receipts and future
+signal-dependent execution are pending. The earlier -43 essential controls and
+startup pass remain valid for their observed versions; the migration tests changed
+code and dual-timer controls for a concrete reason. Unrelated final observer or
+traded-dashboard checks do not block initial qualification.
+
+### Approved M10-only deployment attempt
+
+On **20 November 2026 (Melbourne)**, the owner requested deployment of the prepared
+changes while excluding the dashboard update in the other chat. The frozen M10
+package passed its source, wheel and 460-test-log integrity checks again. All seven
+dashboard files matched the installed version. The dashboard remained active with
+PID `11104`; the controller was idle and ordinary scheduling was disabled.
+
+The exact prepared migration was attempted once using `sudo -n`. Host sudo policy
+denied `codexdev`, exit 1, **before Python or the migration started**. This was a
+host access denial, not a failed migration or an automatic approval-review
+rejection. No deployment receipt was created and no application, plan, timer,
+notebook or broker state was changed. The frozen bundle and concurrent dashboard
+work were preserved. The [attempt record](../var/verification/m10-deployment-attempt-20261120.json)
+retains the command, denial and subsequent service observations.
+
+The post-attempt check confirmed the original dated timer still waiting for
+**21 November 08:50 Melbourne**, no recurring qualification timer installed, the
+ordinary timer disabled/inactive and the same dashboard process running. The
+remaining deployment step requires the existing serveradmin terminal; M10-only
+deployment approval does not authorize ordinary activation or waive qualification.
+
+### Verified M10 automatic qualification deployment
+
+After the owner ran the command, read-only verification on **20 November 2026,
+15:10 Melbourne** confirmed successful migration. Receipt
+`m10-automatic-ebcd02e60445` reports `status: armed`, `files_preserved: true`, zero
+broker requests and no ordinary activation. Its updated broker-free system report
+passes dispatch, no restart/catch-up/overlap, independent dual-timer maintenance
+restoration (four cases), dashboard isolation/WAL and notebook-file preservation,
+with no cleanup errors.
+
+The [verification record](../var/verification/m10-deployed-20261120/verification.json)
+links the receipt and system report by hash. All 43 installed source/package files
+match the isolated M10 artifact, and the installed controller/dashboard units and
+new qualification timer match the prepared definitions. The seven dashboard files
+retain their prior hashes in both installed locations. The dashboard continues with
+the same PID `11104` and original start time; `/controllers`, `/notebooks` and
+`/notebooks/notebook-a` on 8879 each return HTTP 200. The sibling dashboard ports
+8877/8878 retain their prior listening addresses; no sibling service was changed.
+
+Live `nnfx-practice-qualification@practice-a.timer` is `enabled/active/waiting`,
+targets the original controller and uses `Mon..Fri *-*-* 16:50:00 America/New_York`,
+one-second accuracy, no random delay and no persistence. Its next expiry is
+**21 November 08:50 Melbourne / 20 November 16:50 New York**. The dated timer is
+inactive with no next expiry. The ordinary timer is disabled/inactive with no
+pending job, and the controller is idle with `Restart=no`.
+
+The receipt's before/after notebook summaries agree exactly: existing Q0 and
+cursor `2249`, one prior no-entry run, no trades/attempts/fills/issues and no A0.
+The migration verified unchanged notebook/sidecar/claim bytes and metadata. This
+turn performed only read-only host/package/page checks and local documentation
+updates. It did not rerun deployment, change controls, contact OANDA or read private
+credentials. Scheduled signal-dependent execution and final activation acceptance
+remain pending; successful deployment does not complete M10.
+
 ## Next work
 
-M09 owner review is closed for deployment and broker-free verification; do not
-request that approval again. Installation, corrected system fixtures and private
-configuration checks passed. Observer dispatch completed and monitoring finished
-at 09:05 Melbourne. Protected collection/review now passed scheduled dispatch and
-sampled wakefulness; unattended conditions remain unconfirmed after the owner
-answered Unsure about manual intervention.
-The administrator has now completed the informed-approved restart. Startup without
-login passed on kernel 7.0.0-43; do not reboot again for that closed check or ask for
-the same approval. Preserve the prior -42 dispatch/wakefulness evidence with its
-kernel scope and unconfirmed unattended context. This session still lacks sudo
-access. The administrator has now installed the port-8879 dashboard unit, passed
-the preserving system fixtures on -43 and started the observational dashboard.
-Actual display/notebook and LAN checks passed for the current flat qualification
-records. Keep the remaining current-host/window and traded reporting checks before final host
-qualification. Preserve all notebook history and keep ordinary activation disabled.
-Conditional controlled execution authority for Python 01 is now recorded; do not
-request it again. The guarded integration is implemented and offline-tested.
-Its administrator deployment and repeated broker-free system checks now passed.
-Fresh account clearance, disabled-plan preparation and actual Q0 initialization
-passed. Preserve that Q0 and cursor. The reviewed single-session armer has now
-passed actual administrator execution and independent timer inspection. Its
-08:50 service dispatch and clean no-entry run are now reviewed. All 28 pairs
-correctly skipped with no fresh C1 event; no orders or fills occurred. The dated
-timer has elapsed without a next expiry. Do not rerun the initial-session armer,
-rewind Q0/history or invoke the controller manually. Continuing execution
-qualification requires a new explicitly dated plan/run through the same service,
-preserving this completed run, Q0 and the current cursor. The initial-session
-armer deliberately rejects existing run history and cannot be reused unchanged.
-The administrator's narrow continuation has now passed actual arming and live
-timer inspection, with one fresh clear account GET and preserved history. Leave
-the single dated qualification timer waiting for 21 November 08:50 Melbourne;
-do not rearm or invoke the controller manually. Refresh the isolated broker-free
-observer for the current-kernel window while retaining all previous data, then
-use the prepared run-specific read-only collector after dispatch/window completion.
-No ordinary recurring trading was armed. Keep unexercised
-execution requirements pending and return account incompatibilities or proposed
-strategy/unit changes for review; do not reduce Trade 2 units automatically.
-No further
-execution authorization is needed for the existing scope. Verify prerequisites
-again at each step; do not assume the pending execution result passed.
-Complete initial account-path qualification, remaining M09/dashboard
-checks and final integration evidence before considering A0. Keep live mutations
-unarmed and ordinary timers inactive while the relevant prerequisites remain
-unmet. The previous session remains retained, and only one new date-bound
-qualification session is waiting. Ordinary
-activation stays gated. Do not invent another milestone.
-[Approved implementation plan](IMPLEMENTATION_PLAN.md)
+**Owner operating plan, agreed 20 November 2026.** Leave automatic qualification
+running. The owner will check the dashboard **Tuesday–Saturday at 09:30 Melbourne**
+for completed runs, refreshed/reconciled figures and unresolved errors, addressing
+problems promptly. Automatic alerting is deferred in favour of those manual checks.
+Review performance and M10 evidence together on **27 November 2026**. This records
+the intended review date; no automated reminder or monitoring task was scheduled.
 
-Keep this document current when delivery state changes or meaningful checks
-produce evidence. Store exact test and run evidence with the work that produces
-it and link it here.
+The owner prefers continuous performance from the original Q0 baseline, with
+qualification completion recorded as a milestone. That lifecycle/reporting
+simplification has been discussed but is not implemented. Current qualification
+already accumulates results from Q0; keep it running and revisit the future
+transition rules before any ordinary activation. Existing execution checks and
+operator handling of unresolved issues remain in force.
+
+Automatic qualification is now scheduled. Observe the next regular run at
+**21 November 08:50 Melbourne**; no daily arming or deployment repeat is needed.
+Do not rerun the full installer, migration, initial one-shot armer or no-entry
+continuation, delete protection records, reset Q0, or manually invoke a trading run.
+
+Let the unchanged strategy supply eligible signals and the same controller manage
+trades on subsequent weekday qualification runs. Collect
+actual fills/IDs/units/protection, TP and scheduled stop-to-entry, targeted closes,
+restrictions/margin, reconciliation and financing/charge evidence. Preserve failures;
+operator disposition remains required and any broker incompatibility or proposed
+strategy/unit change returns to review. There is no daily administrator arming.
+
+Retain the completed -43 startup proof. Inspect existing observer evidence before
+preparing a matching current-kernel unattended window; preserve the old -42 scope.
+Complete the traded dashboard and A01–A16 final review. Only after qualification,
+clear qualification trades/orders/issues, protect the actual reviewed packet, obtain
+final ordinary authority and reconcile fresh A0 under maintenance. Then, separately,
+enable ordinary scheduling. Do not claim M10 complete before those outcomes exist.
+[Approved implementation plan](IMPLEMENTATION_PLAN.md)

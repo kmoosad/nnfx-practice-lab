@@ -62,6 +62,17 @@ class AutomaticCase(integration.PermitCase):
 
 
 class AutomaticChecks(AutomaticCase):
+    def test_automatic_authority_must_cover_same_account_and_exclude_ordinary(self):
+        path = Path(self.plan['automatic_schedule_authority']['path'])
+        original = json.loads(path.read_bytes())
+        for field,value in (('account_binding_sha256','a'*64),('ordinary_activation_authorized',True),
+                            ('schedule','daily'),('statement','')):
+            raw = json.dumps(dict(original,**{field:value})).encode()
+            path.write_bytes(raw)
+            self.plan['automatic_schedule_authority']['sha256'] = sha256(raw).hexdigest()
+            self.plan_path.write_text(json.dumps(self.plan))
+            with self.subTest(field=field),self.assertRaises(ConfigurationError): self.permit()
+
     def test_idle_sessions_repeat_without_new_plans_and_preserve_q0_and_history(self):
         self.initialize()
         baseline = dict(self.db.execute('SELECT * FROM notebook').fetchone())
@@ -148,6 +159,25 @@ class AutomaticChecks(AutomaticCase):
         attempts = self.db.execute("SELECT * FROM broker_attempts WHERE purpose='stop_to_entry'").fetchall()
         self.assertEqual(len(attempts), 1)
         self.assertTrue(self.db.execute("SELECT 1 FROM issues WHERE status='open'").fetchone())
+
+    def test_readonly_collection_preserves_history_and_orphan_claim_without_observer(self):
+        from . import collect_m10_automatic as collector
+        self.initialize()
+        self.scheduled()
+        self.next_day()
+        self.claim(self.permit())  # A crash before creating the master row.
+        before='\n'.join(self.db.iterdump())
+        output=self.root/'collected'
+        with patch.object(collector,'DATA',self.root), \
+                patch('nnfx_practice.config.load_binding',side_effect=AssertionError('private load')):
+            result=collector.collect(output,'controller-a')
+        exported=json.loads((output/'progress.json').read_bytes())
+        self.assertEqual(result['ordinary_activated'],False)
+        self.assertEqual(exported['broker_requests'],0)
+        self.assertEqual(sum(name.endswith('.claim') for name in exported['session_artifacts']),2)
+        self.assertEqual(before,'\n'.join(self.db.iterdump()))
+        self.assertTrue(exported['notebook_files_unchanged'])
+        self.assertIn('long_sets',exported['facts']['missing'])
 
 
 class OrdinaryChecks(AutomaticCase):
@@ -364,6 +394,30 @@ class OrdinaryChecks(AutomaticCase):
         with self.assertRaises(ConfigurationError):
             activate_ordinary(self.root,'controller-a',broker,service=self.service,evidence=new.references)
         self.assertEqual(self.db.execute('SELECT activation_snapshot_id FROM notebook').fetchone()[0],first)
+
+    def test_revocation_during_fresh_account_read_prevents_a0_commit(self):
+        self.completed_history()
+        permit,broker=self.activation_broker()
+        def revoke(call):
+            if call.method=='GET':
+                self.plan_path.write_text(json.dumps(dict(self.ordinary_plan,enabled=False)))
+        self.world.on_call=revoke
+        with self.assertRaisesRegex(ConfigurationError,'revoked'):
+            activate_ordinary(self.root,'controller-a',broker,service=self.service,evidence=permit.references)
+        self.assertIsNone(self.db.execute('SELECT activated_at FROM notebook').fetchone()[0])
+        self.assertIsNone(self.db.execute("SELECT 1 FROM account_snapshots WHERE purpose='activation'").fetchone())
+
+    def test_scripted_activation_cannot_enable_native_ordinary_dispatch(self):
+        self.completed_history()
+        permit=self.ordinary_permit()
+        # The offline lifecycle remains useful, but its fixture source is not native evidence.
+        activate_ordinary(self.root,'controller-a',self.broker,service=self.service,evidence=permit.references)
+        self.next_day()
+        native=self.ordinary_permit('run')
+        self.native(native)
+        broker=PracticeBroker(self.bound,ordinary=native,now=self.clock.now)
+        with self.assertRaisesRegex(ConfigurationError,'reviewed, committed activation'):
+            require_invocation(self.db,broker,'ordinary',None)
 
 
 class DualMaintenanceChecks(M07Case):

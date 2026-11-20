@@ -138,6 +138,10 @@ def activate_ordinary(root, controller_id, broker, *, service, evidence):
                 broker._ordinary.verify_qualification(db)
 
             def commit_activation(identifier, snapshot):
+                if broker._ordinary is not None:
+                    # The owner can revoke the plan while the fresh GET/history
+                    # import is in flight. Recheck inside the atomic A0 commit.
+                    broker._ordinary.check(binding)
                 require_clear(db, snapshot)
                 db.execute('''UPDATE notebook SET activation_snapshot_id = ?, activation_transaction_id = ?,
                               activation_evidence_json = ?, activated_at = ? WHERE activated_at IS NULL''',

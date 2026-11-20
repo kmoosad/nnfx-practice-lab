@@ -37,10 +37,11 @@ class OrdinaryPermit(q.QualificationPermit):
         self.check(self.binding)
         row = db.execute('SELECT * FROM notebook').fetchone()
         snapshot = db.execute('SELECT * FROM account_snapshots WHERE snapshot_id = ?', (row['activation_snapshot_id'],)).fetchone()
+        evidence = json.loads(row['activation_evidence_json'] or '{}')
         if (not row['activated_at'] or not snapshot or snapshot['purpose'] != 'activation'
                 or snapshot['reconciliation_status'] != 'reconciled'
                 or snapshot['last_transaction_id'] != row['activation_transaction_id']
-                or json.loads(row['activation_evidence_json'] or '{}').get('references') != self.references):
+                or evidence.get('source') != 'practice_get' or evidence.get('references') != self.references):
             raise ConfigurationError('Ordinary dispatch requires this reviewed, committed activation')
 
 

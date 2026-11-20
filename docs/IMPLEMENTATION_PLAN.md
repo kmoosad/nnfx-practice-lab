@@ -362,7 +362,13 @@ without a second trading service or a replacement notebook for the same account.
    cursor at Q0's transaction boundary together, before qualification orders.
    Reopening an initialized notebook preserves this baseline and cursor and
    reconciles forward; it never discards history or resets an interrupted attempt.
-2. **Run explicit qualification.** M07's invocation requires this initialized,
+2. **Run explicit qualification.** Under the owner’s 20 November 2026 instruction,
+   use an authorized automatic weekday qualification timer at 16:50 New York,
+   targeting the same controller service while the ordinary timer stays disabled.
+   Reuse Q0 and reconcile/manage existing qualification trades on later days; no
+   daily administrator arming, forced signals or automatic issue recovery. A durable
+   New York date claim prevents repeated dispatch, including a transition from a
+   dated plan or to ordinary operation. M07's invocation requires this initialized,
    unactivated notebook, completed strategy qualification/preflight and the M10
    execution prerequisites. It uses the same binding checks, request guards,
    commit boundaries and controller functions. Record qualification run IDs in

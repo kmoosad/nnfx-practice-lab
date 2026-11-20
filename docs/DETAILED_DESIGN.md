@@ -91,6 +91,49 @@ account-specific. The suggested one-unit-increment difference for Trade 2 is
 still a review option, not an enabled fallback. If the account requires a change,
 bring the evidence and proposed adjustment to review before activation.
 
+### Protected scheduled qualification and native activation
+
+The owner's 20 November 2026 instruction adds automatic qualification scheduling.
+Version-1 dated plans and their claims remain readable. Version-2 qualification
+plans use a separate weekday timer targeting the existing controller service;
+ordinary scheduling stays disabled. Each dispatch validates protected authority,
+account/strategy/code/configuration identities, essential host evidence, the
+clock, service process and approved New York minute. It creates an exclusive,
+fsynced New York date claim before network activity. Existing claims survive
+plan changes, failures and the transition to ordinary operation. A missed day
+is never replayed. Later regular runs manage existing qualification trades with
+the same reconciliation, attempt guards and operator disposition rules.
+
+Both schedules are paused during local maintenance, with independent restoration
+of their prior states after notebook release. A service mask excludes external
+launches. Version-2 permits pin the tested kernel and code; a same-kernel reboot
+can resume the regular schedule without login, while a changed kernel or code
+requires refreshed relevant evidence. Prior startup and window observations
+retain their original scope. Final host acceptance does not become a prerequisite
+for initial qualification where the implementation plan excludes it.
+
+The [native ordinary adapter](../nnfx_practice/ordinary.py) accepts only a separate
+protected ordinary plan and final owner authorization. Its
+[evidence verifier](../nnfx_practice/qualification_review.py) checks completed
+prerequisite observations, the full reviewed notebook record digest, actual
+long/short/cross-currency complete sets, distinct IDs/units and historical
+fill-relative protection, sizing/margin evidence, confirmed scheduled stop-to-entry
+and targeted closes, daily financing, a completed both-stage final run, retained
+session claims and matching raw broker responses. It checks the current-kernel
+startup/window evidence, traded dashboard comparison and reviewed A01–A16
+observations and named tests from a retained passing offline suite. References
+and pass flags alone are insufficient. Missing or inapplicable account evidence
+requires review; the verifier never manufactures a waiver or strategy change.
+
+Under maintenance, activation verifies those records, then reconciles a fresh
+account snapshot and requires no trades/orders, unresolved attempts/sets or
+issues. A0/evidence/time commit atomically. Repeat activation verifies the existing
+record; it cannot replace A0 or its review. The activation command never enables
+a timer. A native ordinary dispatch requires that committed activation and the
+same protected review, uses the shared daily claim and existing master, and keeps
+ordinary candle windows in memory. Commands and review-packet fields are in the
+[README](../README.md#automatic-m10-qualification-and-ordinary-activation).
+
 ## 3. Run and calculation contracts
 
 At step 2, create the master row and both child rows before account work. Save

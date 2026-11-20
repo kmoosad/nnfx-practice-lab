@@ -93,9 +93,16 @@ def facts(db, plan):
                         target.get('tradeID') != leg['broker_trade_id'] or money(target.get('price')) != money(expected['target'])))
                     or (leg['leg_no'] == 2 and historical.get('TAKE_PROFIT') is not None)):
                 valid = False
-        if valid and money(sizing['risk_per_leg']) <= money(sizing['balance']) * money('0.01'):
+        reads = {r.get('purpose'): r for r in evidence.get('reads', [])}
+        margins = (sizing.get('margin', {}), evidence.get('trade_2_margin', {}))
+        margin_proof = (all(m.get('required') is not None and m.get('available') is not None
+                            and money(m['required']) <= money(m['available']) for m in margins)
+                        and all(reads.get(p, {}).get('http_status') == 200 for p in ('pre_set_margin', 'trade_2_margin')))
+        if (valid and margin_proof and money(sizing['balance']) == money(runs[item['run_id']]['sizing_balance'])
+                and money(sizing['risk_per_leg']) <= money(sizing['balance']) * money('0.01')):
             sets.append(dict(set_id=item['set_id'], run_id=item['run_id'], pair=item['pair'], direction=item['direction'],
-                             trade_ids=[r['broker_trade_id'] for r in legs]))
+                             trade_ids=[r['broker_trade_id'] for r in legs], margin_estimates=list(margins),
+                             broker_margin=[reads[p]['body']['account'] for p in ('pre_set_margin', 'trade_2_margin')]))
     stops, closes = [], []
     for attempt in db.execute("SELECT * FROM broker_attempts WHERE outcome = 'confirmed'"):
         if attempt['run_id'] not in runs or not attempt['response_json'] or attempt['http_status'] not in (200, 201):
@@ -120,7 +127,8 @@ def facts(db, plan):
         stages = [dict(r) for r in db.execute('SELECT * FROM stages WHERE run_id = ?', (run['run_id'],))]
         start = datetime.fromisoformat(run['started_at']).astimezone(q.NY)
         if (run['status'] == 'completed' and run['ended_at'] and run['duration_seconds'] is not None
-                and run['duration_seconds'] >= 0 and start.weekday() < 5 and (start.hour, start.minute) == (16, 50)
+                and math.isfinite(run['duration_seconds']) and run['duration_seconds'] >= 0
+                and start.weekday() < 5 and (start.hour, start.minute) == (16, 50)
                 and run['lookback_candles'] == 386 and run['final_snapshot_id'] and not run['refresh_error']
                 and len(stages) == 2 and all(s['status'] == 'completed' for s in stages)
                 and [r['pair'] for r in entries] == list(PERMITTED_PAIRS)
@@ -209,6 +217,9 @@ def verify_host(review, plan, final_run):
 def verify_notebook(db, plan, review):
     if record_hash(db) != review.get('record_sha256'):
         fail('qualification records changed since final review')
+    if db.execute("""SELECT 1 FROM issues WHERE status != 'resolved' OR operator_id IS NULL
+                     OR operator_disposition IS NULL OR resolved_at IS NULL OR disposition_evidence_json IS NULL""").fetchone():
+        fail('qualification issues require evidenced operator disposition')
     observed = facts(db, plan)
     if observed['missing']:
         fail('actual qualification remains pending: ' + ', '.join(observed['missing']))

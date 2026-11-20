@@ -89,8 +89,9 @@ processes all 28 pairs through the candidate component, then reconciles final
 reporting. `mode="ordinary"` requires committed activation;
 `mode="qualification"` requires an initialized, unactivated notebook and explicit
 prerequisite evidence references. Qualification can use the guarded M10 permit;
-ordinary invocation remains scripted-only pending completed activation review.
-No recurring trading timer is enabled.
+native ordinary invocation now has a separate protected final-review gate.
+Automatic qualification is deployed and scheduled; ordinary scheduling remains
+disabled. The deployment record below retains verification and remaining gates.
 
 The [lifecycle functions](nnfx_practice/lifecycle.py) provide
 `initialize_qualification(...)` and `activate_ordinary(...)`. Both take
@@ -102,8 +103,8 @@ it commits Q0, its evidence and cursor together; reopening reconciles forward.
 Activation commits A0, the history import, evidence and time atomically;
 repeating activation verifies the original record. The required evidence keys
 are listed in that module. References identify externally reviewed prerequisites;
-nonempty references alone do not establish live qualification. Activation stays
-scripted-only pending completed qualification and activation review. Qualification and ordinary reports remain separate in
+nonempty references alone do not establish live qualification. Native activation requires the protected final review and completed execution
+evidence described below; references alone cannot authorize it. Qualification and ordinary reports remain separate in
 `account_report(db, "qualification" | "ordinary")`.
 
 The [local disposition action](nnfx_practice/disposition.py) is
@@ -122,8 +123,8 @@ It never stops a running controller. After the notebook closes, it removes only
 its own mask and restores the timer's previous active/inactive state. The local
 lock remains held during restoration to exclude another maintenance operation.
 No timer is enabled at boot by maintenance. See the deployment commands below;
-guarded qualification initialization is described below; ordinary activation
-remains a local scripted-only interface.
+guarded qualification initialization and native ordinary activation are described
+below. Once installed, maintenance excludes both qualification and ordinary timers.
 
 Notebook schema 2 adds run invocation labels and immutable Q0/A0 guards. Opening
 a version-1 writer migrates it atomically after checking its binding; existing
@@ -175,25 +176,21 @@ See [M08 evidence and dependencies](docs/STATUS.md#m08-observational-dashboard).
 ## Ubuntu deployment and host operation
 
 M09 supplies the [installer](deploy/install.py), per-controller
-[service](deploy/nnfx-practice@.service) and
+[service](deploy/nnfx-practice@.service), ordinary
 [timer](deploy/nnfx-practice@.timer), and separate
-[dashboard service](deploy/nnfx-practice-dashboard.service). Administrator
-installation on `thinkbook-server` completed successfully. Read-only inspection
-confirms the installed package and loaded system units; the controller timer is
-disabled/inactive and the dashboard is stopped. This session still lacks sudo
-access for further administrator actions. The owner approved
-M09 for deployment and broker-free verification on 19 November, retaining all
-qualification checks and keeping trading disabled. Python 3.14 venv support is
-installed. The dependency and administrator-path failures are resolved, and the
-corrected system fixture probe and private configuration checks passed. Remaining
-boot, scheduled-window and production dashboard checks still require qualification.
-The owner has now installed the guarded M10 integration and passed the repeated
-system fixture and unarmed actual-service checks. The earlier sudo-denied attempt
-is retained. See the [deployed M10 evidence](docs/STATUS.md#verified-guarded-system-deployment-and-disabled-plan-preparation);
-actual account execution and remaining final host checks are still pending.
-The actual user-systemd controller probes passed;
-the dashboard security probe could not start in user scope. These are not passes
-for the system deployment. See [M09 outcomes](docs/STATUS.md#m09-host-operation-and-maintenance-exclusion).
+[dashboard service](deploy/nnfx-practice-dashboard.service). The installed dashboard
+is running on **8879**; preserve the sibling research dashboards on 8877/8878.
+Startup without login and essential system/maintenance/dashboard fixtures passed
+on kernel `7.0.0-43-generic`. Ordinary scheduling remains disabled. The existing
+single qualification timer is waiting for **21 November 08:50 Melbourne**.
+The automatic qualification implementation below is **not deployed yet**.
+
+**For this existing protected plan, use the M10 migration below.** The full
+installer intentionally refuses an existing qualification plan. Do not delete
+plans, Q0, claims or notebook history to make installation succeed. The following
+full-install commands are for an initial installation only. Existing M09 deployment
+and controlled Python 01 execution approvals remain valid; no repeat approval is
+required for their scope. Host sudo access is still unavailable to this agent.
 
 The administrator setup uses `/opt/nnfx-practice` for root-owned code and its
 virtual environment, and `/var/lib/nnfx-practice` for the public registry, copied
@@ -518,6 +515,177 @@ An indicator-lab run was active at inspection, so coordinate the restart after
 that work completes or at another agreed maintenance window. Check/cleanup and
 actual boot/window outcomes remain pending. Neither an armed observer nor
 its eventual host result establishes practice execution or ordinary activation.
+
+## Automatic M10 qualification and ordinary activation
+
+The owner requested automatic weekday practice qualification on 20 November 2026.
+The isolated M10 package passes **460 offline tests**, including 33 new schedule/activation/deployment
+checks. The checkout supports it through the same controller service, including
+management of trades opened on earlier qualification days. It keeps the agreed
+16:50 New York partial candle, strategy, ATR, balance/margin and protection rules.
+There is no daily administrator arming, signal forcing, resized Trade 2 or automatic
+repair of failed/uncertain requests. Those issues remain visible for operator
+disposition, while eligible work follows the existing controller rules.
+
+**Current host:** M10 was deployed on 20 November. Automatic qualification is
+enabled and waiting for **21 November 08:50 Melbourne / 20 November 16:50 New York**,
+then follows Monday–Friday at 16:50 New York. The old dated timer is stopped.
+The installed dashboard files and running process are unchanged. Ordinary trading
+remains disabled and the deployment receipt confirms A0 is unset, with notebook
+history and claims preserved. The [deployment verification](docs/STATUS.md#verified-m10-automatic-qualification-deployment)
+records the successful host checks and remaining dependencies. No daily arming is
+needed; the dated arming/continuation procedures below are retained for history.
+
+### Deploy automatic qualification once
+
+The deployment source is frozen at
+`/home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic`. Per the owner’s
+instruction, it retains the verified installed dashboard and its original tests;
+concurrent dashboard work stays in the shared checkout and is excluded from this
+deployment. Do not rebuild this package from the changing shared checkout.
+
+**Completed—do not rerun.** The owner ran this M10-only migration from the
+**serveradmin** terminal after the agent's host sudo denial. Receipt
+`m10-automatic-ebcd02e60445` confirms `armed`, successful updated system fixtures
+and preserved files. This command is retained as deployment history; the existing
+dashboard was preserved:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic/deploy/upgrade_m10.py \
+  --expected-plan-sha256 db84be8d0d31928c16e8be512472553509cd5a675a2c83ebd53ae369ca84fdc5 \
+  --verification /home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic/var/verification/m10-automatic/verification.json
+```
+
+The [migration](deploy/upgrade_m10.py) checks the exact retained plan and current
+service/trigger state, defers around the trading window or an active controller,
+and archives the old plan, dated timer, code and policy. It stops the dated trigger,
+holds the existing notebook lock, installs the verified local wheel without
+network/dependency installation, adds the qualification timer and narrow maintenance
+permissions, and runs the updated broker-free system fixtures. The fixtures verify
+both timer states restore independently and preserve actual notebook files.
+Only after those checks does it enable
+`nnfx-practice-qualification@practice-a.timer`. The ordinary timer stays disabled.
+No broker request, notebook reset, trade closure or A0 activation occurs during
+migration. It preserves existing trades, attempts, Q0, cursors, claims and evidence.
+A prior executed session does not need a no-entry-only continuation.
+
+Require a receipt with `status: armed`, `files_preserved: true`, a successful system
+report and the recurring timer `enabled/active/waiting`. Receipts go under
+`var/verification/m10-automatic-deployment` within that prepared source folder; archives stay protected under
+`/etc/nnfx-practice/qualification/evidence/`. The installer verifies the package
+against the recorded application hashes and records the next expiry. The source
+and verification artifact must remain unchanged until deployment.
+
+On failure, preserve the receipt and archive and inspect the reported stage.
+The migration leaves schedules stopped (the recurring timer disabled on cleanup),
+never stops a running controller, and does not restore obsolete code or replay a
+session automatically. A changed plan hash requires inspection; do not simply
+substitute a new hash and rerun. Repeating a completed migration is rejected.
+
+Qualification then runs Monday–Friday at 16:50 New York, with DST, no missed-launch
+catch-up, no restart and one durable claim per New York date. The same date claim
+blocks a duplicate from an old dated timer or ordinary activation on that day.
+A same-kernel reboot can resume the regular schedule without login. A new kernel,
+code/configuration or strategy identity blocks the permit pending relevant review;
+it does not silently inherit qualification. Ordinary scheduling remains separate.
+
+### Collect qualification progress without daily arming
+
+After deployment, use this read-only collector when reviewing progress:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic/tests/collect_m10_automatic.py
+```
+
+It exports the notebook, run/attempt/fill/issue records, reconciled figures, retained
+raw responses and all claims, including claims left before a run row was created.
+It reports concrete execution evidence and missing requirements. It sends no broker
+request, changes no controls and creates no notebook sidecars. No host-observer
+file is required to collect execution progress. A `practice_execution_qualified:
+false` field remains intentional: collection is not final owner acceptance.
+Each collection uses a new private output directory owned by the checkout owner
+so it can be reviewed without another administrator handoff. The actual notebook
+and protected evidence keep their existing permissions and ownership.
+
+The -43 startup-without-login pass remains valid. The old wakefulness window belongs
+to -42, and a refreshed -43 observer has not been observed. Its remaining unattended
+window evidence and traded dashboard comparison are **final activation gates**,
+not reasons to block otherwise eligible qualification. Do not repeat the completed
+startup check or reboot for it. Existing observer instructions below remain available
+for a matching future qualification window after inspecting any already prepared
+observer. Eligible signals must arise from the unchanged strategy; their timing
+and the later TP/stop/close observations cannot be promised.
+
+### Guarded native ordinary activation
+
+Ordinary activation and dispatch are implemented in
+[ordinary.py](nnfx_practice/ordinary.py), with the
+[review verifier](nnfx_practice/qualification_review.py). **Do not run activation
+or enable the ordinary timer now.** Actual long/short/cross-currency execution,
+management, restrictions/margin, charges, final integration and final owner
+review/ordinary authority remain incomplete.
+
+Once that evidence exists, the owner-reviewed protected ordinary plan uses version
+2, `mode: ordinary`, `enabled: true`, the same identity fields and approved weekday
+schedule, a run-ID prefix (at most 54 characters), `qualification_plan` and
+`activation_review` references. Both references are `{path, sha256}` objects pointing
+to root-owned files with protected ancestors. The archived qualification plan must
+match the qualified code/configuration/account/strategy and its essential host
+observations. The final review contains:
+
+- Matching controller/notebook/account, manifest, code, configuration and kernel
+  identities; `record_sha256` from the reviewed collection and `final_run_id`.
+- `owner_authorization` with `reviewer`, `at`, `statement`, `reviewed_record_sha256`,
+  and explicit `ordinary_activation` and `ordinary_scheduling` authorization.
+- A hashed full verbose `offline_suite` log, and every `A01`–`A16` under
+  `acceptance`, with an accepted conclusion, explanation, named passed
+  `offline_tests`, and concrete observations. Each observation supplies an artifact
+  reference, a list of JSON keys/indexes in `pointer`, and its exact `observed`
+  value. Boolean/pass flags do not count as observations.
+- `runs` mapping the selected execution/management run IDs to protected `claim`
+  and raw JSONL `captures` references. The verifier checks their actual source and
+  matches committed mutation responses, rather than accepting simulated fills.
+- `startup` pointing to raw `rows` containing the retained current-kernel boot
+  marker; `scheduled_window` pointing to continuous raw monitor `rows` around the
+  final run (10 minutes before to 15 after). Unknown intervention stays pending;
+  logged-in windows need an explicit `operator_intervention: none` and owner
+  statement in that artifact.
+- `dashboard_comparison` with the exact collected `account_report`, final run ID,
+  GET/status evidence, `owner_lan_confirmation`, and a hashed retained `html`
+  response containing the actual run, balance and trade identities.
+
+A fabricated pass flag, nonempty reference, stale source, missing observation,
+unresolved issue, incomplete set or changed reviewed history cannot satisfy this
+gate. Historical protection is checked from establishment and transactions because
+closed trades correctly no longer have current protective orders. Account-specific
+exceptions or incompatible broker behavior must return to review; the code does
+not invent waivers or adjust strategy/units.
+
+After final review, protect/archive the reviewed artifacts and ordinary plan,
+disable/stop qualification scheduling, and leave both timers disabled. Under the
+writer identity and maintenance exclusion, the command is:
+
+```sh
+sudo -u nnfx-run env NNFX_NOTEBOOK_READ_GROUP=nnfx-read \
+  /opt/nnfx-practice/.venv/bin/python -I -B -m nnfx_practice.host ordinary-activate practice-a
+```
+
+It verifies the final packet against the notebook, reconciles a fresh A0 and
+requires no remaining trades/orders or unresolved activity. A failed commit leaves
+ordinary activation unset. A repeated request verifies the same A0 and review.
+This command never enables scheduling. Only after the successful reviewed A0 and
+maintenance release may the authorized administrator enable the ordinary timer:
+
+```sh
+sudo systemctl enable --now nnfx-practice@practice-a.timer
+```
+
+Ordinary dispatch revalidates its protected plan and committed activation and uses
+the existing master, while retaining no ordinary candle archive. The qualifier
+cannot run after activation. A0 opens ordinary reporting; Q0/history and all
+qualification results remain preserved and separately labeled.
 
 ## M10 readiness preparation
 

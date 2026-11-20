@@ -53,22 +53,23 @@ def collect(output, controller='practice-a'):
                 facts=facts(db,plan),qualification_account_report=report_values(db),
                 ordinary_activated=notebook['activated_at'] is not None, practice_execution_qualified=False,
                 final_review='pending; collection never grants activation',
-                protected_plan=save('plan.json',original),runs={})
+                protected_plan=save('plan.json',original),runs={},session_artifacts={})
+            directory=DATA/'var/qualification'/controller
+            for source in sorted(directory.iterdir()):
+                if source.suffix not in ('.claim','.jsonl'):
+                    continue
+                info=source.lstat()
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1:
+                    raise ValueError('Unexpected capture file type')
+                result['session_artifacts'][source.name]=save(source.name,source.read_bytes())
             # Keep raw capture artifacts apart from the ordinary notebook export.
             for run in tables['runs']:
                 if not any(i['run_id']==run['run_id'] and i['mode']=='qualification' for i in tables['run_invocations']):
                     continue
                 refs={}
-                directory=DATA/'var/qualification'/controller
                 for label,source in (('claim',directory/(run['session_date']+'.claim')),
                                      ('captures',directory/(run['run_id']+'.jsonl'))):
-                    try:
-                        info=source.lstat()
-                        if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1:
-                            raise ValueError('Unexpected capture file type')
-                        refs[label]=save(run['run_id']+'.'+('claim' if label=='claim' else 'jsonl'),source.read_bytes())
-                    except FileNotFoundError:
-                        refs[label]=dict(status='missing')
+                    refs[label]=result['session_artifacts'].get(source.name,dict(status='missing'))
                 result['runs'][run['run_id']]=refs
             db.rollback()
         after={str(p):sha256(p.read_bytes()).hexdigest() for p in files}
@@ -76,6 +77,13 @@ def collect(output, controller='practice-a'):
         if before!=after:
             raise ValueError('Notebook files changed during collection; preserve output and inspect')
         save('progress.json',(json.dumps(result,indent=2)+'\n').encode())
+        # Exported records already have connection identifiers/credentials redacted.
+        # Let the checkout owner review this private copy without another admin
+        # handoff; the real notebook, claims and protected plan keep their owners.
+        owner=ROOT.stat()
+        for item in output.iterdir():
+            os.chown(item,owner.st_uid,owner.st_gid)
+        os.chown(output,owner.st_uid,owner.st_gid)
         return dict(output=str(output/'progress.json'),missing=result['facts']['missing'],ordinary_activated=result['ordinary_activated'])
     finally:
         os.close(descriptor)

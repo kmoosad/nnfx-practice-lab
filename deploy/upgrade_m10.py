@@ -18,6 +18,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import zipfile
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,6 +82,13 @@ def validate_verification(verification, root, source_hashes):
     for name, digest in verification['deployment_hashes'].items():
         if sha256((root/name).read_bytes()).hexdigest() != digest:
             raise ValueError('Deployment/fixture source changed after verification')
+    wheel = root / verification['wheel']['path']
+    if sha256(wheel.read_bytes()).hexdigest() != verification['wheel']['sha256']:
+        raise ValueError('Prepared offline package changed')
+    with zipfile.ZipFile(wheel) as package:
+        for name,digest in source_hashes.items():
+            if sha256(package.read(name)).hexdigest() != digest:
+                raise ValueError('Prepared package differs from verified application')
 
 
 def notebook_state():
@@ -88,6 +96,14 @@ def notebook_state():
     from nnfx_practice.evidence import canonical_json
     from nnfx_practice.notebook import open_readonly
     experiment = read_registry(DATA)[CONTROLLER]
+    writer = pwd.getpwnam('nnfx-run')
+    path = experiment.notebook_path(DATA)
+    for item in (path, Path(str(path)+'-wal'), Path(str(path)+'-shm')):
+        info = item.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                or info.st_uid != writer.pw_uid or info.st_gid != writer.pw_gid
+                or stat.S_IMODE(info.st_mode) != 0o640):
+            raise ValueError('Existing notebook/WAL/SHM permissions are required; nothing is created')
     with open_readonly(DATA, experiment) as db:
         row = db.execute('SELECT * FROM notebook').fetchone()
         if not row['qualification_snapshot_id'] or row['activated_at'] is not None:
@@ -127,9 +143,12 @@ def main():
         parser.error('Administrator access is required; no plan, timer or broker action was attempted')
     sys.path.insert(0, str(ROOT))
     from nnfx_practice import qualification as q
+    from nnfx_practice.config import read_registry
     from tests.arm_m10_qualification import replace_plan, write_new
     from tests.check_m10_preparation import root_directory
     quiet_window(datetime.now(UTC), q.NY)
+    if set(read_registry(DATA)) != {CONTROLLER}:
+        raise ValueError('This migration is scoped to Python 01; review other controllers before updating shared code')
     verification = json.loads(args.verification.read_bytes())
     validate_verification(verification,ROOT,q.code_hashes())
     plan_path = q.PLAN_DIRECTORY / (CONTROLLER + '.json')
@@ -143,6 +162,10 @@ def main():
     command(CODE/'.venv/bin/python', '-I', '-B', '-c', program)
     ordinary = properties(ORDINARY)
     service = properties(SERVICE)
+    recurring = properties(QUALIFICATION)
+    if recurring.get('LoadState') != 'not-found' and (recurring.get('ActiveState') != 'inactive'
+            or recurring.get('UnitFileState') != 'disabled' or recurring.get('Job') not in ('','0')):
+        raise ValueError('An automatic qualification schedule already exists; inspect instead of rearming')
     if (ordinary.get('ActiveState') != 'inactive' or ordinary.get('UnitFileState') != 'disabled'
             or ordinary.get('Job') not in ('','0') or service.get('ActiveState') not in ('inactive','failed')
             or service.get('Job') not in ('','0') or service.get('LoadState') != 'loaded'):
@@ -177,6 +200,8 @@ def main():
     seal('previous-plan.json', original)
     seal('dated-timer.txt', body.encode())
     seal('offline-verification.json', args.verification.read_bytes())
+    wheel_path=ROOT/verification['wheel']['path']
+    package_ref=seal(wheel_path.name,wheel_path.read_bytes())
     for name in ('nnfx_practice', 'strategies'):
         shutil.copytree(CODE/name, archive/('previous-'+name), ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
     lock_path = DATA/'var/notebooks/notebook-a.lock'
@@ -202,7 +227,8 @@ def main():
         for name in ('nnfx_practice','strategies'):
             for path in (CODE/name).rglob('*'):
                 os.chown(path,0,0); path.chmod(0o755 if path.is_dir() else 0o644)
-        command(CODE/'.venv/bin/python', '-m', 'pip', 'install', '--no-deps', '--no-build-isolation', CODE, timeout=120)
+        command(CODE/'.venv/bin/python', '-m', 'pip', 'install', '--no-index', '--no-deps', '--force-reinstall',
+                package_ref['path'], timeout=120)
         command('install','-o','root','-g','root','-m','0644',ROOT/'deploy/nnfx-practice-qualification@.timer',
                 '/etc/systemd/system/nnfx-practice-qualification@.timer')
         policy = Path('/etc/sudoers.d/nnfx-practice')
