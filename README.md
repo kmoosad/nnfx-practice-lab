@@ -126,10 +126,13 @@ No timer is enabled at boot by maintenance. See the deployment commands below;
 guarded qualification initialization and native ordinary activation are described
 below. Once installed, maintenance excludes both qualification and ordinary timers.
 
-Notebook schema 2 adds run invocation labels and immutable Q0/A0 guards. Opening
-a version-1 writer migrates it atomically after checking its binding; existing
-rows are preserved. Read-only access requires the current schema. No actual
-notebook was created or activated for M07.
+Notebook schema 2 added run invocation labels and immutable Q0/A0 guards.
+Schema 3 adds retained transaction response variants alongside cumulative accepted
+facts. Opening a version-1 or version-2 writer migrates atomically after checking
+its binding and preserves existing records. Updated readers accept schemas 2 and
+3 without writing or migrating. Deploy the compatible dashboard reader before
+the controller upgrades their shared notebook; the older installed reader accepts
+only schema 2. No actual notebook migration has been performed for this fix.
 
 To recreate the M07 trace and committed-row exports with the full offline suite:
 
@@ -154,7 +157,7 @@ details are loaded only when opened. Reload a page to see committed changes. The
 Flask's development server without debug, reloading or dotenv loading. The separate
 trusted-LAN service uses Waitress and the permissions described below.
 
-The dashboard reads `config.toml` and the matching schema-2 notebook paths through
+The dashboard reads `config.toml` and matching schema-2/schema-3 notebook paths through
 SQLite `mode=ro` and `query_only`, using one short read transaction per notebook.
 It does not read `.env` or contact OANDA. Missing, incompatible or unreadable
 notebooks show an unavailable message; GET requests never create or migrate them.
@@ -702,7 +705,7 @@ After deployment, use this read-only collector when reviewing progress:
 
 ```sh
 sudo /opt/nnfx-practice/.venv/bin/python -I -B \
-  /home/codexdev/projects/nnfx-practice-lab/var/prepared/m10-automatic/tests/collect_m10_automatic.py
+  /home/codexdev/projects/nnfx-practice-lab/tests/collect_m10_automatic.py
 ```
 
 It exports the notebook, run/attempt/fill/issue records, reconciled figures, retained
@@ -714,6 +717,12 @@ false` field remains intentional: collection is not final owner acceptance.
 Each collection uses a new private output directory owned by the checkout owner
 so it can be reviewed without another administrator handoff. The actual notebook
 and protected evidence keep their existing permissions and ownership.
+The corrected collector reads a temporary database/WAL copy under controller
+exclusion. It never opens the original notebook with SQLite, which can update
+writable shared-memory read marks even through a read-only connection. The export
+records before/after source hashes, distinguishes SHM changes from database/WAL
+changes, and preserves an inspectable export before refusing changed database/WAL
+evidence. Use the command above, not the frozen migration bundle's older collector.
 
 The -43 startup-without-login pass remains valid. The old wakefulness window belongs
 to -42, and a refreshed -43 observer has not been observed. Its remaining unattended

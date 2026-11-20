@@ -224,7 +224,8 @@ are stored. Use decimal arithmetic outside the inherited lab calculations.
 | `trade_sets` — `set_id` | Entry decision/run/strategy, pair/direction, frozen ATR and executable stop distance, sizing balance reference, expected leg count 2, establishment status/time and terminal time. |
 | `trade_legs` — `(set_id, leg_no)` | Leg 1 or 2; unique nullable broker trade ID; planned/initial/current units; last confirmed broker state/time/transaction boundary; entry fill/time; original stop, current stop and their order IDs; intended/confirmed target and order ID; stop-to-entry status; final exit summary and reason. Unknown values remain null. |
 | `broker_attempts` — `attempt_id` | Run/stage/pair/set/leg, purpose, method/path and redacted payload, local/client IDs, prepared time, response time, HTTP status, OANDA `RequestID`, broker order/trade/transaction IDs, response evidence, outcome/error. |
-| `broker_transactions` — broker `transaction_id` | Broker time/type/batch/request IDs, import time and unmodified non-secret transaction body. Unique per notebook/account. Retain all transaction types in the imported interval. |
+| `broker_transactions` — broker `transaction_id` | Broker time/type/batch/request IDs, first import time and cumulative accepted non-secret transaction facts. Unique per notebook/account. Retain all transaction types in the imported interval. |
+| `broker_transaction_observations` — `(transaction_id, body_json)` | Each distinct accepted source body, unmodified except secret redaction, with its first observation time. Repeated identical bodies do not create another row. |
 | `fills` — `(transaction_id, broker_trade_id, effect)` | Open/reduce/close effect, order ID, units, per-trade actual price, time and broker reason; link to registered leg when known. Preserve every reduction, not only the final close. |
 | `ledger_entries` — `(transaction_id, component_key)` | Signed home-currency amount, category (trading P/L, financing, commission, other charge, cash adjustment), optional trade allocation, source field and posted-versus-informational status. |
 | `account_snapshots` — `snapshot_id` | Purpose, request/response times, broker transaction boundary, balance, unrealised P/L, margin, currency, relevant broker state and reconciliation status/error. Only reconciled snapshots qualify for the dashboard's latest account figures. |
@@ -265,6 +266,16 @@ uses the reconciliation transaction to commit A0, imported history/cursor,
 references and activation time together. Reporting retains the plan's Q0/A0
 intervals. Implementation references are in the
 [local interfaces](../README.md#master-and-local-maintenance-interfaces).
+
+Transaction comparison storage: schema 3 adds `broker_transaction_observations`
+and seeds it with the existing transaction bodies and import times. Writer
+migration from schema 1 or 2 runs atomically after binding validation; it preserves
+Q0/A0, cursor, runs, issues and derived records. New readers accept schemas 2 and 3
+without migrating. The deployed schema-2-only dashboard reader must be updated
+before the controller migrates its shared notebook. Observation evidence is
+included in qualification record digests and collector exports. Each accepted
+merge, observation, fill/ledger projection and history advance shares the same
+commit; a conflict or balance failure rolls them all back.
 
 Original protective levels are the first confirmed broker levels and remain
 immutable. Intended levels stay in the decision/attempt even if the broker
@@ -351,6 +362,11 @@ including unfinished attempts and unexpected trades/orders:
 2. Match account, trade, order, transaction and available client/request IDs.
    Deduplicate by broker IDs. Response-supplied transactions may already be
    stored; importing them again changes neither units nor monetary totals.
+   Apply the field-aware comparison policy below to response/history echoes and
+   duplicate IDs within a fetched batch. Keep each actual source body as evidence;
+   use their compatible cumulative facts for projection. The
+   [21 November diagnosis](STATUS.md#transaction-import-failure-on-21-november)
+   owns the observed practice difference and offline validation.
    Advance the cursor only over fully retrieved and applied history; do not
    assume IDs are consecutive integers or skip to the highest ID seen.
 3. Compare registered legs/protection with the snapshot at `S`. For missing legs,
@@ -365,6 +381,49 @@ including unfinished attempts and unexpected trades/orders:
    boundary and monetary records agree. Isolated pair issues remain visible
    alongside the snapshot and keep those pairs blocked. Missing account history
    or an unexplained balance difference makes account state unreliable.
+
+**Repeated-transaction comparison policy (owner agreed 21 November).**
+
+- Identity, instrument, time, reason, trade membership and protection instructions
+  remain strict. Missing required/core information is not treated as a default.
+  Changed quantities or prices remain conflicts.
+- Compare known decimal fields by exact decimal value, accepting spelling changes
+  such as `0.00` versus `0.0000`. This covers fill and per-trade amounts, order and
+  protection prices/distances, transfer/financing totals and known nested quote/
+  conversion numbers. IDs and arbitrary strings never receive numeric coercion;
+  null, booleans, JSON numbers and invalid decimal strings are not equivalent.
+- Match `tradesClosed` by trade ID, allowing array reordering but rejecting
+  duplicate IDs or changed membership. Other arrays retain their original order.
+- Known supplemental fields may be added or omitted in a later echo without
+  discarding earlier facts. These are fill/per-trade commission, guaranteed
+  execution fee and dividend adjustment; per-trade realised P/L and financing;
+  half-spread cost and initial margin; client-extension tags/comments; and fund
+  transfer comments. Shared supplied values must agree. Spread cost and initial
+  margin are descriptive amounts, not additional account debits.
+- The four observed conversion-cost names (`baseFinancingHomeConversionCost`,
+  `guaranteedExecutionFeeHomeConversionCost`, `homeConversionCost`,
+  `plHomeConversionCost`) are accepted as zero-valued supplements in fills and
+  their opened/reduced/closed trade details. Their nonzero accounting treatment
+  remains unqualified, so a nonzero/invalid value blocks import. Unknown field
+  additions/removals/changes also remain conflicts; there is no ignore-all rule.
+- New supported monetary components use the existing ledger mappings and unique
+  source keys. A nonzero posted addition to an existing transaction requires its
+  broker `accountBalance` evidence and an ID beyond the previously imported
+  cursor. Complete history must reconcile before the cursor or reporting snapshot
+  advances. Already imported account totals cannot be rewritten. Later per-trade
+  allocations remain informational and never repost an account total. Nonzero
+  fill allocations require their account-level total; once all affected trades
+  supply a component, their sum must match that total. Existing
+  ledger entries must match; they are never silently overwritten or ignored.
+
+The explicit field locations are implemented in
+[transaction_records.py](../nnfx_practice/transaction_records.py). A conflict
+records the transaction ID and field paths. The policy covers representations
+and supported accounting enrichment; it grants no order retries, replacement
+legs, issue resolution or strategy changes. The
+[OANDA transaction definitions](https://developer.oanda.com/rest-live-v20/transaction-df/)
+describe the known numeric, fee, spread, margin and per-trade fields; actual
+nonzero conversion-cost semantics still need account evidence.
 
 If the cursor is already beyond an older response, never roll derived trade
 state back; obtain a fresh snapshot or end the read with a visible failure.

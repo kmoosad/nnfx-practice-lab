@@ -7,6 +7,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import sqlite3
 import subprocess
 from unittest.mock import Mock, patch
 
@@ -162,6 +163,7 @@ class AutomaticChecks(AutomaticCase):
 
     def test_readonly_collection_preserves_history_and_orphan_claim_without_observer(self):
         from . import collect_m10_automatic as collector
+        from nnfx_practice.notebook import open_readonly
         self.initialize()
         self.scheduled()
         self.next_day()
@@ -169,15 +171,71 @@ class AutomaticChecks(AutomaticCase):
         before='\n'.join(self.db.iterdump())
         output=self.root/'collected'
         with patch.object(collector,'DATA',self.root), \
+                patch('nnfx_practice.notebook.open_readonly', wraps=open_readonly) as opened, \
                 patch('nnfx_practice.config.load_binding',side_effect=AssertionError('private load')):
             result=collector.collect(output,'controller-a')
+        self.assertNotEqual(opened.call_args.args[0], self.root)
         exported=json.loads((output/'progress.json').read_bytes())
         self.assertEqual(result['ordinary_activated'],False)
         self.assertEqual(exported['broker_requests'],0)
         self.assertEqual(sum(name.endswith('.claim') for name in exported['session_artifacts']),2)
         self.assertEqual(before,'\n'.join(self.db.iterdump()))
         self.assertTrue(exported['notebook_files_unchanged'])
+        self.assertTrue(exported['notebook_data_files_unchanged'])
+        self.assertEqual(len(exported['tables']['runs']), 1)
+        self.assertFalse(list(output.glob('.notebook-*')))
         self.assertIn('long_sets',exported['facts']['missing'])
+
+    def test_collection_distinguishes_shm_changes_and_retains_failed_data_export(self):
+        from . import collect_m10_automatic as collector
+        self.initialize()
+        self.scheduled()
+        source = self.bound.experiment.notebook_path(self.root)
+        original = Path.read_bytes
+        for index, suffix in enumerate(('-shm', '-wal', '')):
+            with self.subTest(suffix=suffix):
+                output = self.root / f'collected-{index}'
+                changed = Path(str(source) + suffix)
+                reads = 0
+                def read_bytes(path):
+                    nonlocal reads
+                    raw = original(path)
+                    if path == changed:
+                        reads += 1
+                        if reads > 1:
+                            return raw + b'changed-by-another-process'
+                    return raw
+                with patch.object(collector, 'DATA', self.root), patch.object(Path, 'read_bytes', read_bytes):
+                    if suffix == '-shm':
+                        collector.collect(output, 'controller-a')
+                    else:
+                        with self.assertRaisesRegex(ValueError, str(output / 'progress.json')):
+                            collector.collect(output, 'controller-a')
+                exported = json.loads((output / 'progress.json').read_bytes())
+                self.assertFalse(exported['notebook_files_unchanged'])
+                self.assertEqual(exported['notebook_data_files_unchanged'], suffix == '-shm')
+                self.assertEqual(exported['notebook_changed_files'], [str(changed)])
+                self.assertTrue(exported['session_artifacts'])
+                self.assertEqual((output / 'progress.json').stat().st_uid, collector.ROOT.stat().st_uid)
+                self.assertFalse(list(output.glob('.notebook-*')))
+
+    def test_collection_reads_retained_wal_after_last_writer_without_touching_source(self):
+        from . import collect_m10_automatic as collector
+        self.initialize()
+        self.scheduled()
+        source = self.bound.experiment.notebook_path(self.root)
+        self.db.setconfig(sqlite3.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE, True)
+        self.db.close()
+        files = [Path(str(source) + suffix) for suffix in ('', '-wal', '-shm')]
+        before = [path.read_bytes() for path in files]
+        self.assertGreater(len(before[1]), 32)
+        output = self.root / 'collected'
+        with patch.object(collector, 'DATA', self.root):
+            collector.collect(output, 'controller-a')
+        exported = json.loads((output / 'progress.json').read_bytes())
+        self.assertEqual(len(exported['tables']['runs']), 1)
+        self.assertTrue(exported['notebook_files_unchanged'])
+        self.assertEqual([path.read_bytes() for path in files], before)
 
 
 class OrdinaryChecks(AutomaticCase):

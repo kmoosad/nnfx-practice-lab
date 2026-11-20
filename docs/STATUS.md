@@ -1,8 +1,19 @@
 # Project status
 
-Updated 20 November 2026 (Australia/Melbourne).
+Updated 21 November 2026 (Australia/Melbourne).
 
 ## Current position
+
+The **21 November 08:50 Melbourne qualification run failed** during GBP-CAD
+entry. OANDA confirmed one short fill and its on-fill stop; the controller's
+history comparison rejected five additional zero conversion-cost fields, leaving
+the notebook at cursor `2249`, with an incomplete entry and stale account figures.
+The [diagnosis and fix](#transaction-import-failure-on-21-november) are on
+`codex/diagnose-broker-transaction-import`. The exact retained-response import
+passes offline with the broader field-aware fix, retaining the incomplete-entry/
+operator block. All **520 offline tests pass**; schema 3 retains original response
+variants and requires a compatible dashboard reader before writer migration.
+**The trading fix is not deployed and the existing issue is not resolved.**
 
 The owner authorized [scoped dashboard deployment access](#scoped-dashboard-deployment-access)
 for `codexdev`. The corrected one-time setup and the
@@ -33,9 +44,10 @@ confirms its `armed` receipt, updated host-fixture pass and live schedule. The
 **427-test baseline** and **460-test isolated M10 suite** remain the offline
 verification; deployed source and package match all 43 recorded application files.
 
-Live read-only inspection confirms automatic qualification is `enabled/active/waiting`
-for Monday–Friday at 16:50 New York, next **21 November 08:50 Melbourne / 20 November
-16:50 New York**. The former dated timer is stopped with no next expiry. Ordinary
+The 20 November deployment inspection confirmed automatic qualification was
+`enabled/active/waiting` for Monday–Friday at 16:50 New York, then due at
+**21 November 08:50 Melbourne / 20 November 16:50 New York**. That run has now
+failed as recorded above. The former dated timer was stopped with no next expiry. Ordinary
 timer remains `disabled/inactive`, the controller is idle, and the dashboard remains
 active on 8879 using the verified separate release. The M10 administrator receipt confirms
 Q0 `c245f517b15448cabb2edbb5336a53aa`, cursor `2249` and A0 unset, with all notebook,
@@ -150,7 +162,103 @@ offline evidence. Actual two-leg execution and charge mapping remain pending.
 | M07 master workflow, entry loop and operator disposition | Implemented offline. All 264 baseline tests passed again before M08 |
 | M08 observational dashboard | Implemented offline. All 294 tests passed, including 30 M08 checks. Ready for owner review |
 | M09 host operation and maintenance exclusion | Startup, refreshed essential system/maintenance controls and dashboard isolation/WAL passed on -43; actual dashboard/notebook and LAN agreement passed. Prior -42 scheduled-window unattended context remains unconfirmed; keep kernel/window scopes separate. Ordinary timer disabled |
-| M10 practice qualification and ordinary activation | Automatic qualification deployed and enabled; next run 21 November 08:50 Melbourne. Old dated timer stopped, dashboard unchanged, notebook/claims preserved and updated host fixtures passed. Actual execution/final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
+| M10 practice qualification and ordinary activation | Automatic qualification deployed; 21 November run failed after a GBP-CAD fill and on-fill stop. Broader import fix verified offline on the diagnosis branch, not deployed; incomplete entry remains operator-owned. Final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
+
+## Transaction import failure on 21 November
+
+The owner requested investigation and a diagnosis branch after run
+`m10-auto-bfeea7da7de9-20261120` failed at **21 November 08:50 Melbourne /
+20 November 16:50 New York**. Service inspection confirms exit status 2. The
+dashboard records 15 no-entry pairs followed by failed GBP-CAD (16 of 28 checked).
+The management stage and sizing refresh succeeded before entry; the master
+stopped on the history failure without obtaining a final reporting snapshot.
+
+**Observed broker evidence.** The administrator's
+[read-only export](../var/verification/m10-automatic-collections/collection-c100b2e47ec0/progress.json)
+and retained responses confirm order `2250`, short fill/trade `2251` for
+**42,665 units at 1.87722**, and on-fill stop `2252` at **1.88824**, all in batch
+`2250`. The order response contains the create/fill bodies and references the
+stop through boundary `2252`; history supplies its actual body. No target or
+Trade 2 request was sent. The notebook retained the first fill but rolled back
+the history import, so it shows no confirmed stop and cursor `2249`. Historical
+stop creation is confirmed; these retained responses do not establish its
+current broker status after the failed run.
+
+**Cause and correction.** History adds four zero-valued conversion-cost fields
+to fill `2251` and one to its `tradeOpened` object. Every other field matches the
+saved response exactly. The strict body comparison raised
+`Imported broker transaction changed` before stop `2252` could be imported.
+The initial correction allowed the five observed zero-valued omissions. The
+owner then agreed to broaden it beyond this one response shape. The
+[reconciliation contract](DETAILED_DESIGN.md#reconciliation-procedure) owns the
+replacement field-aware policy: exact numeric equivalence at known paths,
+compatible supplemental metadata and supported fees, and closed-trade lists
+matched by ID. Identity, core facts, unknown differences, invalid values and
+unqualified nonzero conversion costs remain failures. Diagnostic evidence names
+the transaction and field paths. No signal, sizing, entry sequence or automatic
+repair rule changed.
+
+**Broader correction.** Accepted source variants are retained separately from
+the cumulative transaction facts used for projections. A later supported charge
+is posted once only before that transaction's history interval is complete,
+with broker balance evidence and reconciliation; it cannot silently alter an
+already imported account balance. Later per-trade allocations remain informational
+and must agree with the corresponding transaction totals when complete.
+Sparse echoes never remove previously accepted facts or fees. Compatible duplicate
+bodies within a response/history batch receive the same policy and retain their
+individual sources. Schema 3 adds the evidence table and atomically seeds it from
+existing transaction rows; interrupted migration rolls back. Updated readers
+support schemas 2 and 3, and qualification review digests/collector exports include
+the response variants.
+
+**Collector correction.** The original administrator collector failed its
+all-file hash comparison and left its partial export protected. A root-owned
+SQLite read-only connection can change the source SHM read marks; that failed
+collector did not retain per-file hash results, so the exact original difference
+cannot be established. The corrected collector reads a temporary DB/WAL copy
+under exclusion, preserves failure exports for inspection, and distinguishes
+database/WAL changes from SHM changes. Its four focused checks pass, including
+retained uncheckpointed WAL after the last writer exits. The owner ran the
+corrected collector successfully; **all three real source files were unchanged**.
+The frozen migration bundle was preserved.
+
+**Verification.** The initial narrow patch's
+[505-test log](../var/verification/transaction-import-20261121/full-suite.log)
+and [replay](../var/verification/transaction-import-20261121/replay-result.json)
+remain historical evidence. The broader version passes **520 offline tests** in
+the [new full suite](../var/verification/transaction-import-broader-20261121/full-suite.log).
+Its 15 additional cases cover decimal equivalence, opening/reducing/closing
+fills, reordered closed trades, retained metadata, new supported fees, balance
+failure rollback, rejection of late charges and absent balance evidence,
+informational allocations and contradictory allocation totals, core conflicts,
+and interrupted/repeated schema migration. Retained observations also pass the
+existing credential-redaction check.
+The existing two-leg entry test still completes with history-enriched fills and
+stop bodies absent from mutation responses. Collector checks still pass.
+
+The [new exact-evidence replay](../var/verification/transaction-import-broader-20261121/replay-result.json)
+reproduces the old failure, replays schema migration, then imports through `2252`
+and records stop **1.88824**. Four source observations retain all original bodies
+and the enriched fill; cumulative facts gain the zero-cost fields. Fills, ledger,
+attempts and issues remain unchanged. The incomplete set and open issue remain
+blocked. This is an in-memory offline import using retained responses, with no
+broker requests or actual notebook writes. The
+[wheel verification](../var/verification/transaction-import-broader-20261121/package-verification.json)
+matches all **49 application/resource files** and passes isolated import, schema
+creation and numeric comparison checks. The backend build succeeded without
+downloads after the environment's pip/build front ends were unavailable.
+
+**Remaining operational work.** The live controller still uses its qualified
+installed version. A reviewed controller deployment must preserve the notebook,
+Q0, date claims, dashboard and schedule, refresh the protected code identity and
+repeat affected host checks. **Update the separate dashboard reader before
+migrating the notebook to schema 3**; its installed schema-2-only code cannot
+read the new version. The corrected collector remains usable with the installed
+schema-2 package before deployment. Do not rerun the initial installer or automatic
+migration, replay this run, complete Trade 2 or clear the issue automatically.
+The existing partial set requires operator handling with fresh broker evidence
+and the normal maintenance disposition. The branch fix alone does not update
+the dashboard's saved figures or establish current protection. M10 remains open.
 
 ## Controller wording update
 
@@ -2896,8 +3004,11 @@ already accumulates results from Q0; keep it running and revisit the future
 transition rules before any ordinary activation. Existing execution checks and
 operator handling of unresolved issues remain in force.
 
-Automatic qualification is now scheduled. Observe the next regular run at
-**21 November 08:50 Melbourne**; no daily arming or deployment repeat is needed.
+Address the [21 November transaction-import failure](#transaction-import-failure-on-21-november)
+before the next regular qualification run, **24 November 08:50 Melbourne /
+23 November 16:50 New York**. Deploy the reviewed correction and handle the
+existing incomplete entry through the normal operator process; no daily arming
+is needed.
 Do not rerun the full installer, migration, initial one-shot armer or no-entry
 continuation, delete protection records, reset Q0, or manually invoke a trading run.
 

@@ -1,5 +1,6 @@
 """M02 acceptance checks using account-scoped, broker-shaped fixtures only."""
 
+from copy import deepcopy
 from decimal import Decimal
 from http.client import HTTPException
 import json
@@ -64,6 +65,16 @@ def protection(order_id, trade_id, kind, price, **data):
 
 def history(boundary, *records):
     return {"lastTransactionID": str(boundary), "transactions": list(records)}
+
+
+def with_zero_conversion_costs(fill):
+    """History-only fields observed on Python 01 fill 2251 (20 Nov 2026)."""
+    result = deepcopy(fill)
+    result.update(baseFinancingHomeConversionCost="0.0000000",
+                  guaranteedExecutionFeeHomeConversionCost="0.00000000000000",
+                  homeConversionCost="0.00000000000000", plHomeConversionCost="0.00000000000000")
+    result["tradeOpened"]["guaranteedExecutionFeeHomeConversionCost"] = "0.00000000000000"
+    return result
 
 
 class BrokerReads(NotebookCase):
@@ -296,6 +307,79 @@ class ReconciliationChecks(NotebookCase):
         self.assertEqual(self.cursor(), "0100")
         self.assertEqual(self.db.execute("SELECT count(*) FROM broker_transactions").fetchone()[0], 0)
 
+    def test_a12_changed_saved_transaction_identifies_conflict_without_advancing(self):
+        transfer = event(105, "TRANSFER_FUNDS", amount="20", accountBalance="1020")
+        record_confirmed_transactions(self.db, self.script(), [transfer])
+        saved = self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0]
+        ledger = [tuple(row) for row in self.db.execute("SELECT * FROM ledger_entries")]
+        with self.assertRaisesRegex(BrokerError, "Imported broker transaction changed.*105") as failure:
+            self.snapshot(account(105, "1021"), {**transfer, "amount": "21", "accountBalance": "1021"})
+        self.assertEqual(failure.exception.evidence,
+                         {"transaction_id": "105", "changed_fields": ["accountBalance", "amount"]})
+        self.assertEqual(self.cursor(), "0100")
+        self.assertEqual(self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0], saved)
+        self.assertEqual([tuple(row) for row in self.db.execute("SELECT * FROM ledger_entries")], ledger)
+        self.assertEqual(account_report(self.db, "qualification").snapshot_id, "q0")
+        evidence = self.db.execute("SELECT broker_state_json FROM account_snapshots WHERE snapshot_id = 'snapshot'")
+        self.assertEqual(json.loads(evidence.fetchone()[0])["failure"], failure.exception.evidence)
+
+    def test_a12_history_zero_cost_enrichment_imports_stop_once_and_preserves_raw_response(self):
+        self.register(trade_ids=("102", None), stop_ids=(None, None), status="incomplete")
+        fill = order_fill(102, 102, effect="open", reason="MARKET_ORDER")
+        expanded = with_zero_conversion_costs(fill)
+        record_confirmed_transactions(self.db, self.script(), [fill])
+        saved = self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0]
+        stop = event(103, "STOP_LOSS_ORDER", tradeID="102", price="1.09000", timeInForce="GTC")
+        broker = self.script((Call("GET", ROOT + "/transactions/sinceid?id=100"), reply(history(103, expanded, stop))))
+        import_through(self.db, broker, "103")
+        for bodies in ([expanded, stop], [fill, stop]):
+            record_confirmed_transactions(self.db, self.script(), bodies)
+        self.assertEqual(self.cursor(), "103")
+        self.assertIn(saved, [r[0] for r in self.db.execute(
+            "SELECT body_json FROM broker_transaction_observations WHERE transaction_id='102'")])
+        self.assertEqual(self.db.execute("SELECT count(*) FROM broker_transaction_observations WHERE transaction_id='102'").fetchone()[0], 2)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM fills").fetchone()[0], 1)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM ledger_entries WHERE posted=1").fetchone()[0], 4)
+        leg = self.db.execute("SELECT current_units,current_stop,current_stop_order_id FROM trade_legs WHERE leg_no=1").fetchone()
+        self.assertEqual(tuple(leg), ("1000", "1.09000", "103"))
+        self.assertEqual(self.db.execute("SELECT establishment_status FROM trade_sets").fetchone()[0], "incomplete")
+        self.assertFalse(pair_is_available(self.db, "EUR-USD"))
+
+    def test_a12_sparse_response_after_richer_history_preserves_original_record(self):
+        fill = order_fill(102, 102, effect="open", reason="MARKET_ORDER")
+        expanded = with_zero_conversion_costs(fill)
+        record_confirmed_transactions(self.db, self.script(), [expanded])
+        saved = self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0]
+        record_confirmed_transactions(self.db, self.script(), [fill])
+        self.assertEqual(self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0], saved)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM fills").fetchone()[0], 1)
+
+    def test_a12_enrichment_never_hides_changed_trade_facts_or_unqualified_fields(self):
+        fill = order_fill(102, 102, effect="open", reason="MARKET_ORDER")
+        record_confirmed_transactions(self.db, self.script(), [fill])
+        cases = []
+        for value in ("0.01", "-0.01", None, 0, "NaN", "bad", "0" * 39):
+            for nested in (False, True):
+                changed = with_zero_conversion_costs(fill)
+                target = changed["tradeOpened"] if nested else changed
+                target["guaranteedExecutionFeeHomeConversionCost"] = value
+                cases.append(changed)
+        for field, value in (("price", "1.20000"), ("requestID", "another-request"),
+                             ("pl", "1"), ("unqualifiedCost", "0"), ("commission", "0.01")):
+            cases.append({**with_zero_conversion_costs(fill), field: value})
+        for field, value in (("units", "2000"), ("tradeID", "999"), ("price", "1.20000"),
+                             ("unknownConversionCost", "0")):
+            changed = with_zero_conversion_costs(fill)
+            changed["tradeOpened"][field] = value
+            cases.append(changed)
+        for index, changed in enumerate(cases):
+            with self.subTest(index=index), self.assertRaisesRegex(BrokerError, "Imported broker transaction changed"):
+                record_confirmed_transactions(self.db, self.script(), [changed])
+        self.assertEqual(self.cursor(), "0100")
+        self.assertEqual(self.db.execute("SELECT count(*) FROM fills").fetchone()[0], 1)
+        self.assertEqual(json.loads(self.db.execute("SELECT body_json FROM broker_transactions").fetchone()[0]),
+                         {key:value for key,value in fill.items() if key != "accountID"})
+
     def test_a12_reduction_waits_for_contiguous_history_before_applying_remaining_units(self):
         self.register(trade_ids=("40", None))
         earlier = order_fill(101, 40, units="100", effect="reduce")
@@ -495,3 +579,5 @@ class ReconciliationChecks(NotebookCase):
         for private in (TOKEN, ACCOUNT, "fixture-extra-secret", "authorization"):
             self.assertNotIn(private, raw)
         self.assertEqual(json.loads(raw)["details"]["note"], "[redacted] at /v3/accounts/[redacted]")
+        observations = [row[0] for row in self.db.execute("SELECT body_json FROM broker_transaction_observations")]
+        self.assertEqual(observations, [raw])

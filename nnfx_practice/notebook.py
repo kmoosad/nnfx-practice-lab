@@ -15,7 +15,7 @@ from .config import Binding, ConfigurationError, Experiment
 from .evidence import encode_evidence, redact
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 _HASH = re.compile(r"(?:[a-f0-9]{40}|[a-f0-9]{64})")
 
 
@@ -42,6 +42,7 @@ def _schema_version(db):
 def _create_schema(db):
     _schema_script(db, "schema.sql")
     _schema_script(db, "schema_m07.sql")
+    _schema_script(db, "schema_transactions.sql")
     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
 
@@ -129,11 +130,14 @@ def open_notebook(root: Path, binding: Binding, *, create: bool = False):
                             strategy_version, manifest_json, manifest_hash, lookback_candles
                         ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, _binding_values(binding))
-        if _schema_version(db) == 1:
+        if _schema_version(db) in (1, 2):
             _check_binding(db, binding)
             with transaction(db):
                 if _schema_version(db) == 1:
                     _schema_script(db, "schema_m07.sql")
+                    db.execute("PRAGMA user_version = 2")
+                if _schema_version(db) == 2:
+                    _schema_script(db, "schema_transactions.sql")
                     db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
         if _schema_version(db) != SCHEMA_VERSION:
             raise ConfigurationError("Unsupported notebook schema version")
@@ -180,7 +184,7 @@ def open_readonly(root: Path, experiment: Experiment):
     """Read committed notebook records without needing private configuration."""
     with _connect(experiment.notebook_path(root), "ro") as db:
         db.execute("PRAGMA query_only = ON")
-        if _schema_version(db) != SCHEMA_VERSION:
+        if _schema_version(db) not in (2, SCHEMA_VERSION):
             raise ConfigurationError("Unsupported notebook schema version")
         row = db.execute("""
             SELECT controller_id, notebook_id, strategy_version FROM notebook WHERE singleton = 1

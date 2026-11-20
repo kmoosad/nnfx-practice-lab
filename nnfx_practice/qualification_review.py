@@ -21,7 +21,14 @@ from .sizing import levels
 
 
 TABLES = ('account_snapshots', 'runs', 'run_invocations', 'stages', 'pair_decisions', 'trade_sets', 'trade_legs',
-          'broker_attempts', 'broker_transactions', 'fills', 'ledger_entries', 'issues')
+          'broker_attempts', 'broker_transactions', 'broker_transaction_observations', 'fills', 'ledger_entries', 'issues')
+
+
+def record_tables(db):
+    # Schema-2 exports remain readable before the writer's atomic migration.
+    if db.execute('PRAGMA user_version').fetchone()[0] == 2:
+        return tuple(name for name in TABLES if name != 'broker_transaction_observations')
+    return TABLES
 
 
 def fail(reason):
@@ -41,7 +48,7 @@ def record_hash(db):
     # Q0 and the reviewed history are pinned without serializing the account ID.
     row = db.execute('SELECT qualification_snapshot_id, qualification_transaction_id, manifest_hash FROM notebook').fetchone()
     records = {'baseline': list(row)}
-    for table in TABLES:
+    for table in record_tables(db):
         records[table] = sorted((dict(r) for r in db.execute('SELECT * FROM ' + table)), key=canonical_json)
     return sha256(canonical_json(records).encode()).hexdigest()
 

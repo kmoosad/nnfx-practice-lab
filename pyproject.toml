@@ -12,5 +12,5 @@ dependencies = ["Flask>=3.1,<4", "waitress>=3,<4"]
 packages = ["nnfx_practice", "strategies", "strategies.t3_bandpass_v1"]
 
 [tool.setuptools.package-data]
-nnfx_practice = ["schema.sql", "schema_m07.sql", "templates/*.html", "templates/*.css"]
+nnfx_practice = ["schema.sql", "schema_m07.sql", "schema_transactions.sql", "templates/*.html", "templates/*.css"]
 "strategies.t3_bandpass_v1" = ["manifest.json", "qualification.json"]

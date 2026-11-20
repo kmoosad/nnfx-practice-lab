@@ -323,6 +323,28 @@ class CandidateChecks(NotebookCase):
         self.assertEqual(plan["establishment"]["transaction_id"], "108")
         self.assertEqual(plan["sizing"]["units"], "6666")
 
+    def test_a06_entry_response_without_stop_body_and_enriched_history_completes_once(self):
+        self.through_margin()
+        self.entry(2)
+        # Match the observed OANDA response shape: stop is referenced by the
+        # response boundary, but its transaction only arrives in history.
+        for call, response in self.steps:
+            if call.method == "POST":
+                body = response.body
+                body.pop("t2Transaction")
+            elif "/transactions/sinceid" in call.path:
+                body = response.body
+                body["transactions"] = [m02.with_zero_conversion_costs(row) if row["type"] == "ORDER_FILL" else row
+                                        for row in body["transactions"]]
+        self.assertEqual(self.run_candidate(), "completed")
+        self.assertEqual(self.row("trade_sets")["establishment_status"], "complete")
+        self.assertEqual(self.db.execute("SELECT count(*) FROM fills").fetchone()[0], 2)
+        self.assertEqual([r[0] for r in self.db.execute("SELECT current_stop_order_id FROM trade_legs ORDER BY leg_no")],
+                         ["103", "108"])
+        self.assertEqual(len([c for c in self.transport.calls if c.method == "POST"]), 2)
+        self.assertEqual(len([c for c in self.transport.calls if c.method == "PUT"]), 1)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM issues").fetchone()[0], 0)
+
     def test_a06_short_complete_set_uses_each_own_fill(self):
         self.fresh("short")
         self.through_margin()

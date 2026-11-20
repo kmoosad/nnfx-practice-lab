@@ -905,5 +905,5 @@ class LifecycleCommitChecks(M07Case):
         self.assertFalse(legacy.execute("SELECT 1 FROM sqlite_schema WHERE name='run_invocations'").fetchone())
         legacy.close()
         self.initialize()
-        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], 2)
+        self.assertEqual(self.db.execute('PRAGMA user_version').fetchone()[0], notebook.SCHEMA_VERSION)
         self.assertEqual(tuple(self.db.execute('SELECT controller_id,notebook_id,account_id,home_currency,strategy_version,manifest_json,manifest_hash,lookback_candles FROM notebook').fetchone()), _binding_values(self.bound))

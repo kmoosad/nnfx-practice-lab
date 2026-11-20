@@ -11,6 +11,7 @@ from .broker import BrokerError, broker_id, money
 from .evidence import encode_evidence, redact
 from .ledger import ZERO, _TRANSACTION_KEY, _postings_between, _snapshot_key, fill_details, postings, transaction_key
 from .notebook import _check_binding, transaction
+from .transaction_records import merge_transaction
 
 
 _TIME = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,9})?Z")
@@ -21,6 +22,25 @@ _LEGS = """
     SELECT trade_legs.*, trade_sets.pair, trade_sets.direction FROM trade_legs
     JOIN trade_sets USING (set_id)
 """
+
+
+class _Records(dict):
+    """A fetched batch's merged facts and the actual bodies behind them."""
+
+    def __init__(self):
+        super().__init__()
+        self.sources = {}
+
+    def add(self, body):
+        identifier = broker_id(body.get("id"))
+        if identifier in self:
+            try:
+                self[identifier] = merge_transaction(self[identifier], body)
+            except BrokerError as failure:
+                raise BrokerError("Conflicting transactions share a broker ID", evidence=failure.evidence) from None
+        else:
+            self[identifier] = body
+        self.sources.setdefault(identifier, []).append(body)
 
 
 def _time(value):
@@ -82,12 +102,9 @@ def _issue(db, code, identity, at, evidence, *, pair=None, leg=None, set_id=None
 
 
 def _history(broker, cursor, boundary, *, deferred=None):
-    records = {}
+    records = _Records()
     for body in broker.history(cursor, boundary, deferred=deferred):
-        identifier = broker_id(body["id"])
-        if identifier in records and records[identifier] != body:
-            raise BrokerError("Conflicting transactions share a broker ID")
-        records[identifier] = body
+        records.add(body)
     if cursor != boundary and boundary not in records:
         raise BrokerError("Broker history is missing the requested boundary transaction")
     return records
@@ -201,26 +218,40 @@ def _exit_summary(db, leg):
         _update_leg(db, leg, exit_price=str(value / volume))
 
 
-def _store(db, broker, records, at, *, complete_history):
+def _store(db, broker, records, at, *, complete_history, imported_before=None, observations=None):
     """Insert and project source records in broker order inside the caller's write."""
     touched = set()
+    imported_before = _cursor(db) if imported_before is None else imported_before
+    observations = getattr(records, 'sources', {}) if observations is None else observations
     for identifier, raw in sorted(records.items(), key=lambda item: int(item[0])):
         broker.verify_transaction(raw)
         body = redact(raw, broker.private_values)
         stamp = _time(body.get("time"))
         try:
-            encoded = encode_evidence(body, ())
+            sources = []
+            for source in observations.get(identifier, [raw]):
+                broker.verify_transaction(source)
+                sources.append(encode_evidence(source, broker.private_values))
         except ValueError:
             raise BrokerError("Broker transaction evidence exceeds the notebook limit",
                               evidence={"transaction_id": identifier}) from None
         prior = db.execute("SELECT body_json FROM broker_transactions WHERE transaction_id = ?", (identifier,)).fetchone()
-        if prior is not None and json.loads(prior[0]) != body:
-            raise BrokerError("Imported broker transaction changed")
+        body = merge_transaction(json.loads(prior[0]) if prior is not None else None, body)
+        try:
+            merged = encode_evidence(body, ())
+        except ValueError:
+            raise BrokerError("Combined broker transaction evidence exceeds the notebook limit",
+                              evidence={"transaction_id": identifier}) from None
         if prior is None:
             db.execute("""
                 INSERT INTO broker_transactions (transaction_id, broker_at, type, batch_id, request_id, imported_at, body_json)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (identifier, stamp, body["type"], body.get("batchID"), body.get("requestID"), at, encoded))
+            """, (identifier, stamp, body["type"], body.get("batchID"), body.get("requestID"), at, merged))
+        elif prior[0] != merged:
+            db.execute("UPDATE broker_transactions SET body_json = ? WHERE transaction_id = ?", (merged, identifier))
+        db.executemany("""INSERT INTO broker_transaction_observations (transaction_id, observed_at, body_json)
+                          VALUES (?, ?, ?) ON CONFLICT (transaction_id, body_json) DO NOTHING""",
+                       [(identifier, at, source) for source in sources])
 
         fills = list(fill_details(body))
         attempt = _correlated_entry(db, body, identifier) if body["type"] in (
@@ -267,6 +298,27 @@ def _store(db, broker, records, at, *, complete_history):
                 _set_protection(db, leg, protection, None, None, identifier, stamp)
 
         for entry in postings(body, fills):
+            existing = db.execute("""SELECT amount, category, broker_trade_id, source_field, posted FROM ledger_entries
+                                     WHERE transaction_id = ? AND component_key = ?""", (identifier, entry[0])).fetchone()
+            if existing is not None:
+                if money(existing["amount"]) != money(entry[1]) or tuple(existing)[1:] != tuple(entry[2:]):
+                    raise BrokerError("Broker transaction conflicts with an existing accounting entry",
+                                      evidence={"transaction_id": identifier, "source_field": entry[0]})
+            elif prior is not None and entry[-1] and money(entry[1]) != ZERO and _number(identifier) <= _number(imported_before):
+                raise BrokerError("New monetary posting would change already imported history",
+                                  evidence={"transaction_id": identifier, "source_field": entry[0]})
+            elif prior is not None and entry[-1] and money(entry[1]) != ZERO and body.get("accountBalance") is None:
+                raise BrokerError("Additional monetary posting lacks broker balance evidence",
+                                  evidence={"transaction_id": identifier, "source_field": entry[0]})
+            if body["type"] == "ORDER_FILL" and existing is None and not entry[-1] and money(entry[1]) != ZERO:
+                field = entry[0].rsplit('.', 1)[-1]
+                total_field = 'pl' if field == 'realizedPL' else field
+                total = body.get(total_field)
+                allocations = [detail[field] for *_, detail in fills if field in detail]
+                if total is None or (len(allocations) == len(fills) and
+                                     sum((money(value) for value in allocations), ZERO) != money(total)):
+                    raise BrokerError("Additional trade allocation lacks a matching transaction total",
+                                      evidence={"transaction_id": identifier, "source_field": entry[0]})
             db.execute("""
                 INSERT INTO ledger_entries (transaction_id, component_key, amount, category, broker_trade_id,
                     source_field, posted) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -413,7 +465,7 @@ def import_through(db, broker, boundary):
     records = _history(broker, cursor, boundary)
     with transaction(db), localcontext(prec=80):
         _advance(db, cursor, boundary, records)
-        _store(db, broker, records, broker.now(), complete_history=True)
+        _store(db, broker, records, broker.now(), complete_history=True, imported_before=cursor)
         _balance_through(db, boundary)
         _release_closed_sets(db, broker.now())
 
@@ -430,13 +482,10 @@ def apply_confirmed_transactions(db, broker, bodies):
     if not db.in_transaction:
         raise ValueError("Confirmed activity requires a notebook write transaction")
     _check_binding(db, broker.binding)
-    records = {}
+    records = _Records()
     for body in bodies:
         broker.verify_transaction(body)
-        identifier = broker_id(body.get("id"))
-        if identifier in records and records[identifier] != body:
-            raise BrokerError("Conflicting transactions share a broker ID")
-        records[identifier] = body
+        records.add(body)
     cursor = _number(_cursor(db))
     q0 = db.execute("SELECT qualification_transaction_id FROM notebook").fetchone()[0]
     if q0 is None:
@@ -771,7 +820,8 @@ def reconcile_snapshot(db, broker, *, purpose="reporting", snapshot_id=None, on_
                        {"attempt_id": attempt["attempt_id"]}, pair=attempt["affected_pair"],
                        set_id=attempt["set_id"], attempt_id=attempt["attempt_id"])
             _advance(db, cursor, snapshot.boundary, records)
-            _store(db, broker, {**supplements, **records}, snapshot.read.responded_at, complete_history=True)
+            _store(db, broker, {**supplements, **records}, snapshot.read.responded_at,
+                   complete_history=True, imported_before=cursor, observations=records.sources)
             expected, actual = _balance_through(db, snapshot.boundary), money(snapshot.account["balance"])
             if expected != actual:
                 raise BrokerError("Unexplained broker snapshot balance", evidence={
