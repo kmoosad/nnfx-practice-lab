@@ -7,12 +7,16 @@ Updated 20 November 2026 (Australia/Melbourne).
 The [Controller layout update](#controller-layout-update-on-dashboard-updates),
 [Notebooks overview](#notebooks-overview-update) and
 [trading journal](#trading-journal-layout-update) are merged into `main` from
-`dashboard-updates`. Their latest 41 focused offline checks and browser
-checks at 320, 716 and 1280 pixels pass. This checkout change is not deployed;
-the installed dashboard on 8879 and trading controls were not changed by this work.
+`dashboard-updates` and are **deployed on port 8879**. The
+[verified dashboard deployment](#verified-dashboard-layout-deployment) passed
+live page/navigation checks at 320, 716 and 1280 pixels, with no browser errors
+or horizontal overflow. Its 41 focused offline checks and 14 deployment checks
+also pass. The separate dashboard release preserves qualified trading code,
+notebook records, service restrictions and the automatic qualification schedule.
 
 M10 automatic weekday practice qualification and guarded native ordinary
-activation/dispatch are **deployed**, with the existing dashboard preserved. The
+activation/dispatch are **deployed**. That migration preserved the preceding
+dashboard; the independent dashboard release above is now active. The
 owner ran the prepared migration from the serveradmin terminal on 20 November;
 the [deployment verification](#verified-m10-automatic-qualification-deployment)
 confirms its `armed` receipt, updated host-fixture pass and live schedule. The
@@ -23,7 +27,7 @@ Live read-only inspection confirms automatic qualification is `enabled/active/wa
 for Monday–Friday at 16:50 New York, next **21 November 08:50 Melbourne / 20 November
 16:50 New York**. The former dated timer is stopped with no next expiry. Ordinary
 timer remains `disabled/inactive`, the controller is idle, and the dashboard remains
-active on 8879 with unchanged files and process. The administrator receipt confirms
+active on 8879 using the verified separate release. The M10 administrator receipt confirms
 Q0 `c245f517b15448cabb2edbb5336a53aa`, cursor `2249` and A0 unset, with all notebook,
 sidecar and claim files preserved. These protected notebook observations come from
 the deployment receipt; the unprivileged verifier did not reopen the notebook.
@@ -900,6 +904,100 @@ passed against an isolated copy of the exact dashboard merge contents, without
 those concurrent changes. Existing responsive/browser evidence remains recorded
 above. The merge changes the local Git history; live dashboard deployment remains
 pending.
+
+### Dashboard deployment preparation
+
+On 20 November 2026 the owner requested deployment of the merged dashboard.
+Live inspection at **16:04 Melbourne** confirmed the old dashboard active with
+PID `11104`, all three views returning HTTP 200, automatic qualification still
+enabled/waiting for **21 November 08:50 Melbourne**, the controller idle and the
+ordinary timer disabled/inactive. The [predeployment record](../var/prepared/dashboard-a7d756b/predeployment.json)
+retains those observations. `sudo -n -l` explicitly denied `codexdev`; this is a
+host administrator-access limitation, not an automatic approval-review rejection.
+No live deployment command or host modification was performed.
+
+The frozen [deployment bundle](../var/prepared/dashboard-a7d756b/verification.json)
+contains the exact installed M10 runtime (43 source files verified against the
+previous deployment) plus only ten dashboard file changes from `a7d756b`, yielding
+47 application files. The [41 dashboard checks](../var/prepared/dashboard-a7d756b/checks.log)
+pass with the installed Python environment. The [eight initial deployment checks](../var/prepared/dashboard-a7d756b/attempt-1/deployment-checks.log)
+pass with temporary paths and simulated services: successful isolation, failed-page
+rollback, changed-payload/source rejection, active-controller refusal, unchanged
+security, nonadministrator refusal and trading-window deferral. These are offline
+checks; root deployment and live updated-page verification remain outstanding.
+
+The trading permit pins all installed application files, including the old
+dashboard. Therefore this update uses a separate administrator-owned dashboard
+release and changes only the dashboard service's working directory. It retains
+the existing interpreter, reader identity, port and security settings. The
+qualified trading source/package, protected plan, notebook/history and schedules
+stay unchanged; no permit or trade is created. Post-switch checks inspect the
+three live pages and preservation fingerprints, with rollback to the previous
+dashboard on verification failure. The [administrator command](../README.md#deploy-the-merged-dashboard-layouts)
+is ready for the existing serveradmin terminal. A successful receipt and follow-up
+read-only verification are required before describing this update as deployed.
+
+#### Dashboard deployment retry
+
+The administrator's first attempt at **16:06 Melbourne** installed the separate
+release and received HTTP 200 with the new markup on all three dashboard pages.
+The service-settings comparison then failed and the helper restored the previous
+dashboard. Its [receipt](../var/prepared/dashboard-a7d756b/deployment-20261120T050623661159.json)
+records the page results and successful rollback. The screenshot supplied on retry
+shows the subsequent refusal to overwrite that retained release directory.
+Read-only inspection confirms the restored service is active with PID `36705`,
+working directory `/opt/nnfx-practice` and no dashboard override. Qualification
+remains enabled/waiting, ordinary scheduling disabled and the controller idle.
+
+The first comparison used exact strings for set-valued service properties, which
+can reorder without changing the restrictions. The receipt did not retain the
+individual values, so it does not identify the specific property that differed.
+Revision 2 compares those collections by contents, retaining allow/deny polarity,
+all rules and exact scalar comparisons. It now saves before/after settings and
+names any actual difference. It also safely reuses the previous release only when
+every file, owner, permission and type matches; changed/extra files or writable
+paths are refused without overwriting them. The [existing-release inspection](../var/prepared/dashboard-a7d756b/existing-release-verification.json)
+confirms all 47 files and protected ownership/permissions match.
+
+The revised [14 offline deployment checks](../var/prepared/dashboard-a7d756b/deployment-checks.log)
+pass, including successful retry after rollback without rewriting files, harmless
+rule reordering, rejection of actual restriction changes, and modified/extra/
+writable existing-release refusal. The original helper, manifest and checks are
+preserved in [attempt-1](../var/prepared/dashboard-a7d756b/attempt-1/). Application
+files and the passing 41-check log are unchanged. The revised
+[manifest](../var/prepared/dashboard-a7d756b/verification.json) and
+[administrator command](../README.md#deploy-the-merged-dashboard-layouts) are ready.
+Host sudo remained unavailable to this account. The administrator subsequently
+completed the corrected retry, verified below.
+
+#### Verified dashboard layout deployment
+
+The administrator completed the corrected deployment at **16:11 Melbourne on
+20 November 2026**. The [successful receipt](../var/prepared/dashboard-a7d756b/deployment-20261120T051138897799.json)
+reports `status: deployed`, reuse of the verified release, unchanged security,
+qualified trading code, notebook/claim files and protected plan. The original
+failed attempt and rollback remain retained. The retry's captured settings show
+only `IPAddressAllow` enumeration order changed; its allowed networks are equal.
+
+[Read-only verification at 16:12 Melbourne](../var/verification/dashboard-deployed-20261120/verification.json)
+confirms the dashboard active with PID `37415`, working directory
+`/opt/nnfx-dashboard/dashboard-a7d756b-7a3d198f3e7e`, and the single intended
+working-directory override. All 47 release files match the prepared artifact.
+All 43 qualified trading source files and their installed package copies still
+match the M10 deployment. Service security matches the prior settings. Automatic
+qualification remains enabled/waiting for **21 November 08:50 Melbourne**;
+ordinary scheduling is disabled/inactive and the controller is idle.
+
+Live Chromium checks against `192.168.51.10:8879` received HTTP 200 and the new
+layout on Controller, Notebooks and the Python 01 journal at 320, 716 and 1280
+pixels. Expanded/collapsed details fit without horizontal overflow; journal/back
+navigation works, and the saved run's dedicated detail page returns 200. No
+browser errors occurred. The [live journal screenshot](../var/verification/dashboard-deployed-20261120/notebooks-notebook-a-716.png)
+was visually reviewed. It retains the exact AUD 50,000.1007 qualification balance,
+completed saved run and empty trade history. These observations establish live
+dashboard operation; they are not new OANDA execution evidence. Verification used
+only dashboard GETs and read-only service/file checks, with no broker request or
+trading-control change. The dashboard deployment is complete; do not rerun it.
 
 ## M09 host operation and maintenance exclusion
 

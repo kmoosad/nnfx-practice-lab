@@ -173,6 +173,47 @@ NNFX_M08_EVIDENCE_DIR=var/m08/fixtures .venv/bin/python -m unittest tests.test_m
 
 See [M08 evidence and dependencies](docs/STATUS.md#m08-observational-dashboard).
 
+### Deploy the merged dashboard layouts
+
+The owner completed live dashboard deployment on 20 November 2026, verified at
+16:12 Melbourne. The [deployment record](docs/STATUS.md#verified-dashboard-layout-deployment)
+confirms all three live pages, mobile/desktop checks and preserved trading controls.
+The frozen
+release in `var/prepared/dashboard-a7d756b` combines the verified installed M10
+runtime with only the ten dashboard files from commit `a7d756b`. Its 41 dashboard
+checks pass using the installed Python environment; 14 separate offline
+deployment checks cover rejection and rollback. The
+[manifest](var/prepared/dashboard-a7d756b/verification.json) identifies all 47
+application files and the exact deployment helper. Do not rebuild from unrelated
+checkout changes or rerun the M10 migration.
+
+**Completed—do not rerun.** The owner ran this command from the **serveradmin**
+terminal on `thinkbook-server`; it is retained as deployment history:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/dashboard-a7d756b/deploy.py \
+  --manifest-sha256 7590f9988e99ede5325dcac2f238d132f4e9275dfa35dd69206d0bdfeaf43368
+```
+
+The [helper](var/prepared/dashboard-a7d756b/deploy.py) installs an administrator-owned
+release under `/opt/nnfx-dashboard`. A dashboard-only systemd override selects
+that working directory, retaining the existing Python environment, reader identity,
+port 8879 and service restrictions. The qualified `/opt/nnfx-practice` source and
+package remain unchanged, so the scheduled trading code identity stays valid.
+Only the dashboard is restarted. The helper refuses an active controller or the
+trading window, verifies all three pages, checks unchanged trading controls and
+notebook/plan fingerprints, and restores the previous dashboard if post-switch
+verification fails. It does not alter timers, credentials, strategies or notebook
+data. Receipts are saved beside the prepared helper; require `status: deployed`.
+The first attempt restored the old dashboard after a service-setting comparison
+failed. The corrected helper compares unordered rules by content while retaining
+all restrictions, and safely reuses the existing release only after verifying
+every file, owner and permission. The prior helper/manifest remain in `attempt-1`
+beside its receipt. The administrator completed the corrected retry; its receipt
+reports `deployed`. The dashboard is now served from
+`/opt/nnfx-dashboard/dashboard-a7d756b-7a3d198f3e7e` on port 8879.
+
 ## Ubuntu deployment and host operation
 
 M09 supplies the [installer](deploy/install.py), per-controller
