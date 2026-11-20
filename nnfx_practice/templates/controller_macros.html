@@ -3,17 +3,17 @@
   {% if v.report %}
     <p><strong>Account data updated</strong> <span>{{ v.refresh_age_short }} ago</span></p>
     <p class="muted"><time datetime="{{ v.report.refreshed_at }}">{{ v.report.refreshed_at|ny_short }}</time></p>
-  {% else %}<p class="error">Account figures unavailable: no reconciled reporting baseline/snapshot.</p>{% endif %}
+  {% else %}<p class="error">Account figures unavailable: no confirmed account figures for this reporting period.</p>{% endif %}
 </div>
 {% if v.stale %}
-  <p class="controller-alert error"><strong>Stale:</strong> {% if v.schedule_stale %}no snapshot since expected weekday launch {{ v.expected_launch|ny }}{% else %}failed or unfinished refresh; retaining the preceding reconciled snapshot{% endif %}.</p>
+  <p class="controller-alert error"><strong>Account data may be out of date:</strong> {% if v.schedule_stale %}no successful account update recorded since the scheduled run time of {{ v.expected_launch|ny }}{% else %}the latest update failed or is unfinished; showing the last confirmed account figures{% endif %}.</p>
 {% endif %}
 {% if v.refresh_problem %}
   <p class="controller-alert error">Refresh {{ v.refresh_problem.reconciliation_status }} · {{ v.refresh_problem.requested_at|ny_short }} · {{ v.refresh_problem.reconciliation_error or 'Unfinished refresh' }}</p>
 {% endif %}
 {% if v.latest_run %}
-  {% if v.latest_run.refresh_error %}<p class="controller-alert error">Final refresh failed: {{ v.latest_run.refresh_error }}</p>
-  {% elif not v.latest_run.ended_at %}<p class="controller-alert error">Latest run unfinished. Final refresh unfinished/unconfirmed.</p>{% endif %}
+  {% if v.latest_run.refresh_error %}<p class="controller-alert error">Final account update failed: {{ v.latest_run.refresh_error }}</p>
+  {% elif not v.latest_run.ended_at %}<p class="controller-alert error">Latest run has no recorded finish. Its final account update is unconfirmed.</p>{% endif %}
 {% endif %}
 {% endmacro %}
 
@@ -24,8 +24,8 @@
     {% if v.report %}
       <dt>Last successful refresh</dt><dd>{{ v.report.refreshed_at|ny }}</dd>
       <dt>Age at page load</dt><dd>{{ v.refresh_age }}</dd>
-      <dt>Snapshot</dt><dd>{{ v.report.snapshot_id }}</dd>
-      <dt>Transaction boundary</dt><dd>{{ v.report.boundary }}</dd>
+      <dt>Account snapshot ID</dt><dd>{{ v.report.snapshot_id }}</dd>
+      <dt>Last transaction included</dt><dd>{{ v.report.boundary }}</dd>
     {% endif %}
     {% if v.refresh_problem %}<dt>Unsuccessful refresh snapshot</dt><dd>{{ v.refresh_problem.snapshot_id }}</dd><dt>Refresh requested</dt><dd>{{ v.refresh_problem.requested_at|ny }}</dd>{% endif %}
   </dl>
@@ -36,13 +36,14 @@
 <ul class="controller-issues">
 {% for issue in items %}
   <li class="controller-issue">
-    <p class="{{ 'error' if issue.status == 'open' else 'muted' }}"><strong>{{ issue.pair or 'Account' }} · {{ issue.code }}</strong> · {{ issue.status|title }}</p>
-    <p>{{ issue.operator_disposition or 'No operator disposition recorded.' }}</p>
+    <p class="{{ 'error' if issue.status == 'open' else 'muted' }}"><strong>{{ issue.pair or 'Account' }} · {{ issue.code|replace('_', ' ')|capitalize }}</strong> · {{ issue.status|title }}</p>
+    <p>{{ issue.operator_disposition or 'No operator response recorded.' }}</p>
     <details class="record-details"><summary>Issue details</summary>
       <dl class="record-grid">
         <dt>Issue ID</dt><dd>{{ issue.issue_id }}</dd>
-        <dt>Set / leg</dt><dd>{{ issue.set_id or '—' }} / {{ issue.leg_no or '—' }}</dd>
-        <dt>Observed</dt><dd>{{ issue.last_observed_at|ny }}</dd>
+        <dt>Recorded issue code</dt><dd>{{ issue.code }}</dd>
+        <dt>Trade set ID / leg number</dt><dd>{{ issue.set_id or '—' }} / {{ issue.leg_no or '—' }}</dd>
+        <dt>Last observed</dt><dd>{{ issue.last_observed_at|ny }}</dd>
         <dt>Resolved</dt><dd>{{ issue.resolved_at|ny }}</dd>
       </dl>
     </details>
@@ -67,8 +68,8 @@
     <span class="badge {{ 'run-success' if not run.needs_attention else 'run-attention' }}">{{ run.status|replace('_', ' ')|capitalize }}{% if not run.ended_at %} · Unfinished{% endif %}{% if run.duration_seconds is not none %} · {{ run.duration_seconds|duration }}{% endif %}</span>
   </div>
   {% if run.no_new_entries %}<p class="run-outcome">No new entries</p>{% endif %}
-  <p class="muted run-meta">{{ (run.mode or 'Unclassified invocation')|title }} · Started {{ run.started_at|ny_short }}</p>
-  {% if not run.ended_at %}<p class="muted">Last recorded progress {{ run.last_progress_at|ny_short }} · Current activity unconfirmed.</p>{% endif %}
+  <p class="muted run-meta">{{ run.mode|title if run.mode else 'Run type unavailable' }} · Started {{ run.started_at|ny_short }}</p>
+  {% if not run.ended_at %}<p class="muted">Last recorded progress {{ run.last_progress_at|ny_short }} · Whether this run is still active is unconfirmed.</p>{% endif %}
   {% if run.refresh_error %}<p class="error">Refresh failure: {{ run.refresh_error }}</p>{% endif %}
   <ol class="run-stages" aria-label="Run stages">
     {% for stage in run.stages %}
@@ -80,18 +81,20 @@
             <span class="stage-status {{ 'error' if stage.status in ('failed', 'completed_with_errors', 'blocked') else 'muted' }}">{{ stage.status|replace('_', ' ')|capitalize }}{% if stage.started_at and not stage.ended_at %} · Unfinished{% endif %}{% if stage.duration_seconds is not none %} · {{ stage.duration_seconds|duration }}{% endif %}</span>
           </div>
           {% if stage.stage == 'manage_open' %}
-            <p>{{ 'Account reconciled' if stage.reconciled else 'Reconciliation unconfirmed' }}{% if stage.status == 'completed' and stage.expected_pair_count == 0 %} · No surviving pairs to manage{% endif %}</p>
+            <p>{{ 'Account records matched to broker' if stage.reconciled else 'Account reconciliation unconfirmed' }}{% if stage.status == 'completed' and stage.expected_pair_count == 0 %} · No open trades to manage{% endif %}</p>
           {% endif %}
           {% if stage.stage != 'manage_open' or stage.expected_pair_count != 0 or stage.status != 'completed' %}
-            <p>{{ stage.finished }} / {{ stage.expected_pair_count if stage.expected_pair_count is not none else 'Unavailable' }} {{ 'surviving pairs' if stage.stage == 'manage_open' else 'pairs' }} finished</p>
+            <p>{{ stage.finished }} / {{ stage.expected_pair_count if stage.expected_pair_count is not none else 'Unavailable' }} {{ 'pairs with open trades' if stage.stage == 'manage_open' else 'pairs' }} checked</p>
           {% endif %}
-          <p class="muted">{{ stage.skipped }} skipped · {{ stage.failed }} failed</p>
-          {% if stage.skip_reasons|length == 1 %}<p class="muted">{{ stage.skip_reasons[0].reason or 'Skip reason unavailable' }}</p>
-          {% elif stage.skip_reasons %}<details class="skip-reasons"><summary>Skip reasons</summary><ul>{% for reason in stage.skip_reasons %}<li>{{ reason.count }} · {{ reason.reason or 'Reason unavailable' }}</li>{% endfor %}</ul></details>{% endif %}
-          {% if stage.expected_pair_count %}<progress max="{{ stage.expected_pair_count }}" value="{{ stage.finished }}" aria-label="{{ 'Manage open trades' if stage.stage == 'manage_open' else 'Check for new trades' }}: finished pair outcomes">{{ stage.finished }} / {{ stage.expected_pair_count }}</progress>{% endif %}
+          {% if stage.stage != 'manage_open' or stage.expected_pair_count != 0 or stage.status != 'completed' or stage.skipped or stage.failed %}
+            <p class="muted">{{ stage.skipped }} {{ ('exit check' ~ ('' if stage.skipped == 1 else 's') ~ ' unavailable') if stage.stage == 'manage_open' else 'with no entry' }} · {{ stage.failed }} failed</p>
+          {% endif %}
+          {% if stage.skip_reasons|length == 1 %}<p class="muted">Reason: {{ stage.skip_reasons[0].reason or 'Reason unavailable' }}</p>
+          {% elif stage.skip_reasons %}<details class="skip-reasons"><summary>{{ 'Reasons exit checks were unavailable' if stage.stage == 'manage_open' else 'Reasons for no entry' }}</summary><ul>{% for reason in stage.skip_reasons %}<li>{{ reason.count }} · {{ reason.reason or 'Reason unavailable' }}</li>{% endfor %}</ul></details>{% endif %}
+          {% if stage.expected_pair_count %}<progress max="{{ stage.expected_pair_count }}" value="{{ stage.finished }}" aria-label="{{ 'Manage open trades' if stage.stage == 'manage_open' else 'Check for new trades' }}: pairs checked">{{ stage.finished }} / {{ stage.expected_pair_count }}</progress>{% endif %}
           {% if stage.status == 'running' %}<p class="muted">Last recorded step {{ stage.current_step or '—' }} · {{ stage.current_pair or 'No current pair' }}</p>{% endif %}
           {% if stage.failure_summary %}<p class="error">{{ stage.failure_summary }}</p>{% endif %}
-          {% for decision in run.decisions if decision.stage == stage.stage %}<p class="{{ 'error' if decision.outcome == 'failed' else 'warning' }}">{{ decision.pair }} · {{ decision.outcome or 'Unfinished decision' }} · {{ decision.reason or 'No final outcome committed' }}</p>{% endfor %}
+          {% for decision in run.decisions if decision.stage == stage.stage %}<p class="{{ 'error' if decision.outcome == 'failed' else 'warning' }}">{{ decision.pair }} · {{ decision.outcome|capitalize if decision.outcome else 'Check unfinished' }} · {{ decision.reason or 'No final result recorded' }}</p>{% endfor %}
         </div>
       </li>
     {% endfor %}
@@ -114,7 +117,7 @@
         </dd>
       {% endfor %}
     </dl>
-    <p class="muted">Finished counts include committed completed, skipped and failed pair outcomes. Unfinished decisions do not count.</p>
+    <p class="muted">Pair counts include saved outcomes, including failed checks and unavailable inputs. Pairs with no recorded outcome are not counted.</p>
   </details>
 </article>
 {% endmacro %}

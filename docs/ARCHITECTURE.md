@@ -76,6 +76,14 @@ calendar check is in [status](STATUS.md).
 [systemd timer documentation](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html) ·
 [systemd service documentation](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
 
+Dashboard releases are separate from the qualified trading installation. The
+owner authorized a limited deployment command for `codexdev` on 20 November 2026;
+the dashboard continues to run as `nnfx-view`. The
+[deployment authority contract](DETAILED_DESIGN.md#dashboard-deployment-authority)
+defines the permitted files, protected helper and rollback boundary. The
+[installation status](STATUS.md#scoped-dashboard-deployment-access) distinguishes
+prepared setup from an active host permission.
+
 ## Configuration and storage
 
 Use one `config.toml` with a record per experiment. It binds a

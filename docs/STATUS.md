@@ -4,6 +4,16 @@ Updated 20 November 2026 (Australia/Melbourne).
 
 ## Current position
 
+The owner authorized [scoped dashboard deployment access](#scoped-dashboard-deployment-access)
+for `codexdev`. The corrected one-time setup and the
+[Controller wording update](#controller-wording-update) are **installed and deployed**.
+The [live verification](#verified-scoped-dashboard-deployment) confirms the exact
+no-argument grant, denial of broader commands, successful unchanged-content use by
+`codexdev`, all 47 release files, unchanged qualified trading code/restrictions and
+schedules, and **12 passing live browser checks**. The **68 focused offline checks**
+remain the implementation evidence. Do not rerun the administrator installer;
+future reviewed dashboard updates use the restricted command.
+
 The [Controller layout update](#controller-layout-update-on-dashboard-updates),
 [Notebooks overview](#notebooks-overview-update) and
 [trading journal](#trading-journal-layout-update) are merged into `main` from
@@ -141,6 +151,152 @@ offline evidence. Actual two-leg execution and charge mapping remain pending.
 | M08 observational dashboard | Implemented offline. All 294 tests passed, including 30 M08 checks. Ready for owner review |
 | M09 host operation and maintenance exclusion | Startup, refreshed essential system/maintenance controls and dashboard isolation/WAL passed on -43; actual dashboard/notebook and LAN agreement passed. Prior -42 scheduled-window unattended context remains unconfirmed; keep kernel/window scopes separate. Ordinary timer disabled |
 | M10 practice qualification and ordinary activation | Automatic qualification deployed and enabled; next run 21 November 08:50 Melbourne. Old dated timer stopped, dashboard unchanged, notebook/claims preserved and updated host fixtures passed. Actual execution/final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
+
+## Controller wording update
+
+On 20 November 2026 (Melbourne), the owner requested replacing “skipped” and
+reviewing the rest of the Controller page for unclear language. Entry summaries
+now say “28 / 28 pairs checked” and “28 with no entry · 0 failed”, retaining the
+recorded reason. Open-trade skips say “exit check(s) unavailable”; they do not imply
+a successful hold decision. Empty management stages say “No open trades to manage”
+without a zero-only outcome line. Account reconciliation, saved-record notices,
+account freshness, missing run types, unfinished checks and operator-response
+messages use clearer language. Issue headings use readable words while the exact
+codes remain in details. Shared freshness/issue/header/footer wording also appears
+on the Notebooks pages; trading rules, stored records and lifecycle are unchanged.
+
+All **40 focused dashboard checks** pass in the checkout and against the exact
+staged release using the installed Python environment. Existing mixed-outcome
+coverage now also checks unavailable exit inputs, retained reasons and exclusion
+of unfinished decisions. The [fixture browser review](../var/verification/controller-wording-20261120/browser-checks.json)
+passed **21 checks** across seven healthy/error/history states at 320, 716 and 1280
+pixels, with no browser errors or horizontal overflow when details are collapsed
+or expanded. Keyboard access to full run records passes. The
+[716-pixel preview](../var/verification/controller-wording-20261120/controller-716.png)
+was visually reviewed. These are offline fixture checks, not broker execution.
+
+The [prepared release](../var/prepared/dashboard-wording-20261120/verification.json)
+changes only four templates relative to the verified live dashboard. All other
+release files and the qualified trading installation match their prior hashes.
+Its **16 offline deployment checks** pass, including upgrade/rollback, changed
+previous-release/override rejection, security preservation, active-controller
+refusal and trading-window deferral. The helper switches only the dashboard
+working directory, restores the preceding override if verification fails, and
+retains notebook/plan/control preservation checks. The original deployment
+bundle is unchanged.
+
+At preparation, read-only host inspection confirmed the dashboard active from
+`/opt/nnfx-dashboard/dashboard-a7d756b-7a3d198f3e7e`, PID `37415`.
+`sudo -n -l` then confirmed `codexdev` could not run sudo on this host. This was a host access
+limitation, not an automatic approval-review rejection. No installation, restart,
+trading run, timer change or broker request was attempted. The
+[serveradmin installation command](../README.md#deploy-the-controller-wording-update)
+was prepared. The later [scoped deployment verification](#verified-scoped-dashboard-deployment)
+confirms successful installation of the wording update through the new helper.
+
+## Scoped dashboard deployment access
+
+On 20 November 2026 (Melbourne), the owner authorized scoping and implementing
+a dashboard deployment command for `codexdev`, retaining the restricted dashboard
+account. The [authority contract](DETAILED_DESIGN.md#dashboard-deployment-authority)
+is implemented in the [fixed helper](../deploy/dashboard_deploy.py),
+[administrator installer](../deploy/install_dashboard_deployer.py) and
+[unprivileged request preparation](../deploy/prepare_dashboard_update.py).
+The approved scope is dashboard releases and that service's restart, with no
+generic sudo, trading controls, credentials, notebook writes or strategy changes.
+
+The [68 focused checks](../var/verification/dashboard-delegation-20261120/checks.log)
+pass: 28 deployment-boundary/setup checks plus the 40 dashboard checks. They cover
+submitted Python remaining inert in the privileged helper, isolated interpreter
+environment, rejected non-dashboard/path/duplicate/oversized submissions, stale
+updates, protected-file checks, concurrent-deployment exclusion, trading-window
+and active-run deferral, successive updates, failed-page/restart rollback and
+explicit failed-rollback receipts. Installer failures withhold or revoke the grant
+and restore the preceding override. These use controlled files/services; they do
+not establish that the live sudo grant is installed. The host's `visudo-rs 0.2.13`
+accepted the exact rule, and its installed manual confirms that the empty argument
+string limits the command to no arguments.
+
+The [frozen setup bundle](../var/prepared/dashboard-delegation-20261120/verification.json)
+contains the verified helper, installer, service definition and a stdin request
+for the four pending wording templates. Read-only host preflight confirmed the
+active preceding dashboard release, all 47 protected release files, the unchanged
+service definition, successful GETs for all three pages, an idle controller and
+execution outside the trading window. No privileged mutation was attempted.
+
+**Administrator installation is complete**, verified below. The
+[one-time command](../README.md#enable-scoped-dashboard-deployment) installed the
+fixed helper and exact sudo rule, then applied the wording update through
+the same restricted helper. The earlier standalone wording installer is retained
+as preparation history. Routine later updates use the new command as `codexdev`;
+no repeat administrator handoff is needed for that scope.
+
+### Dashboard deployment setup retry
+
+The owner's first administrator invocation stopped in the trading-path ownership
+preflight, before creating the helper, configuration, sudo grant or active-release
+link and before any service changes. Read-only inspection identified exactly two
+root-owned, root-group directories with mode `0775`:
+`/opt/nnfx-practice/nnfx_practice` and `/opt/nnfx-practice/strategies`.
+The original preflight had verified the separate dashboard release but omitted
+these qualified-code parent-directory permissions.
+
+Installer revision 2 validates all qualified-code files and directories before
+any setup changes. It plans only these exact root:root `0775` to `0755` directory
+changes and applies them after other preflight checks and sudo-rule validation.
+It does not rewrite application files, alter ownership or touch notebooks/plans.
+Other owners/groups, wider modes, links and writable descendants remain refused.
+If a later setup step fails, the reduced directory permissions are retained; the
+existing service rollback and permission-grant cleanup still apply. The installed
+runtime helper and its strict ownership checks are unchanged.
+
+All 68 focused checks pass, including the observed directory case, unchanged code
+hashes and rejection of unrelated permission problems. The
+[corrected host preflight](../var/verification/dashboard-delegation-20261120/retry-preflight.json)
+confirms all 43 qualified application files match the previously verified hashes,
+all other code-path metadata passes, the setup components are absent and the live
+dashboard remains at PID `37415` on the preceding release. All three dashboard GETs
+pass; trading controls remain unchanged. These inspections made no host changes.
+
+The original installer/manifest and checks are retained in
+[attempt-1](../var/prepared/dashboard-delegation-20261120/attempt-1/verification.json).
+The updated bundle uses the **same administrator command and helper hash**.
+The owner subsequently completed the retry; the resulting installation,
+directory tightening, sudo grant and wording deployment are verified below.
+
+### Verified scoped dashboard deployment
+
+On **20 November 2026, 16:46 Melbourne**, verification after the owner's retry
+confirmed successful installation. Receipt `20261120T054512457591.json` reports
+`deployed`, from the previous layout release to
+`dashboard-deploy-ae8979eace31f5a55da8c313`. The
+[verification record](../var/verification/dashboard-delegation-deployed-20261120/verification.json)
+retains its hash, exact template hashes, service settings and permission results.
+All 47 release files match the preceding release plus the four prepared templates;
+all 43 pinned qualified application files are unchanged. The installed helper
+matches its reviewed hash, is root-owned, and both package directories are now
+root:root `0755`.
+
+The dashboard is active as `nnfx-view:nnfx-read`, PID `42854`, with working directory
+`/opt/nnfx-dashboard/current`. Its restrictions match the pre-installation settings.
+Six sudo permission-listing checks confirm only the exact no-argument helper is
+allowed; helper arguments, direct Python/shell execution, dashboard restart and
+trading-service start commands are denied. An actual `codexdev` invocation with
+the current release identity and identical file contents succeeded without a new
+receipt, release switch or dashboard restart. This confirms usable deployment
+access without making another update.
+
+The controller remains inactive, ordinary scheduling disabled/inactive, and
+qualification scheduling enabled/active for the same next expiry,
+**21 November 08:50 Melbourne / 20 November 16:50 New York**. No trading control
+changed. The [live browser checks](../var/verification/dashboard-delegation-deployed-20261120/browser-checks.json)
+passed the Controller, Notebooks, journal and current-run details at 320, 716 and
+1280 pixels, with no errors or horizontal overflow before/after expanding details.
+The Controller visibly shows “28 / 28 pairs checked”, “28 with no entry · 0 failed”
+and its recorded reason. Verification used dashboard GETs, host/file reads and the
+unchanged-content helper invocation; it did not access broker credentials, place
+orders, change notebook data or restart services. These are deployment checks,
+not additional OANDA execution evidence. The one-time installation is complete.
 
 ## Verification and limits
 

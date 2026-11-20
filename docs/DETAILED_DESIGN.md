@@ -591,8 +591,21 @@ issues. Main timestamps remain explicitly New York time with offset; readable
 duration rounding never changes stored values. Display recorded skip reasons,
 not an assumed lack of signals. “No new entries” requires a completed entry stage
 with all expected pairs skipped and no trade set recorded for that run. A stage's
-“Account reconciled” label requires its referenced snapshot to be reconciled.
+“Account records matched to broker” label requires its referenced snapshot to be
+reconciled.
 These summaries describe saved outcomes, not current service liveness.
+
+The owner requested clearer Controller wording on 20 November 2026. Display entry
+outcomes recorded as `skipped` as “with no entry”, retaining their exact recorded
+reasons. For open-trade management, the same stored outcome means exit inputs were
+unavailable: display “exit check(s) unavailable”, never “no action required”. Label
+pair progress “checked”, explain that it includes failed checks and unavailable
+inputs, and continue excluding decisions without a final outcome. A completed
+empty management stage says “No open trades to manage”; omit its zero-only outcome
+line. Use plain language for saved records, read-only access, account freshness,
+reconciliation and operator responses. Preserve exact issue codes, IDs and times in
+the expandable records. These presentation changes do not alter stored outcomes,
+trading rules, reconciliation evidence or the qualification lifecycle.
 
 The Notebooks overview follows the same account-first order: notebook name and
 journal link, freshness/warnings and open-issue count, then account balance,
@@ -648,6 +661,57 @@ escape stored text and serve on the separate trusted-LAN port. No route accepts
 trading/configuration/issue-resolution writes, and the dashboard service cannot
 read the private credentials. Preserve the reference dashboard's simple
 navigation, labels and tables; no live broker polling is required.
+
+### Dashboard deployment authority
+
+On 20 November 2026, the owner authorized a narrowly scoped deployment command
+for `codexdev`, preserving the dashboard's separate `nnfx-view:nnfx-read` runtime
+identity. This is a local operator command, not a dashboard control or trading
+permission. The host permission requires one administrator installation; observed
+installation and verification belong in [status](STATUS.md#scoped-dashboard-deployment-access).
+
+- The sole sudo grant is the fixed root-owned
+  `/usr/local/sbin/nnfx-dashboard-deploy` command **with no arguments**. No Python,
+  shell, source-tree script, generic service command or timer operation is granted.
+- Its isolated Python interpreter accepts bounded JSON text through stdin. Only
+  `nnfx_practice/dashboard.py` and the nine named HTML/CSS files in its fixed
+  allowlist may change. There is no caller-selected executable, installation path,
+  service, environment, dependency installation or root-run test/import hook.
+- Root copies submitted content as data into a protected dashboard release. Only
+  the restricted `nnfx-view` process executes dashboard code. The service retains
+  its read-only notebook access, blocked credential/control paths, denied outbound
+  connections and existing LAN/port restrictions. Strategy, broker/controller,
+  startup code, dependencies and the qualified trading installation cannot be
+  submitted through this interface.
+- A one-time setup changes the dashboard working directory to the protected
+  `/opt/nnfx-dashboard/current` link. Subsequent deployments atomically switch
+  that link and restart only `nnfx-practice-dashboard.service`; they never edit
+  service definitions or reload the service manager. Releases are root-owned,
+  immutable to `codexdev` and service users, and retained for rollback.
+- The helper rejects stale expected releases, unknown/duplicate fields, oversized
+  input, unsafe paths/ownership/permissions/links, changed non-dashboard files,
+  changes to the pinned qualified trading files or service restrictions, concurrent
+  deployment, active trading runs, pending trading jobs and the 16:35–17:10 New York
+  weekday trading window. It does not pause, enable or disable trading schedules.
+- Fixed localhost GET checks use no proxy or redirect and bounded responses.
+  Failed restart/page/preservation checks restore the preceding dashboard link and
+  restart that service. Receipts retain hashes, release identities and rollback
+  outcome, including an explicit failed-rollback result requiring administrator
+  attention. The helper does not open credentials, notebooks or protected plans.
+
+The one-time installer validates the existing restricted service and qualified
+code paths. It may tighten only the existing root:root `0775` package directories
+`/opt/nnfx-practice/nnfx_practice` and `/opt/nnfx-practice/strategies` to `0755`;
+all other unsafe ownership, links or permissions are refused. These mode-only
+changes are retained on later failure and do not change application file hashes.
+The installer prepares the
+protected helper/configuration/link and validates the exact sudo rule before
+granting access. Its setup checks and optional pending dashboard update are
+separate outcomes. Revoking the sudo rule removes deployment access without
+changing the dashboard or trading services. Qualified-code upgrades, new host
+bindings and changes beyond the allowlist require separate administrator review.
+Commands and the frozen setup bundle are in the
+[README](../README.md#enable-scoped-dashboard-deployment).
 
 ## 8. Acceptance test design
 

@@ -211,8 +211,72 @@ failed. The corrected helper compares unordered rules by content while retaining
 all restrictions, and safely reuses the existing release only after verifying
 every file, owner and permission. The prior helper/manifest remain in `attempt-1`
 beside its receipt. The administrator completed the corrected retry; its receipt
-reports `deployed`. The dashboard is now served from
-`/opt/nnfx-dashboard/dashboard-a7d756b-7a3d198f3e7e` on port 8879.
+reports `deployed`. That release was served from
+`/opt/nnfx-dashboard/dashboard-a7d756b-7a3d198f3e7e` on port 8879; the later
+wording release below now runs through the protected `current` link.
+
+### Deploy the Controller wording update
+
+The 20 November wording update is **deployed and verified**.
+It changes four templates in the separate dashboard release. The
+[status record](docs/STATUS.md#controller-wording-update) retains 40 dashboard,
+21 fixture-browser and 16 initial deployment checks. The
+[live verification](docs/STATUS.md#verified-scoped-dashboard-deployment) confirms
+12 browser checks and the new wording on port 8879. The one-time setup below is
+complete; do not rerun it or the earlier standalone wording installer.
+
+### Enable scoped dashboard deployment
+
+The owner authorized this scope on 20 November 2026. The command is **installed
+and verified on the host**. The
+[status record](docs/STATUS.md#scoped-dashboard-deployment-access) retains 68 passing
+focused checks and the verified installation. The runtime remains `nnfx-view`;
+`codexdev` has only the fixed no-argument deployment command, with no generic
+sudo, service control or trading permissions.
+
+**Completed—do not rerun.** The owner ran this once from the **serveradmin** terminal
+on `thinkbook-server`; it is retained as installation history:
+
+```sh
+sudo /usr/bin/python3 -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/dashboard-delegation-20261120/install_dashboard_deployer.py \
+  --helper-sha256 7e4048385743bb7157e8145e5b31c80a1f75e683045b9a4da37cbe16e320003f \
+  --apply /home/codexdev/projects/nnfx-practice-lab/var/prepared/dashboard-delegation-20261120/update.json
+```
+
+The corrected retry removed group-write permission from the two existing
+root:root `0775` application package directories, making them `0755`.
+Application file contents and trading schedules are unchanged. The first attempt
+installed nothing and did not restart
+the dashboard. The [retry record](docs/STATUS.md#dashboard-deployment-setup-retry)
+contains the corrected host inspection and retained first-attempt evidence.
+
+The [frozen bundle](var/prepared/dashboard-delegation-20261120/verification.json)
+pins the helper and four changed templates. Setup installs the administrator-owned
+helper, baseline configuration and exact sudo rule, switches the dashboard to a
+protected `current` release link and verifies the existing restrictions. The
+optional update used the installed helper. Receipt `20261120T054512457591.json`
+reports `deployed`; effective permissions, protected ownership, live pages and
+unchanged trading controls passed verification. Neither the M10 migration nor
+the full installer was part of this setup.
+
+Prepare and apply subsequent reviewed dashboard changes as
+`codexdev` from this checkout:
+
+```sh
+.venv/bin/python -m deploy.prepare_dashboard_update --output var/prepared/dashboard-update.json
+sudo -n /usr/local/sbin/nnfx-dashboard-deploy < var/prepared/dashboard-update.json
+```
+
+The helper accepts only its ten named dashboard files as stdin data, creates a
+protected release, switches the link and restarts only the dashboard. It never
+executes submitted code as root. It preserves service restrictions and qualified
+trading code, defers during active runs/the trading window, and restores the
+previous release if page or preservation checks fail. Receipts are under
+`/var/lib/nnfx-dashboard-deploy`. Existing releases are retained. New dependencies,
+service changes, trading upgrades and files outside the allowlist remain separate
+administrator work. To revoke deployment access, an administrator removes only
+`/etc/sudoers.d/nnfx-dashboard-deploy`; that does not stop either service.
 
 ## Ubuntu deployment and host operation
 
@@ -231,7 +295,8 @@ installer intentionally refuses an existing qualification plan. Do not delete
 plans, Q0, claims or notebook history to make installation succeed. The following
 full-install commands are for an initial installation only. Existing M09 deployment
 and controlled Python 01 execution approvals remain valid; no repeat approval is
-required for their scope. Host sudo access is still unavailable to this agent.
+required for their scope. General administrator access remains unavailable;
+scoped dashboard updates use the restricted command above.
 
 The administrator setup uses `/opt/nnfx-practice` for root-owned code and its
 virtual environment, and `/var/lib/nnfx-practice` for the public registry, copied
@@ -264,7 +329,7 @@ If this session's account cannot run sudo, an administrator must execute that
 command in an administrator-capable terminal on `thinkbook-server`. The approval
 is already recorded. These absolute paths work when `serveradmin` cannot enter
 the private `codexdev` checkout: sudo gives Python access to the source and registry.
-This session still lacks host privilege access.
+This session has no general administrator access.
 The installer leaves the dashboard stopped and ordinary trading timers inactive.
 
 The installer creates non-login users `nnfx-run` and `nnfx-view`, both with the

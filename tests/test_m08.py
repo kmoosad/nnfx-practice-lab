@@ -189,7 +189,7 @@ class DashboardChecks(NotebookCase):
         html = self.get('/notebooks/notebook-a')
         self.assertIn('After account snapshot', html)
         self.assertIn('Refresh failed', html)
-        self.assertIn('retaining the preceding reconciled snapshot', html)
+        self.assertIn('showing the last confirmed account figures', html)
         self.assertIn('<span>1,000.00</span>', html)
         self.assertIn('class="journal-disclosure ledger-records" open', html)
         overview = self.get('/notebooks')
@@ -319,9 +319,17 @@ class DashboardChecks(NotebookCase):
         stage = stages[1]
         self.assertEqual((stage['finished'], stage['skipped'], stage['failed']), (3, 1, 1))
         html = self.get('/controllers')
-        for expected in ('3 / 28 pairs', '1 skipped · 1 failed', 'Unfinished decision', 'NZD-USD', '4.3',
-                         'Reconciliation:', 'due_stops', 'surviving pairs', 'Unfinished', 'fixture failed'):
+        for expected in ('3 / 28 pairs checked', '1 with no entry · 1 failed', 'Check unfinished', 'NZD-USD', '4.3',
+                         'Reconciliation:', 'due_stops', 'No open trades to manage', 'Unfinished', 'fixture failed'):
             self.assertIn(expected, html)
+        # Missing exit inputs are not a successful hold or a new-entry outcome.
+        self.db.execute("UPDATE pair_decisions SET stage='manage_open',reason='Indicator input unavailable; no eligible opposite event' WHERE pair='GBP-USD'")
+        self.db.execute("UPDATE stages SET expected_pair_count=1 WHERE stage='manage_open'")
+        html = self.get('/controllers')
+        self.assertIn('1 / 1 pairs with open trades checked', html)
+        self.assertIn('1 exit check unavailable · 0 failed', html)
+        self.assertIn('Reason: Indicator input unavailable; no eligible opposite event', html)
+        self.assertNotIn('No action required', html)
 
     def completed_no_entry_run(self, run_id='run-a', reason='No fresh C1 event with valid entry ATR'):
         self.start_run(self.db, run_id)
@@ -341,9 +349,9 @@ class DashboardChecks(NotebookCase):
         self.assertFalse(run['needs_attention'])
         self.assertTrue(run['stages'][0]['reconciled'])
         html = self.get('/controllers')
-        for text in ('No new entries', '28 / 28 pairs finished', '28 skipped · 0 failed',
-                     'No fresh C1 event with valid entry ATR', 'Account reconciled', '14.1 s',
-                     '14.112094281008467 seconds', 'Transaction boundary', 'Run and reconciliation details'):
+        for text in ('No new entries', '28 / 28 pairs checked', '28 with no entry · 0 failed',
+                     'Reason: No fresh C1 event with valid entry ATR', 'Account records matched to broker', '14.1 s',
+                     '14.112094281008467 seconds', 'Last transaction included', 'Run and reconciliation details'):
             self.assertIn(text, html)
         self.assertEqual(html.count('Latest run ·'), 1)
         self.assertNotIn('<table', html)
@@ -370,7 +378,7 @@ class DashboardChecks(NotebookCase):
         self.assertTrue(run['needs_attention'])
         self.assertFalse(run['stages'][0]['reconciled'])
         html = self.get('/controllers')
-        for text in ('27 / 28 pairs finished', 'Reconciliation unconfirmed', 'EUR-USD · Unfinished decision'):
+        for text in ('27 / 28 pairs checked', 'Account reconciliation unconfirmed', 'EUR-USD · Check unfinished'):
             self.assertIn(text, html)
         self.assertNotIn('run-success">Completed', html)
 
@@ -459,7 +467,7 @@ class DashboardChecks(NotebookCase):
         self.db.execute("UPDATE runs SET refresh_error='final-refresh-failed' WHERE run_id='run-a'")
         html = self.get('/controllers')
         self.assertLess(html.index('missing_protection'), html.index('Latest run ·'))
-        self.assertLess(html.index('Final refresh failed:'), html.index('Latest run ·'))
+        self.assertLess(html.index('Final account update failed:'), html.index('Latest run ·'))
         self.assertNotIn('No recorded issues.', html)
         self.db.execute("UPDATE issues SET status='resolved',resolved_at=?", (STAMP,))
         html = self.get('/controllers')
@@ -528,7 +536,7 @@ class DashboardChecks(NotebookCase):
         self.clock.current = datetime(2026, 11, 17, 21, 51, tzinfo=UTC)
         self.assertTrue(self.model()['stale'])
         html = self.get('/controllers')
-        self.assertIn('Stale:', html)
+        self.assertIn('Account data may be out of date:', html)
         self.assertIn('2026-11-17 16:50:00 EST -0500', html)
         self.assertEqual(self.db.execute('SELECT count(*) FROM runs').fetchone()[0], 0)
 
