@@ -1,0 +1,274 @@
+{
+  "conversion_hashes": {
+    "c1": "8d43bdbbebf757fc628aa5077b99ac371eee25bc8c7da8b2303cccd42a58f23a",
+    "exit": "99d8290be259a912b21c124a5809ac8b5a302e36fceea703fcdfbfdd09310e93"
+  },
+  "dependency_hashes": {
+    "inputs/dependencies/pine_compat_v1.py": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+    "nnfx/assessment.py": "d86dca0aa4528139a58ee65d55a7c8dadcabffd152a699fa611dc58c8c7826ec",
+    "nnfx/comparisons.py": "cddda5f1adfb2d4e7ca454cf8ab82de2baee1037875418bc98aac7e05c3b7fae",
+    "nnfx/interface.py": "9a6ac7730830cce7a9f08743f0a3abd861c1dcb409783b5197dd6feba210f8a4",
+    "nnfx/signals.py": "096a7b887fdf48124810e28ccd0b870bf0d765b7fc608faf5b8f52b81eb46c3e"
+  },
+  "implementation_hashes": {
+    "__init__.py": "2caa0a2883f69e6e390f100d4200753806e77863937f7eae1b102936667e364c",
+    "atr.py": "05a441fdf4f463a06d95cc58719bfc137197240fc0a9799c8004f0da9f2dd076",
+    "c1.py": "8539e562763e82e6de534e0d2dbd2b90a3e0ab9a2c61a5ec251e67cb9dd1f7d2",
+    "comparisons.py": "cddda5f1adfb2d4e7ca454cf8ab82de2baee1037875418bc98aac7e05c3b7fae",
+    "exit.py": "fca320025a38428d15339875019f22f6103bdb2db21322146c8e89b3d6f3cc2c",
+    "interface.py": "918a7dd052e1ceb7d294f9619b201c91642abf68354a9359d478ef32dfbb8dd0",
+    "pine_compat.py": "7516f3920a0c5a98c841bfbe5e45d668378ed3fab23327dce08d9242c5cd1c39",
+    "signals.py": "41c34bbcdb96136be99b464a3f88b1f8bdc391adb21aeb1c49b67ce97addf6d1"
+  },
+  "lab_numeric_semantics": {
+    "events": "Paired Boolean directional events. Exit longEntry closes shorts and shortEntry closes longs",
+    "exit_bar_gate": "The saved conversion assumes barOK true for each supplied sample. Retain confirmOnClose=true and use the practice sampling time",
+    "indicator_calculations": "Frozen binary64 conversions and registered Pine compatibility code",
+    "sizing_atr": "ATR(14) simple mean via math.fsum and original true-range candidate order, nine-decimal ties retain first full-precision winner",
+    "snapshot": "Evaluate the saved Lab conversion on each stage's 16:50 partial-candle snapshot"
+  },
+  "output_bindings": {
+    "c1": {
+      "long": {
+        "output_id": "aa68ef8c-4c33-402a-a1e7-886fb41acf6f",
+        "python_name": "goLong",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "d92727a1-8c7a-4147-96a6-d936ffab1f20",
+        "python_name": "goShort",
+        "value_kind": "boolean"
+      }
+    },
+    "exit": {
+      "long": {
+        "output_id": "fdf46d9e-ed32-4b35-a35c-a76be3f59b82",
+        "python_name": "longEntry",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "9162d6c9-cfbe-415c-929f-4348a4e7462e",
+        "python_name": "shortEntry",
+        "value_kind": "boolean"
+      }
+    }
+  },
+  "parameters": {
+    "c1": {
+      "AdaptPeriod": 24,
+      "T3Clean": "T3 Swiss Army Knife Mod",
+      "T3Hot": 0.7,
+      "amafl": 2,
+      "amasl": 30,
+      "atrper": 72,
+      "kfl": 0.666,
+      "ksl": 0.0645,
+      "mult": 3.0,
+      "per": 35,
+      "smthtype": "Kaufman",
+      "srcoption": "Close"
+    },
+    "exit": {
+      "Bandwidth": 0.3,
+      "PeakDecay": 0.991,
+      "Period": 20,
+      "atrLen": 14,
+      "confirmOnClose": true,
+      "cooldownBars": 3,
+      "lbL": 5,
+      "lbR": 5,
+      "plotBear": true,
+      "plotBull": true,
+      "plotHiddenBear": false,
+      "plotHiddenBull": false,
+      "rangeLower": 5,
+      "rangeUpper": 60,
+      "showBG": true,
+      "slMult": 2.0,
+      "tpMult": 3.0,
+      "useTPSL": true
+    }
+  },
+  "qualification_evidence": [
+    "strategies/t3_bandpass_v1/qualification.json",
+    "tests/check_m03_selected_reference.py"
+  ],
+  "qualification_report_sha256": "a5ee87596e80abb709c6c4356bfa2bf33324462fc2fbf0865171ef8483122cf5",
+  "qualified_total_candle_count": 386,
+  "research_provenance": {
+    "combination_id": "1e603e3d-f5e3-4bad-9f1e-4c4d4d699f7a",
+    "confirmation_average_win_percentage": 61.088396827503814,
+    "confirmation_result_id": "c57fa6f9-894b-47e4-9630-b1f1020b1c65",
+    "dataset": {
+      "artifact": {
+        "id": "10af4730-f56b-418c-a7b8-c4e27bed594d",
+        "sha256": "d9807930cd21302d33a69d7476d8504e76a2ea69afa315b99daea64a4160fdfd"
+      },
+      "id": "d965d1fe-37c2-424c-8047-454650f1a3b1",
+      "manifest_sha256": "d9807930cd21302d33a69d7476d8504e76a2ea69afa315b99daea64a4160fdfd",
+      "members": [
+        {
+          "member": {
+            "id": "df77fc42-e037-40a0-a6ca-181f54e7504d",
+            "sha256": "b44745c3024fa06def28a8088a27124e0d0489052ea3bd05a7b9eb0fca701925"
+          },
+          "pair": "EUR/USD"
+        },
+        {
+          "member": {
+            "id": "07bbec41-e459-4872-878a-ba4e3644737a",
+            "sha256": "7e5c86cbacefc4a132eb0893595b943903317b607000da901e2f7994c4ef3cbd"
+          },
+          "pair": "EUR/GBP"
+        },
+        {
+          "member": {
+            "id": "50076670-5bd3-4cad-8a0c-31acac563a33",
+            "sha256": "9b44978f3a933e704b4fd70ed88ad1799c82acf44029e7b4387337819f144251"
+          },
+          "pair": "AUD/NZD"
+        },
+        {
+          "member": {
+            "id": "5fb97921-b62f-473b-a5a6-b5cfb9e74f6a",
+            "sha256": "59ba6adf51801b11fb52c50b922e83de10f60a27721150637bf570fe599b4c0e"
+          },
+          "pair": "CHF/JPY"
+        }
+      ]
+    },
+    "pine_dependency": {
+      "id": "f40238c0-8244-4db6-b5e5-adbdd5b2b4ec",
+      "path": "inputs/dependencies/pine_compat_v1.py",
+      "sha256": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+      "source_commit": "0e500dc207815231fc84702c2a6179f53292b927"
+    },
+    "plan_artifact": {
+      "id": "fc7ae552-42ba-438d-b464-02a81f86f9fe",
+      "sha256": "bb38a6813c705f50aec39ae423c32cf5f9bcbaa3d7c47482c24aeff5ee00f96f"
+    },
+    "plan_id": "abf36947-5a19-4b49-8aba-9508f28a0517",
+    "result_artifact": {
+      "id": "036d7189-bd72-45f7-a0db-6e296c98c541",
+      "sha256": "e74395dfeaf7ec572d6a37aeebf53ba8780d2876423255cf892b8038ca557412"
+    },
+    "roles": {
+      "c1": {
+        "candidate": {
+          "id": "3c66f81d-f2c5-45bc-94a2-69ef5ee933fc",
+          "sha256": "0fdc388c9fd631bf5c9a8b28c5a90106301d6d99c0227c4859c090e44439fe53"
+        },
+        "conversion": {
+          "id": "79cd4b99-8c5f-481a-a5f6-e62931bcce2a",
+          "sha256": "8d43bdbbebf757fc628aa5077b99ac371eee25bc8c7da8b2303cccd42a58f23a"
+        },
+        "publication": "https://www.tradingview.com/script/Pzkuyy7y-STD-Adaptive-T3-Channel-w-Ehlers-Swiss-Army-Knife-Mod-Loxx/",
+        "source": {
+          "id": "be92045c-f307-4243-8e26-c87e42e53b6e",
+          "sha256": "e5a95a07b5284145413e25223b8c384f554c75644f78fdf87dfe7cd32ca22c57"
+        },
+        "source_version_id": "fedd8317-d54e-4763-8e7f-f578537ffc29",
+        "title": "STD-Adaptive T3 Channel w/ Ehlers Swiss Army Knife Mod. [Loxx]"
+      },
+      "exit": {
+        "candidate": {
+          "id": "a1e29ac4-9716-45ef-9e54-8f413a12c826",
+          "sha256": "fe3ad86f245a78ac554a5a63e064ae0514791fcdac1a26ca9d4aa28d78960c7d"
+        },
+        "conversion": {
+          "id": "52bb93b7-ce99-4f76-9564-137ed39d7213",
+          "sha256": "99d8290be259a912b21c124a5809ac8b5a302e36fceea703fcdfbfdd09310e93"
+        },
+        "publication": "https://www.tradingview.com/script/KnEaBOOd-blackcat-L2-Ehlers-Bandpass-Filter/",
+        "source": {
+          "id": "492ee3a2-6433-4eaf-9472-f89e2a410eec",
+          "sha256": "3f404d33b12eccf71c89f810cfa7c6dc553815ca32310383944e36998546a414"
+        },
+        "source_version_id": "b41dd573-4c39-4f2e-a87f-2eb124c58aaa",
+        "title": "[blackcat] L2 Ehlers Bandpass Filter"
+      }
+    },
+    "standards": [
+      {
+        "binding": {
+          "id": "3497adb5-8a7c-42ad-bf87-d4b389bcc43d",
+          "sha256": "3c3544bc9af29fa249ad828e2cb30a7c3e0b0d57f461734144cd7cb9141f7ee5",
+          "version": 1
+        },
+        "name": "exit_assessment"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "assessment_reference"
+      },
+      {
+        "binding": {
+          "id": "8b037fb4-5725-4aea-839d-9e69383abd2b",
+          "sha256": "957f6446e4e82086214ece87c9628d7d82ac71231b86b68181dcb4cd10c3c0f5",
+          "version": 1
+        },
+        "name": "exit_signal"
+      },
+      {
+        "binding": {
+          "id": "35b7a0d4-b517-4df8-9b04-8a5bf880f0b9",
+          "sha256": "7e27f670eb9cb5fbdcd8ecf48933815170575de17d2bb83caeae6b317992d897",
+          "version": 9
+        },
+        "name": "exit_signal_reference"
+      },
+      {
+        "binding": {
+          "id": "d56e9db2-c9fc-4e36-9904-fd9b225402d8",
+          "sha256": "a05ca238bb24a79020e22f5ab9736e0adeb8c82f1f4ea0bebbaf7b02c69c935c",
+          "version": 10
+        },
+        "name": "c1_signal"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "c1_assessment"
+      }
+    ],
+    "total_research_pips": 6258.300000000011
+  },
+  "research_result_id": "a3d408b1-b645-4b38-b3cd-a423e5c8d4a9",
+  "signal_rules": {
+    "c1": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "aa68ef8c-4c33-402a-a1e7-886fb41acf6f",
+        "short_output_id": "d92727a1-8c7a-4147-96a6-d936ffab1f20"
+      },
+      "evidence": {
+        "id": "28b5516f-b127-4a90-8600-5cc96b7c2b3f",
+        "sha256": "8fdb7e97b8de5a71586257d0025e7847bd73d8bc840ff6f3cd2d82d1d80c1c89"
+      },
+      "id": "a53e86e2-845e-4ee8-ba59-fb6d763bcfa2",
+      "proposal_rule_key": "rule_set_1"
+    },
+    "exit": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "fdf46d9e-ed32-4b35-a35c-a76be3f59b82",
+        "short_output_id": "9162d6c9-cfbe-415c-929f-4348a4e7462e"
+      },
+      "evidence": {
+        "id": "e6cb9290-c40e-4f13-b618-70c323562f2c",
+        "sha256": "9ebf64aabf5c28b948cde3d7009b36b3fcded7f6c83214a8791922e7d0c06d19"
+      },
+      "id": "c277fa0e-233f-4089-9294-29d263b2936a",
+      "proposal_rule_key": "rs_exit_directional_entries"
+    }
+  },
+  "source_commit": "40e27cfabb4130702716ec1e41db7fbbf6e0f404",
+  "strategy_version": "t3_bandpass_v1"
+}

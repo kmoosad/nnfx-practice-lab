@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from 'macros.html' import rules, refresh, value %}
+{% block content %}
+{% for v in views %}<section class="panel"><h2><a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
+{% if v.error %}<p class="error">{{ v.error }}</p>{% else %}{{ rules(v) }}{{ refresh(v) }}
+<div class="table-wrap"><table><thead><tr><th>Reporting period</th><th>Balance</th><th>Realised profit</th><th>Realised loss</th><th>Common snapshot / refresh</th></tr></thead><tbody>
+{% for period, report in v.reports.items() %}<tr><td>{{ period|title }}</td>{% if report %}<td>{{ value(report.balance) }} {{ report.home_currency }}</td><td>{{ value(report.realised_profit) }} {{ report.home_currency }}</td><td>{{ value(report.realised_loss) }} {{ report.home_currency }}</td><td>{{ report.snapshot_id }} / {{ report.boundary }}<br>{{ report.refreshed_at|ny }}</td>{% else %}<td colspan="4">Unavailable{% if period == 'ordinary' %} — notebook unactivated{% endif %}</td>{% endif %}</tr>{% endfor %}
+</tbody></table></div>{% endif %}</section>{% endfor %}{% endblock %}

@@ -1,0 +1,12 @@
+/.env
+/.env.*
+!/.env.example
+/config.toml
+/var/
+/.venv/
+__pycache__/
+*.py[cod]
+*.sqlite3*
+/build/
+/dist/
+*.egg-info/

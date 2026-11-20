@@ -1,0 +1,6 @@
+[[experiments]]
+controller_id = "practice-a"
+notebook_id = "notebook-a"
+notebook_name = "Practice A"
+strategy_version = "select-a-qualified-version"
+connection_key = "PRACTICE_A"

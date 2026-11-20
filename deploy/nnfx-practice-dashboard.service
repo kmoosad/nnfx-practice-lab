@@ -1,0 +1,35 @@
+[Unit]
+Description=NNFX observational dashboard
+After=network.target
+
+[Service]
+Type=exec
+User=nnfx-view
+Group=nnfx-read
+WorkingDirectory=/opt/nnfx-practice
+ExecStart=/opt/nnfx-practice/.venv/bin/python -m nnfx_practice.serve --root /var/lib/nnfx-practice --host 0.0.0.0 --port 8879
+Restart=no
+UMask=0077
+Environment=PYTHONDONTWRITEBYTECODE=1
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ReadOnlyPaths=/var/lib/nnfx-practice
+InaccessiblePaths=-/var/lib/nnfx-practice/.env /run/systemd /run/dbus /usr/bin/systemctl /usr/bin/sudo
+IPAddressDeny=any
+IPAddressAllow=localhost
+IPAddressAllow=link-local
+IPAddressAllow=10.0.0.0/8
+IPAddressAllow=172.16.0.0/12
+IPAddressAllow=192.168.0.0/16
+IPAddressAllow=fc00::/7
+SocketBindDeny=any
+SocketBindAllow=tcp:8879
+SystemCallFilter=~@mount @reboot @swap connect
+SystemCallErrorNumber=EPERM
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

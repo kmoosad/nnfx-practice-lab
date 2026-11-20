@@ -1,0 +1,20 @@
+[Unit]
+Description=NNFX practice controller %i
+Wants=network-online.target
+After=network-online.target time-sync.target
+
+[Service]
+Type=oneshot
+User=nnfx-run
+Group=nnfx-read
+WorkingDirectory=/opt/nnfx-practice
+ExecStart=/opt/nnfx-practice/.venv/bin/python -m nnfx_practice.host --root /var/lib/nnfx-practice dispatch %i
+Restart=no
+TimeoutStartSec=infinity
+UMask=0027
+Environment=PYTHONDONTWRITEBYTECODE=1 NNFX_NOTEBOOK_READ_GROUP=nnfx-read
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/nnfx-practice/var

@@ -1,0 +1,33 @@
+{
+  "classification": "offline",
+  "identical_input_comparison": {
+    "archived_rows": 8288,
+    "assertions": "Exact converted outputs on identical inputs, accepted event directions, true ranges and sizing ATR.",
+    "synthetic_partial_snapshots": 144
+  },
+  "qualification_date": "2026-11-18",
+  "qualified_total_candle_count": 386,
+  "reference_check": "tests/check_m03_selected_reference.py",
+  "rolling_window_comparison": {
+    "archived_endpoints_per_pair": {
+      "AUD/NZD": 1687,
+      "CHF/JPY": 1687,
+      "EUR/GBP": 1687,
+      "EUR/USD": 1687
+    },
+    "criterion": "Exact current and prior accepted C1 and Exit event outputs against full history, plus exact current sizing ATR.",
+    "shorter_counts_rejected": {
+      "first": 15,
+      "last": 385
+    },
+    "shorter_example": {
+      "count": 385,
+      "endpoint": "2019-05-14T21:00:00Z",
+      "full_history": false,
+      "operand": "prior shortEntry",
+      "pair": "EUR/USD",
+      "short_window": true
+    },
+    "sweep_sha256": "cdb88832aa845fa632af5b2cda5104a3d6cea823ef12a419dd1b4bafad23b900"
+  }
+}

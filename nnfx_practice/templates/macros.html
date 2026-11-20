@@ -1,0 +1,30 @@
+{% macro value(amount) -%}<span class="{{ amount|tone }}">{{ amount|number(signed=true) }}</span>{%- endmacro %}
+{% macro rules(v) %}
+<p>Controller <a href="{{ url_for('controllers') }}#{{ v.experiment.controller_id }}">{{ v.experiment.controller_id }}</a> · Strategy {{ v.binding.strategy_version }} · {{ v.binding.lookback_candles }} candles</p>
+<dl class="rules">{% for name, rule in v.manifest.get('signal_rules', {}).items() %}<div><dt>{{ name|upper }}</dt><dd>
+{% if rule is mapping %}
+{% set source = v.manifest.get('research_provenance', {}).get('roles', {}).get(name, {}) %}
+{% set outputs = v.manifest.get('output_bindings', {}).get(name, {}) %}
+{{ source.get('title', name|upper) }} · Rule {{ rule.get('id', 'Unavailable') }}
+<small>{{ rule.get('definition', {}).get('form', 'Unavailable') }} · Long {{ outputs.get('long', {}).get('python_name', 'Unavailable') }} · Short {{ outputs.get('short', {}).get('python_name', 'Unavailable') }}</small>
+{% if name == 'exit' %}<small>Long Exit event closes shorts; short Exit event closes longs.</small>{% endif %}
+<details><summary>Stored rule definition</summary><pre>{{ rule.get('definition', {})|tojson(indent=2) }}</pre></details>
+{% else %}{{ rule }}{% endif %}</dd></div>{% else %}<div><dt>Signal rules</dt><dd>Unavailable</dd></div>{% endfor %}</dl>
+<details><summary>Fixed strategy parameters</summary><pre>{{ v.manifest.get('parameters', {})|tojson(indent=2) }}</pre></details>
+{% endmacro %}
+{% macro refresh(v) %}
+{% if v.report %}<p>Last successful refresh <time>{{ v.report.refreshed_at|ny }}</time> · Age {{ v.refresh_age }} · Snapshot {{ v.report.snapshot_id }} · Boundary {{ v.report.boundary }}</p>{% else %}<p class="error">Account figures unavailable: no reconciled reporting baseline/snapshot.</p>{% endif %}
+{% if v.stale %}<p class="error">Stale: {% if v.schedule_stale %}no snapshot since expected weekday launch {{ v.expected_launch|ny }}{% else %}failed or unfinished refresh; retaining the preceding reconciled snapshot{% endif %}.</p>{% endif %}
+{% if v.refresh_problem %}<p class="error">Refresh {{ v.refresh_problem.reconciliation_status }} · {{ v.refresh_problem.snapshot_id }} · {{ v.refresh_problem.requested_at|ny }} · {{ v.refresh_problem.reconciliation_error or 'Unfinished refresh' }}</p>{% endif %}
+{% if v.latest_run %}<p>Latest run {{ v.latest_run.run_id }} · <span class="badge">{{ v.latest_run.status }}</span>{% if not v.latest_run.ended_at %} · Unfinished{% endif %} · Last progress {{ v.latest_run.last_progress_at|ny }}</p>{% if v.latest_run.refresh_error %}<p class="error">Final refresh failed: {{ v.latest_run.refresh_error }}</p>{% elif not v.latest_run.ended_at %}<p class="error">Final refresh unfinished/unconfirmed.</p>{% endif %}{% else %}<p>No recorded runs.</p>{% endif %}
+{% endmacro %}
+{% macro summary(report, label) %}
+<section class="panel"><h2>{{ label }}</h2>{% if report %}
+<p>{{ report.period|title }} · Opening {{ report.opening_snapshot_id }} → Snapshot {{ report.snapshot_id }} · Transaction boundary {{ report.boundary }} · {{ report.refreshed_at|ny }}</p>
+<dl class="totals">{% for label, amount in [('Opening balance', report.opening_balance), ('Balance', report.balance), ('Unrealised result', report.unrealised_pl), ('Realised profit', report.realised_profit), ('Realised loss', report.realised_loss), ('Financing', report.financing), ('Commission', report.commission), ('Other charges', report.other_charges), ('Cash adjustments', report.cash_adjustments), ('Net posted result', report.net_posted)] %}<div><dt>{{ label }} ({{ report.home_currency }})</dt><dd>{{ value(amount) }}</dd></div>{% endfor %}</dl>
+{% else %}<p>Unavailable{% if label == 'Ordinary experiment' %} — notebook unactivated; Q0 is not an ordinary opening balance.{% endif %}</p>{% endif %}</section>
+{% endmacro %}
+{% macro issues(v) %}
+<h3>Issues and dispositions</h3><div class="table-wrap"><table><thead><tr><th>Issue</th><th>Pair / set / leg</th><th>Status / code</th><th>Observed / resolved</th><th>Disposition</th></tr></thead><tbody>
+{% for issue in v.issues %}<tr><td>{{ issue.issue_id }}</td><td>{{ issue.pair or 'Account' }} / {{ issue.set_id or '—' }} / {{ issue.leg_no or '—' }}</td><td class="{{ 'error' if issue.status == 'open' else '' }}">{{ issue.status }} · {{ issue.code }}</td><td>{{ issue.last_observed_at|ny }}<br>{{ issue.resolved_at|ny }}</td><td>{{ issue.operator_disposition or 'Unavailable' }}</td></tr>{% else %}<tr><td colspan="5">No recorded issues.</td></tr>{% endfor %}</tbody></table></div>
+{% endmacro %}

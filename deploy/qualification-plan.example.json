@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "enabled": false,
+  "host": "api-fxpractice.oanda.com",
+  "controller_id": "practice-a",
+  "notebook_id": "notebook-a",
+  "run_id": "m10-explicit-run-id",
+  "dispatch_at": "PENDING: explicit weekday 16:50 New York expressed as a UTC ISO instant",
+  "account_binding_sha256": "PENDING: approved private-binding report digest",
+  "manifest_sha256": "PENDING: canonical bound manifest digest",
+  "code_sha256": "PENDING: installed qualification.code_identity()",
+  "config_sha256": "PENDING: deployed public config.toml SHA256",
+  "boot_id": "PENDING: current /proc/sys/kernel/random/boot_id",
+  "kernel": "PENDING: current kernel release",
+  "evidence": {
+    "strategy_qualification": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/strategy.json", "sha256": "PENDING"},
+    "account_preflight": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/account.json", "sha256": "PENDING"},
+    "candle_preflight": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/candles.json", "sha256": "PENDING"},
+    "initial_account_resolution": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/resolution.json", "sha256": "PENDING"},
+    "m09_controller_controls": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/system-controls.json", "sha256": "PENDING"},
+    "execution_authority": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/authority.json", "sha256": "PENDING"},
+    "private_connection": {"status": "pending", "path": "/etc/nnfx-practice/qualification/evidence/private-metadata.json", "sha256": "PENDING"}
+  }
+}
