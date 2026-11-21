@@ -8,12 +8,19 @@ The **21 November 08:50 Melbourne qualification run failed** during GBP-CAD
 entry. OANDA confirmed one short fill and its on-fill stop; the controller's
 history comparison rejected five additional zero conversion-cost fields, leaving
 the notebook at cursor `2249`, with an incomplete entry and stale account figures.
-The [diagnosis and fix](#transaction-import-failure-on-21-november) are on
-`codex/diagnose-broker-transaction-import`. The exact retained-response import
+The [diagnosis and fix](#transaction-import-failure-on-21-november) are merged
+and pushed to `main` in commit `5664c32`. The exact retained-response import
 passes offline with the broader field-aware fix, retaining the incomplete-entry/
 operator block. All **520 offline tests pass**; schema 3 retains original response
 variants and requires a compatible dashboard reader before writer migration.
 **The trading fix is not deployed and the existing issue is not resolved.**
+The owner's subsequent close-command run reached OANDA, but the initial account
+GET returned HTTP 520. No close was sent. Public API checks recovered by
+**21 November 12:19 Melbourne**; at **12:27 Melbourne**, the authenticated
+account GET returned **HTTP 503: system under maintenance**. Account/trade
+state and closure remain unverified. The
+[API investigation](#transaction-import-failure-on-21-november) retains the
+responses, comparison checks and restored schedule inspection.
 
 The owner authorized [scoped dashboard deployment access](#scoped-dashboard-deployment-access)
 for `codexdev`. The corrected one-time setup and the
@@ -162,7 +169,7 @@ offline evidence. Actual two-leg execution and charge mapping remain pending.
 | M07 master workflow, entry loop and operator disposition | Implemented offline. All 264 baseline tests passed again before M08 |
 | M08 observational dashboard | Implemented offline. All 294 tests passed, including 30 M08 checks. Ready for owner review |
 | M09 host operation and maintenance exclusion | Startup, refreshed essential system/maintenance controls and dashboard isolation/WAL passed on -43; actual dashboard/notebook and LAN agreement passed. Prior -42 scheduled-window unattended context remains unconfirmed; keep kernel/window scopes separate. Ordinary timer disabled |
-| M10 practice qualification and ordinary activation | Automatic qualification deployed; 21 November run failed after a GBP-CAD fill and on-fill stop. Broader import fix verified offline on the diagnosis branch, not deployed; incomplete entry remains operator-owned. Final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
+| M10 practice qualification and ordinary activation | Automatic qualification deployed; 21 November run failed after a GBP-CAD fill and on-fill stop. Broader import fix verified offline and merged to main, not deployed; incomplete entry remains operator-owned. Final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
 
 ## Transaction import failure on 21 November
 
@@ -257,8 +264,165 @@ read the new version. The corrected collector remains usable with the installed
 schema-2 package before deployment. Do not rerun the initial installer or automatic
 migration, replay this run, complete Trade 2 or clear the issue automatically.
 The existing partial set requires operator handling with fresh broker evidence
-and the normal maintenance disposition. The branch fix alone does not update
+and the normal maintenance disposition. The merged fix alone does not update
 the dashboard's saved figures or establish current protection. M10 remains open.
+
+**Merge and owner-requested exit.** The owner approved merging the broader fix
+and closing the failed entry's remaining trade. Commit `5664c32` is fast-forwarded
+into local `main` and pushed to `origin/main`. The pre-existing Tailscale document
+edits remain uncommitted and were not included. All 49 verified application/resource
+files still match the 520-test verification. No runtime deployment occurred.
+
+The incident-only [administrator close command](../tests/close_failed_gbpcad_2251.py)
+is pinned to the investigated account fingerprint and trade `2251`. It checks the
+fresh account and original trade identity, excludes controller launches using the
+existing dual-timer maintenance boundary, and durably records an attempt before
+sending the [OANDA trade-specific close](https://developer.oanda.com/rest-live-v20/trade-ep/).
+It sends `ALL` only for this remaining short trade. It retains redacted replies,
+verifies the closed trade against its closing fill, and restores prior timer state.
+Already-closed trades require only reads; subsequent invocations never submit a
+second request, including after a rejection, interruption or lost response.
+The command does not open/migrate/write the notebook or clear its issue.
+
+The [15 offline operator-close checks](../var/verification/operator-close-2251/preparation/tests.log)
+pass, including the native practice transport with mocked network replies.
+The command also imports with the installed interpreter/package. The attempted
+administrator invocation was denied by the host's existing `codexdev` sudo policy;
+**no broker request was sent and closure is not confirmed**. The owner has been
+asked to run the prepared command from the `serveradmin` terminal:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/tests/close_failed_gbpcad_2251.py
+```
+
+Its printed output identifies a private, owner-readable result/evidence export.
+Protected attempt evidence stays under the deployed data directory. After the
+earlier publication block, the owner requested committing and pushing the
+completed changes on 21 November. The requested publication includes the incident
+helper, its offline tests and this investigation record. Raw broker responses and
+private connection settings remain outside version control.
+
+**Administrator attempt and helper correction.** The owner ran the initial
+command. Its [saved result](../var/verification/operator-close-2251/inspection-43da4997d82e/result.json)
+reports `inspection_required` / `ConfigurationError`, with no request or response
+artifacts. The installed settings loader requires its caller's real UID to own
+the private `.env`; loading as root fails that check for the service-owned file.
+The initial helper's offline tests did not exercise that administrator boundary.
+No broker request or notebook change was performed by this failed configuration
+load, and the trade's current broker state remains unconfirmed.
+
+The corrected command retains the same invocation above. The administrator
+launches a temporary root-owned helper copy as `nnfx-run`, matching the existing
+deployment tools. That worker loads its own private configuration and performs
+maintenance/broker operations; the administrator only exports the redacted
+result. Credential ownership and permissions stay unchanged. Errors now identify
+the failing phase without copying private exception text. The
+[21 offline checks](../var/verification/operator-close-2251/worker-identity-fix/tests.log)
+include the real owner-only settings check followed by a simulated close under
+the matching identity, sealed-copy launch/cleanup, timeout handling, and the
+previous rejection/uncertainty/no-duplicate cases. The installed-interpreter
+entry point also rejects the wrong service identity before loading credentials.
+All 49 application/resource files remain identical to the merged fix's verification.
+These offline checks make no broker requests.
+
+**Corrected administrator execution: API unavailable.** The owner ran the
+corrected command at **21 November 10:26 Melbourne / 20 November 23:26 UTC**.
+Its [result and retained account response](../var/verification/operator-close-2251/inspection-00bac9af84b6/result.json)
+show `inspection_required` / `BrokerError` at `account_close`. The sole request
+was `GET /summary`, which returned **HTTP 520**, no OANDA request ID and no JSON
+body. No close attempt claim or mutation was created. The trade's current state,
+protection and closure could not be verified; the notebook and issue are unchanged.
+
+An independent, unauthenticated `GET /v3/accounts` from the same host at
+23:27:10 UTC also returned 520, with Cloudflare's plain-text `error code: 520`
+response and ray `a5db3943fcaea768-SYD`. The
+[probe and verification](../var/verification/operator-close-2251/api-unavailable-20261121/verification.json)
+retain these observations. Cloudflare's
+[520 definition](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/)
+identifies an empty or unexpected origin-server response. This establishes an
+API availability failure from this host; its exact cause, geographic extent and
+recovery time are not established. The public OANDA maintenance notice found
+concerned 7 November and does not explain this event.
+
+Read-only systemd inspection confirms the controller is loaded/unmasked, retains
+its prior failed-run state and has no pending job. Ordinary scheduling remains
+disabled/inactive. Automatic qualification is enabled/active/waiting, next due
+**24 November 08:50 Melbourne / 23 November 21:50 UTC**. Maintenance restored the
+normal schedule. The authorized close requires fresh broker reads once the API
+responds normally. Coordinated fix deployment and evidence-backed notebook
+disposition remain pending; preserve the actual fill/exit history.
+
+**520 investigation and public-path recovery.** Further investigation at the
+owner's request confirms that the deployed broker module and checkout module
+are byte-identical. The retained failed-run capture contains **23 successful
+HTTP responses** (22 HTTP 200, one HTTP 201), including two successful
+`GET /summary` requests at 21:50 UTC. The run's import/comparison error was local
+and distinct from the later HTTP 520 account-read failure.
+
+At **21 November 01:19:21 UTC / 12:19 Melbourne**, two independent public probes
+from the same host received JSON **HTTP 401**, each with an OANDA `RequestID`.
+This is the [expected response to omitted authentication](https://developer.oanda.com/rest-live-v20/troubleshooting-errors/),
+not a test of the real token. Python used TLS 1.3/HTTP 1.1 and curl used HTTP 2,
+reaching the two normally resolved Cloudflare addresses. Certificate validation
+passed and no proxy environment was configured. The plain-text 520 was no
+longer reproduced; the market was still closed. The
+[investigation evidence](../var/verification/oanda-520-investigation-20261121/investigation.json)
+retains timing, response headers, Cloudflare rays, TLS results, source hashes
+and the earlier successful-summary comparison.
+
+These observations support a **transient OANDA/Cloudflare API-path failure**.
+They do not identify the precise upstream cause or demonstrate continuous
+unavailability between observations. The published 7 November maintenance
+notice is unrelated; a separate European CFD crypto notice for 21 November
+08:00–11:00 UTC has a different scope and time. Weekend maintenance remains
+unconfirmed. OANDA's [Australian trading hours](https://www.oanda.com/au-en/trading/hours-of-operation/)
+prevent executing the exit while the market is closed; the next scheduled FX
+open is **23 November 09:05 Melbourne / 22 November 22:05 UTC**.
+
+The local incident helper now supports `--inspect-only`. This mode supplies no
+native mutation guard and reads account/trade evidence without a close attempt,
+notebook change or issue disposition. HTTP read failures now expose their status
+and endpoint without private exception text. All **24 focused offline checks**
+pass, including propagation of the read-only option through the administrator
+worker and rejection of any close attempt in that mode. The installed-interpreter
+entry point rejects the wrong service identity before credential access. The
+owner has been asked to run the read-only inspection because the protected
+credentials still require the trading service identity:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/tests/close_failed_gbpcad_2251.py --inspect-only
+```
+
+Public routing recovery did not establish authenticated account recovery or the
+trade's current state. No additional close request, deployment or publication
+was performed by this investigation.
+
+**Authenticated inspection: maintenance explicitly confirmed.** The owner ran
+`--inspect-only`. At **21 November 12:27:13 Melbourne / 01:27:13 UTC**, the sole
+new request was `GET /summary`. OANDA returned **HTTP 503**, request ID `0`, and
+`{"errorMessage":"System under maintenance, please try again later."}`. The
+[authenticated verification](../var/verification/oanda-520-investigation-20261121/authenticated-maintenance.json)
+and [saved inspection](../var/verification/operator-close-2251/inspection-4dce795296cb/result.json)
+retain the response and hashes. The response log is cumulative: its two earlier
+520 request/response records are preserved alongside the two new 503 records.
+No close claim or mutation was created, and no trade GET was reached. The
+notebook and issue remain unchanged.
+
+This directly confirms **maintenance blocking authenticated account access**,
+even though public requests already reached the authentication service. It makes
+maintenance a likely explanation for the earlier 520, without proving that both
+responses have the same upstream cause. Fresh account/trade verification must
+wait for maintenance to finish. The authorized exit still requires current broker
+state and an open market; it has not been executed or queued.
+
+**Publication verification.** The combined offline suite passes **544 tests** in
+[the final publication log](../var/verification/publish-investigation-20261121/full-suite.log),
+including all 24 operator-helper checks and the 520-test reconciliation baseline.
+All 49 application/resource files retain their previously verified hashes; this
+follow-up publishes the operator tool, tests and investigation record without a
+runtime deployment, notebook migration or broker mutation.
 
 ## Controller wording update
 
