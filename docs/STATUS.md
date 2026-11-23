@@ -1,26 +1,39 @@
 # Project status
 
-Updated 21 November 2026 (Australia/Melbourne).
+Updated 23 November 2026 (Australia/Melbourne).
 
 ## Current position
 
-The **21 November 08:50 Melbourne qualification run failed** during GBP-CAD
-entry. OANDA confirmed one short fill and its on-fill stop; the controller's
-history comparison rejected five additional zero conversion-cost fields, leaving
-the notebook at cursor `2249`, with an incomplete entry and stale account figures.
-The [diagnosis and fix](#transaction-import-failure-on-21-november) are merged
-and pushed to `main` in commit `5664c32`. The exact retained-response import
-passes offline with the broader field-aware fix, retaining the incomplete-entry/
-operator block. All **520 offline tests pass**; schema 3 retains original response
-variants and requires a compatible dashboard reader before writer migration.
-**The trading fix is not deployed and the existing issue is not resolved.**
-The owner's subsequent close-command run reached OANDA, but the initial account
-GET returned HTTP 520. No close was sent. Public API checks recovered by
-**21 November 12:19 Melbourne**; at **12:27 Melbourne**, the authenticated
-account GET returned **HTTP 503: system under maintenance**. Account/trade
-state and closure remain unverified. The
-[API investigation](#transaction-import-failure-on-21-november) retains the
-responses, comparison checks and restored schedule inspection.
+The failed GBP-CAD entry is **closed at OANDA, reconciled in the notebook and
+resolved by evidenced operator disposition**. The owner completed the protected
+recovery at **23 November 21:01 Melbourne / 10:01 UTC**. The actual notebook is
+now schema **3**, imported through **2259**, with leg 1 closed by fill `2257`,
+leg 2 recorded as never opened and no open issue for the pair. The incomplete
+entry, failed run, original attempt, Q0 and existing qualification claims remain
+intact; A0 is unset. The [completed recovery and independent verification](#verified-notebook-reconciliation-and-restored-schedule)
+retain the receipt, actual host checks, fresh broker response and rendered pages.
+
+Python 01 has **zero open trades, positions or pending orders**, with exact
+balance **AUD 50,000.0032**. The notebook separately records the **AUD 43.8956
+trading loss**, **AUD 6.2319 financing** and owner's **AUD 50.03 virtual funding**.
+The journal shows the actual exit at **1.87819 / -9.7 pips**, no open issues and
+one resolved issue. Its retained failed-run label is historical, not an open
+broker incident or an unfinished recovery.
+
+The compatible dashboard reader, corrected source and installed package match
+the verified 49 application/resource files. Both service identities passed native
+package imports, the refreshed essential system/maintenance/dashboard-WAL fixtures
+passed, and all fixture units/grants were removed. The **566-test offline suite**
+and native permissions reproduction remain separate preparation evidence.
+The original transaction-import correction was merged in `5664c32`; the additional
+qualified P/L conversion mapping and incident maintenance fixes are now deployed.
+
+**Qualification scheduling is restored**: enabled/active/waiting for the next
+regular run at **24 November 08:50 Melbourne / 23 November 21:50 UTC**. The
+controller is unmasked and idle with its original failed-run state retained.
+Ordinary scheduling remains disabled/inactive; no ordinary activation or trading
+run was started by maintenance. **This incident is resolved; M10 remains
+incomplete.** Do not rerun the incident deployment or recovery commands.
 
 The owner authorized [scoped dashboard deployment access](#scoped-dashboard-deployment-access)
 for `codexdev`. The corrected one-time setup and the
@@ -48,8 +61,9 @@ dashboard; the independent dashboard release above is now active. The
 owner ran the prepared migration from the serveradmin terminal on 20 November;
 the [deployment verification](#verified-m10-automatic-qualification-deployment)
 confirms its `armed` receipt, updated host-fixture pass and live schedule. The
-**427-test baseline** and **460-test isolated M10 suite** remain the offline
-verification; deployed source and package match all 43 recorded application files.
+**427-test baseline** and **460-test isolated M10 suite** retain that migration's
+offline verification and 43-file identity. The current 49-file package and
+566-test incident correction are verified in the completed recovery above.
 
 The 20 November deployment inspection confirmed automatic qualification was
 `enabled/active/waiting` for Monday–Friday at 16:50 New York, then due at
@@ -169,7 +183,7 @@ offline evidence. Actual two-leg execution and charge mapping remain pending.
 | M07 master workflow, entry loop and operator disposition | Implemented offline. All 264 baseline tests passed again before M08 |
 | M08 observational dashboard | Implemented offline. All 294 tests passed, including 30 M08 checks. Ready for owner review |
 | M09 host operation and maintenance exclusion | Startup, refreshed essential system/maintenance controls and dashboard isolation/WAL passed on -43; actual dashboard/notebook and LAN agreement passed. Prior -42 scheduled-window unattended context remains unconfirmed; keep kernel/window scopes separate. Ordinary timer disabled |
-| M10 practice qualification and ordinary activation | Automatic qualification deployed; 21 November run failed after a GBP-CAD fill and on-fill stop. Broader import fix verified offline and merged to main, not deployed; incomplete entry remains operator-owned. Final qualification and ordinary authority/A0 remain pending; ordinary timer disabled |
+| M10 practice qualification and ordinary activation | GBP-CAD incident resolved: schema-3 notebook reconciled through 2259, actual close/funding imported and issue resolved. Reader/package and affected host checks verified; qualification schedule restored. Ordinary remains disabled and A0 unset; full execution qualification remains pending |
 
 ## Transaction import failure on 21 November
 
@@ -255,17 +269,16 @@ matches all **49 application/resource files** and passes isolated import, schema
 creation and numeric comparison checks. The backend build succeeded without
 downloads after the environment's pip/build front ends were unavailable.
 
-**Remaining operational work.** The live controller still uses its qualified
-installed version. A reviewed controller deployment must preserve the notebook,
-Q0, date claims, dashboard and schedule, refresh the protected code identity and
-repeat affected host checks. **Update the separate dashboard reader before
-migrating the notebook to schema 3**; its installed schema-2-only code cannot
-read the new version. The corrected collector remains usable with the installed
-schema-2 package before deployment. Do not rerun the initial installer or automatic
-migration, replay this run, complete Trade 2 or clear the issue automatically.
-The existing partial set requires operator handling with fresh broker evidence
-and the normal maintenance disposition. The merged fix alone does not update
-the dashboard's saved figures or establish current protection. M10 remains open.
+**Operational outcome.** The [completed incident recovery](#verified-notebook-reconciliation-and-restored-schedule)
+installed and verified the compatible reader/package, preserved notebook/Q0/claims
+and the original backups, passed affected host checks, reconciled actual broker
+history and resolved the specific issue through normal operator disposition.
+The protected code identity is refreshed and the original qualification schedule
+restored. Preserve all failure and backup evidence; do not rerun the initial
+installer, automatic migration or any incident recovery, replay the failed run or
+complete Trade 2. Comprehensive M10 execution qualification and final ordinary
+authority remain separate pending work. The field-aware import fix grants no
+automatic repair or strategy change.
 
 **Merge and owner-requested exit.** The owner approved merging the broader fix
 and closing the failed entry's remaining trade. Commit `5664c32` is fast-forwarded
@@ -413,8 +426,8 @@ notebook and issue remain unchanged.
 This directly confirms **maintenance blocking authenticated account access**,
 even though public requests already reached the authentication service. It makes
 maintenance a likely explanation for the earlier 520, without proving that both
-responses have the same upstream cause. Fresh account/trade verification must
-wait for maintenance to finish. The authorized exit still requires current broker
+responses have the same upstream cause. At this inspection, fresh account/trade
+verification remained blocked. The authorized exit still requires current broker
 state and an open market; it has not been executed or queued.
 
 **Publication verification.** The combined offline suite passes **544 tests** in
@@ -423,6 +436,362 @@ including all 24 operator-helper checks and the 520-test reconciliation baseline
 All 49 application/resource files retain their previously verified hashes; this
 follow-up publishes the operator tool, tests and investigation record without a
 runtime deployment, notebook migration or broker mutation.
+
+**22 November maintenance recheck: authenticated access recovered.** At
+**22 November 19:49:31 Melbourne / 08:49:31 UTC**, a native read-only practice
+`GET /summary` returned **HTTP 200**, request ID `61573386244581878`. The local
+private binding matched the investigated account fingerprint, and the broker
+reader verified the returned account identity and currency. The preceding public
+unauthenticated request returned the expected JSON HTTP 401 with an OANDA
+request ID. The [retained check](../var/verification/oanda-maintenance-recheck-20261122/probe-084931.json)
+records both results without credentials or account figures. An earlier restricted
+connection could not resolve the hostname; that local failure is not evidence of
+an OANDA outage. This establishes account-read recovery at the observed time,
+not uninterrupted availability or order execution capability. No trade read,
+broker mutation, notebook write, issue disposition or scheduling change occurred;
+the failed entry's current protection and closure remain unverified.
+
+**22 November requested close: market closed.** Following the owner's renewed
+request to close the failed GBP-CAD entry, the
+[fresh account, trade and pricing reads](../var/verification/operator-close-2251/preclose-20261122T085302Z/read-only.json)
+all returned HTTP 200 at **22 November 19:53 Melbourne / 08:53 UTC**. The account
+fingerprint and original trade identity were checked against the incident helper.
+Trade `2251` remains `OPEN`, with `currentUnits=-42665`; its stop-loss order
+`2252` is `PENDING` at `1.88824`. GBP-CAD pricing reports
+`status=non-tradeable` and `tradeable=false`, with its last quote from
+20 November 21:59 UTC. OANDA's current
+[Australian trading hours](https://www.oanda.com/au-en/trading/hours-of-operation/)
+confirm that existing positions cannot be closed outside market hours and FX
+reopens Sunday 17:05 New York, next **23 November 09:05 Melbourne /
+22 November 22:05 UTC**. No close was sent or queued, no attempt claim was created,
+and no notebook, issue, service or schedule changed. The authorized close remains
+pending fresh broker verification when the market is tradeable.
+
+**23 November requested cleanup: market open, administrator access required.**
+The owner renewed the request to close the failed entry. At **10:50 Melbourne /
+22 November 23:50 UTC**, the
+[fresh read-only verification](../var/verification/operator-close-2251/preclose-20261122T235029Z/read-only.json)
+returned HTTP 200 for the bound Python 01 account summary, original trade,
+GBP-CAD pricing and stop order. The account fingerprint and original fill
+identity match the incident helper. Trade `2251` is still `OPEN` for
+`-42665` units; stop `2252` remains `PENDING` at `1.88824`. Current pricing
+reports `status=tradeable` and `tradeable=true`.
+
+The exact prepared close command was attempted with non-interactive sudo and
+denied by the server's existing `codexdev` sudo policy before the helper started.
+The sudo grant permits only the restricted dashboard deployment command. This
+was an operating-system access denial, not an automatic approval-review rejection.
+No broker mutation, notebook write, issue disposition or service/timer change
+occurred. Read-only systemd inspection confirms the controller remains failed
+with no pending job, ordinary scheduling is disabled/inactive, and automatic
+qualification is enabled/active/waiting for **24 November 08:50 Melbourne /
+23 November 21:50 UTC**.
+
+All **24 focused offline operator-close checks** pass again. The administrator
+command above remains ready to close only this trade, retain its actual fill and
+restore prior scheduling. Its fresh identity checks and durable claim prevent
+duplicate close submissions. Closure still requires administrator execution and
+broker confirmation; notebook reconciliation and issue disposition remain pending.
+
+**23 November administrator close: broker cleanup confirmed.** The owner ran
+the prepared command and requested verification. The
+[retained administrator result and responses](../var/verification/operator-close-2251/inspection-427a561ed3e3/result.json)
+show one durably claimed `PUT /trades/2251/close` at **11:04:13 Melbourne /
+00:04:13 UTC**. OANDA returned HTTP 200 with close order `2256`, fill `2257`
+and linked stop cancellation `2258`. The helper then reported
+`inspection_required` because its post-close `GET /trades/2251` returned
+HTTP 404 / `NO_SUCH_TRADE`; this was a verification lookup failure after the
+confirmed fill, not a rejected close. The durable attempt claim remains and
+prevents a second close submission. Do not remove or reset it.
+
+The [independent read-only verification](../var/verification/operator-close-2251/postclose-20261123T000525Z/verification.json)
+at **11:05 Melbourne / 00:05 UTC** checked the intended account fingerprint and
+fresh broker transactions. Fill `2257` has reason `MARKET_ORDER_TRADE_CLOSE`
+and closes exactly trade `2251` for all **42,665 units at 1.87819**. Against
+the original short entry at `1.87722`, this is **-9.7 pips** and **AUD -43.8956**
+trading P/L; the fill posts zero additional financing or commission. Previously
+posted financing remains separate. Cancellation `2258` names stop order `2252`
+with reason `LINKED_TRADE_CLOSED`.
+
+The fresh full account response through `2258` confirms **zero open trades,
+zero open positions, zero pending orders and zero unrealised P/L**, with balance
+**AUD 49,949.9732**. The trade-detail endpoint still returns 404; closure is
+established by the matching closing transaction and account state together.
+Read-only systemd inspection confirms the helper restored the prior schedule:
+the controller is loaded, failed and idle with no pending job; ordinary scheduling
+is disabled/inactive, and automatic qualification is enabled/active/waiting,
+next due **24 November 08:50 Melbourne / 23 November 21:50 UTC**.
+
+No additional broker mutation, notebook write, schema migration, issue disposition
+or trading-fix deployment was performed during verification. The open-position
+cleanup is complete at OANDA. The notebook and dashboard still require the
+coordinated reader/controller deployment, reconciliation and evidence-backed
+operator disposition already recorded above; M10 remains incomplete.
+
+## Notebook reconciliation for the closed GBP-CAD trade
+
+On 23 November the owner requested reconciliation and resolution of the closed
+GBP-CAD issue, then reported adding AUD 50.03 of virtual funds. Native read-only
+[account and history responses](../var/verification/operator-close-2251/history-20261123T001051Z.json)
+at **11:10 Melbourne / 00:10 UTC** confirm transaction `2259` is `TRANSFER_FUNDS`
+for `50.0300000000`, with current balance **AUD 50,000.0032**. Transactions
+`2253`–`2255` retain the actual financing, and `2256`–`2258` retain the operator
+close and stop cancellation. No broker mutation or notebook write was made by
+these reads. Funding is a cash adjustment, not a trading gain.
+
+**Additional accounting qualification.** The first offline rehearsal correctly
+blocked history fill `2257`: its P/L conversion disclosures are nonzero
+(`-0.42844810179192`), unlike the earlier zero-only entry evidence. The existing
+merged fix did not qualify this shape. The [reconciliation policy](DETAILED_DESIGN.md#reconciliation-procedure)
+now qualifies matching single-close P/L conversion disclosures with zero other
+conversion components, numeric equality, valid account balance and matching
+per-trade realised P/L. Retain these amounts without a second ledger debit.
+[OANDA Australia's settlement-rate explanation](https://help.oanda.com/au/en/faqs/home-currency-conversion.htm)
+includes the conversion fee in the rate applied to P/L; the actual broker balance
+movement independently confirms `49993.8688 - 43.8956 = 49949.9732` for this
+account. Other nonzero conversion shapes remain blocked. Four focused regression
+checks cover retention, numeric/sparse echoes, invalid or inconsistent shapes,
+no double posting and unexplained-balance rollback. Strategy and order rules
+are unchanged.
+
+**Verified offline result.** The [exact-evidence rehearsal](../var/verification/operator-reconcile-2251/replay-result.json)
+reconstructs the exported schema-2 notebook in a temporary fixture, migrates it,
+and runs the normal `record_disposition` against the fresh retained account and
+history. It imports through `2259`, closes leg 1 at `1.87819` through fill `2257`,
+records leg 2 as never opened, releases the set reservation and resolves the
+specific incomplete-entry issue. The original failure evidence, incomplete set,
+failed run, committed entry attempt and Q0 remain intact. Repeating the normal
+disposition adds neither broker reads nor postings. This is an offline rehearsal,
+not a write to the real notebook or proof of deployed reconciliation.
+
+| Qualification account component | Exact AUD amount |
+| --- | ---: |
+| Original Q0 balance, retained | 50000.1007 |
+| Realised trading loss | -43.8956 |
+| Financing | -6.2319 |
+| Added virtual funding, separately recorded | +50.0300000000 |
+| Reconciled balance through `2259` | 50000.0032 |
+
+The [full offline suite](../var/verification/operator-reconcile-2251/full-suite.log)
+passes **555 tests**. The final [seven operator checks](../var/verification/operator-reconcile-2251/operation-tests.log)
+also pass, including administrative ordering and a host-fixture failure that
+withholds the actual notebook write and leaves controller launches excluded.
+The [frozen preparation](../var/verification/operator-reconcile-2251/preparation.json)
+records all 49 source/package hashes, isolated schema-3 package import and the
+verified wheel. The incident-only [maintenance helper](../deploy/reconcile_gbpcad.py)
+backs up notebook/WAL/SHM and prior code/plan, deploys the compatible reader
+before any schema migration, updates the importer/package and dashboard
+deployment fingerprints, reruns affected broker-free host fixtures, and runs
+the normal GET-only disposition as `nnfx-run`. It preserves Q0, all prior
+claims/captures, failed-run history, automatic run prefix, authority and schedule;
+ordinary activation remains unset. Success restores the prior timer states.
+Failure after exclusion retains the archive and leaves timers stopped with the
+controller masked for inspection; do not rerun blindly or roll back schema-3 data
+to the older writer.
+
+**Initial administrator handoff, retained as history.** The exact non-interactive command
+was denied by the existing `codexdev` sudo policy before the helper started.
+This was an operating-system access denial, not an automatic approval-review
+rejection. The owner subsequently ran the following command. **Do not rerun it**;
+its completed steps and retained failure require the continuation below:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/gbpcad-reconciliation-20261123/deploy/reconcile_gbpcad.py
+```
+
+### Administrator attempt and verified continuation
+
+At **23 November 13:46:56 Melbourne / 02:46:56 UTC**, the owner's administrator
+execution [retained this failure result](../var/prepared/gbpcad-reconciliation-20261123/var/verification/gbpcad-reconcile-1c86fd008419/result.json):
+`inspection_required`, phase `compatible_reader_deployed`, error type
+`RuntimeError`. It created the original protected backup/archive, deployed
+`dashboard-schema3-5c8d7916787e3c60`, and copied all 49 verified source files.
+The notebook disposition worker and later host-fixture stage were not reached.
+The original receipt and frozen package remain unchanged.
+
+**Cause and current checkpoint.** Preparation renamed the valid distribution
+wheel to `package.whl`. Pip rejects that name before installation; a native
+read-only dry run reproduces `Invalid wheel filename (wrong number of parts)`.
+The prior tests mocked pip and missed its filename contract. Read-only inspection
+confirms corrected source identity
+`752b8c10867eddd687c3909678da935bc23b13a5f9cd8f6fb6c08c42e8daeb8e`, but the
+installed package still has its original schema-2 identity `e8eba7f1...`. The
+deployed reader's `notebook.py` matches the verified compatible source. The
+dashboard is active; the notebook has not been migrated/reconciled. Both timers
+are inactive, ordinary remains disabled, qualification remains enabled, and the
+controller is idle/failed and runtime-masked with no pending job. The failure
+left the documented exclusion in place and did not submit a broker mutation.
+
+**Corrected preparation.** The incident helper now rejects an invalid distribution
+filename before any live changes and retains package/fixture step output in its
+protected archive. The separate
+[continuation](../deploy/continue_gbpcad_reconciliation.py) accepts only the exact
+retained failure receipt and pre-write notebook checkpoint. It verifies the old
+package identity, unchanged original plan, backup DB/WAL bytes, notebook rows,
+completed reader release and service restrictions before installing the same
+wheel under its original valid filename. It uses a new evidence archive and
+preserves the prior backup and failure receipt. It then resumes the already
+verified host checks, normal GET-only disposition and original schedule
+restoration; it does not repeat the reader deployment or original migration.
+
+The [full updated suite](../var/verification/operator-reconcile-2251/continuation-full-suite.log)
+passes **559 offline tests**. Its 11 operator checks include initial and
+continuation ordering, preserved reader/old receipt, invalid-wheel refusal,
+checkpoint mismatch refusal and exclusion after a host-fixture failure. The
+[native pip dry run](../var/verification/operator-reconcile-2251/wheel-filename-verification.json)
+accepts `nnfx_practice-0.1.0-py3-none-any.whl` with the unchanged wheel hash
+`bb7ed3dd41cd821284c7207688e451c9190a90f8f72969b1bc0cafc8ef3805e0` and performs
+no installation. The [new frozen preparation](../var/verification/operator-reconcile-2251/continuation-preparation.json)
+binds the exact original receipt, source/package and continuation hashes. The
+financial mapping and offline reconciliation result above are unchanged.
+
+The agent's continuation invocation was also denied by `codexdev`'s existing
+sudo policy before it started. This is a server access limitation, not an
+automatic approval-review rejection. From the `serveradmin` terminal, run:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/gbpcad-reconciliation-continuation-20261123/deploy/continue_gbpcad_reconciliation.py
+```
+
+Allow a few minutes for broker-free system checks. Require its exported
+`status: reconciled_and_resolved`, then verify the live notebook, dashboard and
+restored schedules. The printed result is owner-readable beneath the new frozen
+directory's `var/verification`; original backups and detailed read evidence stay
+protected. That continuation was subsequently executed and stopped as recorded
+below. **Do not rerun it.**
+
+### Permissions repair before notebook reconciliation
+
+The owner ran the continuation at **23 November 19:38 Melbourne / 08:38 UTC**.
+Its [saved result](../var/prepared/gbpcad-reconciliation-continuation-20261123/var/verification/gbpcad-continue-6a8d0b04c443/result.json)
+reports `inspection_required` at `checking_host_controls`. Package installation
+completed and all **49 installed/source hashes** matched, but the first synthetic
+writer (`initialize`) failed before fixture units were installed. The owner
+exported the [command output](../var/verification/operator-reconcile-2251/host-fixture-command.json)
+and [full fixture report](../var/verification/operator-reconcile-2251/controller-controls.json).
+The report confirms `actual_notebook_files_preserved=true`, `cleanup_errors=[]`,
+zero remaining fixture unit files and no broker requests. No notebook migration,
+disposition worker or protected plan update occurred.
+
+**Observed permission defect.** The incident administrator used `umask 077` for
+private evidence. Pip and the fixture stager inherited it when creating public
+code directories. Inspection confirms mode `700` on both installed application
+package directories and the staged fixture-worker directory. An unprivileged
+isolated import cannot read the installed package. This is a deployment-helper
+defect, separate from the broker transaction comparison. The compatible dashboard
+reader continues to run. Both timers remain inactive, qualification is still
+enabled and ordinary disabled, and the controller is idle/failed and runtime-masked.
+
+The [native temporary-install reproduction](../var/verification/operator-reconcile-2251/permissions-native-replay.json)
+installs the same wheel into a disposable target with umask 077 and reproduces
+the mode-700 directories. The scoped repair restores public directories to 755
+and files to 644, preserving all 49 application hashes and touching no actual
+installed package or notebook during this replay. Production repair checks all
+49 application hashes and every targeted path's ownership, type, link count and
+expected mode before changing permissions. It covers only this wheel's two application packages and
+distribution metadata. Credentials, notebook files, dependencies and the Python
+runtime are excluded. Future pip installation explicitly uses child umask 022;
+private parent evidence retains 077. Fixture worker staging explicitly sets its
+public directory mode and copied script modes.
+
+The [final recovery entry point](../deploy/finish_gbpcad_reconciliation.py) is
+pinned to this exact second failure receipt and its verified cleanup/preservation
+report. It retains both prior archives and the original DB/WAL backup, checks
+that the actual notebook still matches, repairs only the installed public-code
+permissions, and verifies isolated imports as **both `nnfx-run` and `nnfx-view`**.
+It performs no package reinstall or reader redeployment. It then repeats the
+affected host fixtures with the corrected staging boundary and uses the same
+GET-only, evidence-backed disposition and schedule restoration. Known package/
+fixture diagnostics are now automatically exported with the result for owner review;
+private worker reads remain protected. A partial diagnostic file does not prevent
+the result export.
+
+The [566-test full suite](../var/verification/operator-reconcile-2251/permissions-full-suite.log)
+and [36 focused checks](../var/verification/operator-reconcile-2251/permissions-focused.log)
+pass. New cases exercise real subprocess umask inheritance, staging under private
+umask, bounded/idempotent permission repair, rejection before any chmod when an
+unexpected link appears, automatic safe diagnostic export, and both successful
+and deferred recovery without reinstalling the package or replacing the reader.
+The [frozen recovery manifest](../var/verification/operator-reconcile-2251/permissions-preparation.json)
+binds the unchanged application/wheel, exact second failure report and both
+backup receipts to the verified operator/fixture sources. The source identity
+remains `752b8c10...`; accounting behavior and the offline financial result above
+are unchanged.
+
+The owner executed the following new frozen recovery from the `serveradmin`
+terminal. It is retained as history; **do not rerun it**:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/prepared/gbpcad-reconciliation-permissions-20261123/deploy/finish_gbpcad_reconciliation.py
+```
+
+The recovery returned `status: reconciled_and_resolved`. Its completed live
+verification is recorded below; the preceding paused state is historical.
+
+### Verified notebook reconciliation and restored schedule
+
+The owner ran the final recovery at **23 November 21:00 Melbourne / 10:00 UTC**.
+Its [successful administrator receipt](../var/prepared/gbpcad-reconciliation-permissions-20261123/var/verification/gbpcad-continue-b21faed3edcb/result.json)
+records completed reconciliation at **21:01:29 Melbourne / 10:01:29 UTC**, with
+`status: reconciled_and_resolved`, no broker mutation and no ordinary activation.
+The recovery repaired **98 public package paths** without touching private files,
+reinstalling the wheel or replacing the already-compatible reader. Both
+[writer](../var/prepared/gbpcad-reconciliation-permissions-20261123/var/verification/gbpcad-continue-b21faed3edcb/service-import-nnfx-run.json)
+and [viewer](../var/prepared/gbpcad-reconciliation-permissions-20261123/var/verification/gbpcad-continue-b21faed3edcb/service-import-nnfx-view.json)
+imports confirmed schema 3 and the exact installed code identity `752b8c10...`.
+
+**Actual host verification passed.** The
+[fresh system-manager fixture report](../var/prepared/gbpcad-reconciliation-permissions-20261123/var/verification/gbpcad-continue-b21faed3edcb/controller-controls.json)
+confirms the dedicated writer dispatch, no automatic restart, missed-run/no-catch-up
+behavior, independent-controller overlap/active-run deferral, maintenance success
+and failure with active/paused timers, both-schedule exclusion and restoration,
+and separate dashboard identity, sandbox and committed WAL visibility. The clock
+is synchronized. All 49 installed/source file hashes match. Notebook files were
+unchanged throughout these broker-free fixtures. `fixture_checks_passed=true`,
+`error=null`, `cleanup_errors=[]` and zero fixture unit files remain. These are
+refreshed essential checks on the current boot/kernel, not completion of the
+separate intended-window/startup or all M10 acceptance requirements.
+
+**Actual notebook disposition committed.** Native practice account/history GETs
+produced snapshot `7ced09da601d454296df0d4ea5df98b5` through **2259**. Schema 3
+retains original transaction observations and reconciles the complete interval.
+The registered leg for trade `2251` is closed at **1.87819** through fill `2257`,
+with reason `MARKET_ORDER_TRADE_CLOSE`. Leg 2 has no broker ID and remains
+`not_opened`; the disposition proof explicitly records `unsent_legs=[2]`.
+The set remains historically incomplete, now terminal, and GBP-CAD is available
+for a future independently eligible entry. The specific issue is `resolved`,
+with operator `owner-via-codex`, the owner's explanation and matching closing
+evidence. The original issue body, failed runs/stages/decisions, confirmed entry
+attempt and Q0 snapshot are preserved; existing claims/captures are byte-identical.
+No failed run was resumed, second leg opened or closing request repeated.
+
+The committed qualification report matches the exact financial breakdown above:
+**AUD 50,000.0032 balance**, **-43.8956 trading loss**, **-6.2319 financing**,
+**+50.0300000000 cash adjustment**, zero commission/other charges/unrealised P/L
+and **-0.0975000000 net change from the original AUD 50,000.1007 Q0**. Conversion
+disclosures are retained without an extra debit. The funding is not a trading
+gain. Q0 `c245f517b15448cabb2edbb5336a53aa` is unchanged and A0 remains unset.
+
+**Independent completion check at 21:05 Melbourne / 10:05 UTC.** The
+[fresh native OANDA account read, live page checks and systemd states](../var/verification/operator-reconcile-2251/completed-20261123T100526Z/verification.json)
+confirm balance `50000.0032`, boundary `2259`, zero open trades/positions/pending
+orders and zero unrealised P/L. Controller, Notebooks and journal GETs all return
+HTTP 200 with no unavailable-notebook error. Notebooks and journal display the
+reconciled balance; Controller and journal show **No open issues** and **Resolved
+issues (1)**. The journal displays the actual exit, pips, loss, financing and cash
+adjustment, with the incomplete-entry and failed-run history retained. This
+verification made no broker mutation or notebook write.
+
+The controller is loaded/unmasked and idle/failed with no pending job. The
+qualification timer is **enabled/active/waiting**, next due **24 November 08:50
+Melbourne / 23 November 21:50 UTC**; ordinary is **disabled/inactive**. The
+dashboard remains active on its existing release and port 8879. Both prior failure
+archives and the original backup remain protected and preserved. **The GBP-CAD
+cleanup and notebook issue resolution are complete. M10 remains incomplete and
+ordinary trading remains unauthorized/unactivated.**
 
 ## Controller wording update
 

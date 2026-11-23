@@ -99,6 +99,16 @@ def fixture_policy(prefix):
     return 'nnfx-run ALL=(root) NOPASSWD: ' + ', '.join(commands) + '\n'
 
 
+def stage_workers(source, staged):
+    staged.mkdir(parents=True, mode=0o755)
+    # Dedicated service identities must traverse this public-code directory,
+    # including when the administrator uses umask 077 for private evidence.
+    staged.chmod(0o755)
+    for name in ('m09_system_worker.py', 'm09_dashboard_worker.py'):
+        shutil.copyfile(source / name, staged / name)
+        (staged / name).chmod(0o644)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, help='new credential-free JSON report; default under checkout var/verification/m09-system')
@@ -264,10 +274,7 @@ def main():
             directory.mkdir(mode=mode)
             os.chown(directory, writer.pw_uid, group)
             directory.chmod(mode)
-        staged.mkdir(parents=True, mode=0o755)
-        for name in ('m09_system_worker.py', 'm09_dashboard_worker.py'):
-            shutil.copyfile(ROOT / 'tests' / name, staged / name)
-            (staged / name).chmod(0o644)
+        stage_workers(ROOT / 'tests', staged)
         worker = staged / 'm09_system_worker.py'
         dashboard_worker = staged / 'm09_dashboard_worker.py'
         (fixture / 'config.toml').write_text(''.join(

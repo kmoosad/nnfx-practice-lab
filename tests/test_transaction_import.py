@@ -38,6 +38,80 @@ class TransactionImportChecks(NotebookCase):
         return [json.loads(row[0]) for row in self.db.execute(
             'SELECT body_json FROM broker_transaction_observations WHERE transaction_id=?', (str(identifier),))]
 
+    def qualified_close(self):
+        body = order_fill(101, 40, pl='-10.00', accountBalance='990.00')
+        for part in (body, body['tradesClosed'][0]):
+            part.update(plHomeConversionCost='-0.10', homeConversionCost='-0.10',
+                        baseFinancingHomeConversionCost='0', guaranteedExecutionFeeHomeConversionCost='0')
+        return body
+
+    def test_single_close_conversion_disclosure_is_retained_without_double_posting(self):
+        self.register(trade_ids=('40', None))
+        body = self.qualified_close()
+        self.snapshot(account(101, '990.00'), body)
+        before = self.rows('ledger_entries')
+        self.save(body, body)
+        report = account_report(self.db, 'qualification')
+        self.assertEqual((report.realised_loss, report.other_charges, report.balance),
+                         (Decimal('-10'), Decimal('0'), Decimal('990')))
+        self.assertEqual(self.rows('ledger_entries'), before)
+        self.assertEqual(self.observations(101)[0]['homeConversionCost'], '-0.10')
+
+    def test_single_close_sparse_echo_and_numeric_spellings_preserve_nonzero_costs(self):
+        body = self.qualified_close()
+        self.save(body)
+        sparse = deepcopy(body)
+        for part in (sparse, sparse['tradesClosed'][0]):
+            for key in ('plHomeConversionCost','homeConversionCost','baseFinancingHomeConversionCost',
+                        'guaranteedExecutionFeeHomeConversionCost'):
+                del part[key]
+        self.save(sparse)
+        equivalent = deepcopy(body)
+        equivalent['plHomeConversionCost'] = '-0.100000'
+        self.save(equivalent)
+        self.assertEqual(len(self.observations(101)), 3)
+        merged = json.loads(self.db.execute('SELECT body_json FROM broker_transactions').fetchone()[0])
+        self.assertEqual(merged['plHomeConversionCost'], '-0.10')
+        changed = deepcopy(body)
+        for part in (changed, changed['tradesClosed'][0]):
+            part.update(plHomeConversionCost='-0.20', homeConversionCost='-0.20')
+        with self.assertRaises(BrokerError):
+            self.save(changed)
+
+    def test_nonzero_conversion_requires_qualified_matching_single_close_disclosure(self):
+        from nnfx_practice.transaction_records import merge_transaction
+        for variation in ('positive','larger-than-pl','allocation-mismatch','total-mismatch',
+                          'missing-balance','missing-component','financing-cost','invalid','multiple-trades'):
+            with self.subTest(variation=variation):
+                body = self.qualified_close()
+                if variation in ('positive','larger-than-pl'):
+                    value = '0.1' if variation == 'positive' else '-11'
+                    for part in (body, body['tradesClosed'][0]):
+                        part.update(plHomeConversionCost=value,homeConversionCost=value)
+                elif variation == 'allocation-mismatch':
+                    body['tradesClosed'][0]['realizedPL'] = '-9'
+                elif variation == 'total-mismatch':
+                    body['homeConversionCost'] = '-0.2'
+                elif variation == 'missing-balance':
+                    del body['accountBalance']
+                elif variation == 'missing-component':
+                    del body['baseFinancingHomeConversionCost']
+                elif variation == 'financing-cost':
+                    body['baseFinancingHomeConversionCost'] = '-0.01'
+                elif variation == 'invalid':
+                    body['plHomeConversionCost'] = 'NaN'
+                else:
+                    body['tradesClosed'].append(dict(body['tradesClosed'][0],tradeID='41'))
+                with self.assertRaises(BrokerError):
+                    merge_transaction(None,body)
+
+    def test_qualified_conversion_disclosure_still_requires_explained_account_balance(self):
+        self.register(trade_ids=('40', None))
+        with self.assertRaisesRegex(BrokerError,'Unexplained broker snapshot balance'):
+            self.snapshot(account(101,'989.90'),self.qualified_close())
+        self.assertEqual(self.cursor(),'0100')
+        self.assertEqual(self.rows('ledger_entries'),[])
+
     def test_numeric_spellings_and_zero_costs_for_open_reduce_and_close(self):
         for identifier, effect, key in ((101, 'open', 'tradeOpened'), (102, 'reduce', 'tradeReduced'),
                                          (103, 'close', 'tradesClosed')):

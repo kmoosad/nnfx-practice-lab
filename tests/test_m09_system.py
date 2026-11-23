@@ -18,6 +18,23 @@ from nnfx_practice.notebook import open_notebook
 
 
 class SystemHarnessChecks(unittest.TestCase):
+    def test_staged_workers_are_readable_with_private_administrator_umask(self):
+        with TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            source=root/'source'
+            source.mkdir()
+            for name in ('m09_system_worker.py','m09_dashboard_worker.py'):
+                (source/name).write_text('print("synthetic fixture")\n')
+            prior=os.umask(0o077)
+            try:
+                staged=root/'staged'
+                harness.stage_workers(source,staged)
+            finally:
+                os.umask(prior)
+            self.assertEqual(staged.stat().st_mode & 0o777,0o755)
+            for path in staged.iterdir():
+                self.assertEqual(path.stat().st_mode & 0o777,0o644)
+
     def templates(self):
         return [(harness.ROOT / 'deploy' / name).read_text() for name in harness.UNIT_NAMES]
 

@@ -131,8 +131,9 @@ Schema 3 adds retained transaction response variants alongside cumulative accept
 facts. Opening a version-1 or version-2 writer migrates atomically after checking
 its binding and preserves existing records. Updated readers accept schemas 2 and
 3 without writing or migrating. Deploy the compatible dashboard reader before
-the controller upgrades their shared notebook; the older installed reader accepts
-only schema 2. No actual notebook migration has been performed for this fix.
+the controller upgrades their shared notebook; a schema-2-only reader cannot read
+schema 3. The [incident status](docs/STATUS.md#notebook-reconciliation-for-the-closed-gbp-cad-trade)
+records actual reader/writer deployment and migration separately.
 
 To recreate the M07 trace and committed-row exports with the full offline suite:
 
@@ -161,8 +162,8 @@ The dashboard reads `config.toml` and matching schema-2/schema-3 notebook paths 
 SQLite `mode=ro` and `query_only`, using one short read transaction per notebook.
 It does not read `.env` or contact OANDA. Missing, incompatible or unreadable
 notebooks show an unavailable message; GET requests never create or migrate them.
-Actual notebooks are still uninitialized/unactivated, so their figures remain
-unavailable. The journal's current state can postdate the displayed reconciled
+Initialization and ordinary activation are separate reviewed maintenance actions;
+the dashboard performs neither. The journal's current state can postdate the displayed reconciled
 account snapshot; those rows are labelled and excluded from summary totals until
 a covering refresh. Qualification totals stop at A0, and ordinary totals begin
 after A0. Pips use instrument metadata retained with the set's entry decision;
@@ -289,11 +290,11 @@ M09 supplies the [installer](deploy/install.py), per-controller
 [dashboard service](deploy/nnfx-practice-dashboard.service). The installed dashboard
 is running on **8879**; preserve the sibling research dashboards on 8877/8878.
 Startup without login and essential system/maintenance/dashboard fixtures passed
-on kernel `7.0.0-43-generic`. Ordinary scheduling remains disabled. The existing
-single qualification timer is waiting for **21 November 08:50 Melbourne**.
-The automatic qualification implementation below is **not deployed yet**.
+on kernel `7.0.0-43-generic`. Ordinary scheduling remains disabled. Automatic
+qualification is deployed; [project status](docs/STATUS.md#current-position)
+records its current state and next scheduled run.
 
-**For this existing protected plan, use the M10 migration below.** The full
+**The completed M10 migration below is retained as history; do not rerun it.** The full
 installer intentionally refuses an existing qualification plan. Do not delete
 plans, Q0, claims or notebook history to make installation succeed. The following
 full-install commands are for an initial installation only. Existing M09 deployment
@@ -431,6 +432,15 @@ sends no orders and does not initialize a missing notebook:
 ```sh
 sudo -u nnfx-run env NNFX_NOTEBOOK_READ_GROUP=nnfx-read /opt/nnfx-practice/.venv/bin/python -m nnfx_practice.host --root /var/lib/nnfx-practice disposition practice-a --issue-id ISSUE_ID --operator-id OPERATOR --explanation "Broker resolution and evidence reference"
 ```
+
+The failed GBP-CAD entry's [incident recovery is complete](docs/STATUS.md#verified-notebook-reconciliation-and-restored-schedule):
+the schema-3 notebook is reconciled through `2259`, the close and AUD 50.03 funding
+are recorded separately, and the matching issue is resolved. Compatible reader,
+writer permissions and affected host controls are verified; the existing
+qualification schedule is restored and ordinary trading remains disabled. Both
+failure archives, original backup, Q0 and failed-run history are retained. Do not
+rerun the incident deployment/recovery commands, original installation or M10
+migration. Future issues use the normal evidenced maintenance action above.
 
 The installer grants `nnfx-run` only exact sudo systemctl operations for registered
 controller timers and runtime service masks. The dashboard user receives no such

@@ -30,6 +30,37 @@ _ORDERS = frozenset({
 _MISSING = object()
 
 
+def _qualified_pl_costs(body):
+    """Qualify the observed single-close disclosure already included in P/L.
+
+    OANDA's account settlement includes home conversion in realizedPL/pl. These
+    paired disclosures are informational, like halfSpreadCost. Financing and
+    guaranteed-fee conversion costs remain unqualified when nonzero.
+    """
+    if not isinstance(body, dict) or body.get('type') != 'ORDER_FILL':
+        return set()
+    closed = body.get('tradesClosed')
+    if (not isinstance(closed, list) or len(closed) != 1 or not isinstance(closed[0], dict)
+            or body.get('tradeOpened') or body.get('tradeReduced')):
+        return set()
+    detail = closed[0]
+    try:
+        money(body.get('accountBalance'))
+        pl = money(body.get('pl'))
+        cost = money(body.get('plHomeConversionCost'))
+        if (pl == 0 or money(detail.get('realizedPL')) != pl or cost > 0 or abs(cost) > abs(pl)
+                or any(money(part.get('homeConversionCost')) != cost
+                       or money(part.get('plHomeConversionCost')) != cost
+                       or money(part.get('baseFinancingHomeConversionCost')) != 0
+                       or money(part.get('guaranteedExecutionFeeHomeConversionCost')) != 0
+                       for part in (body, detail))):
+            return set()
+    except BrokerError:
+        return set()
+    return {('plHomeConversionCost',), ('homeConversionCost',),
+            ('tradesClosed', '*', 'plHomeConversionCost'), ('tradesClosed', '*', 'homeConversionCost')}
+
+
 def _fields(kind, path):
     """Return known decimal fields and fields allowed to supplement this object."""
     if not path:
@@ -70,6 +101,7 @@ def merge_transaction(previous, current):
     kind = current["type"]
     identifier = broker_id(current["id"])
     conflicts = set()
+    qualified_costs = _qualified_pl_costs(current) | _qualified_pl_costs(previous)
 
     def conflict(path):
         conflicts.add(".".join(path) or "transaction")
@@ -86,7 +118,7 @@ def merge_transaction(previous, current):
         if name in numbers:
             try:
                 a, b = money(left), money(right)
-                if a != b or (name in _COSTS and a != 0):
+                if a != b or (name in _COSTS and a != 0 and path not in qualified_costs):
                     conflict(path)
             except BrokerError:
                 conflict(path)

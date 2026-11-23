@@ -403,9 +403,21 @@ including unfinished attempts and unexpected trades/orders:
 - The four observed conversion-cost names (`baseFinancingHomeConversionCost`,
   `guaranteedExecutionFeeHomeConversionCost`, `homeConversionCost`,
   `plHomeConversionCost`) are accepted as zero-valued supplements in fills and
-  their opened/reduced/closed trade details. Their nonzero accounting treatment
-  remains unqualified, so a nonzero/invalid value blocks import. Unknown field
-  additions/removals/changes also remain conflicts; there is no ignore-all rule.
+  their opened/reduced/closed trade details. One observed nonzero shape is now
+  qualified: a fill closes exactly one trade, opens/reduces no other trade,
+  supplies an account balance and matching transaction/per-trade realised P/L,
+  and reports identical `plHomeConversionCost` and `homeConversionCost` at both
+  levels. The cost must be non-positive, no larger in magnitude than the nonzero
+  P/L, with zero financing/guaranteed-fee conversion components at both levels.
+  Retain these P/L conversion disclosures as informational amounts already
+  included in the posted P/L; never debit them again. Numeric echoes must still
+  agree, and the complete import must explain broker transaction/snapshot
+  balances. Nonzero conversion costs in other shapes remain unqualified and
+  block import, as do invalid values. Unknown field additions/removals/changes
+  also remain conflicts; there is no ignore-all rule. This mapping follows
+  [OANDA Australia's conversion-inclusive settlement rates](https://help.oanda.com/au/en/faqs/home-currency-conversion.htm)
+  and the actual closing-fill/balance evidence in the
+  [23 November reconciliation record](STATUS.md#notebook-reconciliation-for-the-closed-gbp-cad-trade).
 - New supported monetary components use the existing ledger mappings and unique
   source keys. A nonzero posted addition to an existing transaction requires its
   broker `accountBalance` evidence and an ID beyond the previously imported
