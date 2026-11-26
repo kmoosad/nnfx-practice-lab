@@ -4,10 +4,10 @@ Updated 26 November 2026 (UTC).
 
 ## Current position
 
-The journal's single table, filters, wording review and readable dates are
-implemented locally on `journal-trades-table`. Its
-[latest offline and browser checks](#readable-trade-dates) pass; merge and
-production deployment are pending.
+The journal's single table, filters, wording review and readable dates were
+[merged into main](#journal-merge-to-main) from `journal-trades-table` on
+26 November 2026 (UTC). Its [latest offline and browser checks](#readable-trade-dates)
+pass. Production deployment is pending.
 
 The [separate development preview](#development-preview-with-production-data)
 is installed and enabled on localhost 8880. Loading the actual production
@@ -950,6 +950,27 @@ pass. Only `nnfx-practice-dev.service` was restarted. The production dashboard
 remains active with PID `526722`; loading production data and adding HTTPS 8444
 are still pending. The administrator setup helper is unchanged, so the previously
 provided command remains valid.
+
+### Journal merge to main
+
+On 26 November 2026 (UTC), the owner approved committing, merging and pushing the
+reviewed journal changes. Commit `581a57f` contains the single trade table,
+read-only filters, readable labels and dates, controlled dashboard checks and
+their owning documentation. It was fast-forward merged from
+`journal-trades-table` into `main` after confirming that local and remote main
+shared the same base.
+
+The committed runtime files match the source hashes retained by the passing
+[74 source checks and browser review](#readable-trade-dates); the updated frozen
+development package also retains its 46 passing checks. All 27 added local
+documentation links were checked against the staged content and `AGENTS.md`
+remains within its 300-line limit. The pre-existing Tailscale documentation edits
+were preserved separately from the journal commit. The
+[repository verification](../var/verification/journal-merge-20261126/integration.json)
+retains the commit and remote-reference results.
+
+Repository integration does not deploy the dashboard. Production deployment and
+the development preview's administrator snapshot/HTTPS setup remain separate.
 
 ## Controller wording update
 
