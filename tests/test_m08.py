@@ -403,6 +403,23 @@ class DashboardChecks(NotebookCase):
         self.assertEqual(TradeRows(html).rows, [])
         self.assertEqual(self.db.total_changes, before)
 
+    def test_closed_protection_is_inactive_while_unconfirmed_open_targets_stay_visible(self):
+        self.filter_fixture()
+        self.db.execute("UPDATE trade_legs SET intended_target='1.12000',confirmed_target=NULL WHERE leg_no=1")
+        html = self.get('/notebooks/notebook-a')
+        rows = html.split('class="leg-summary"')[1:]
+        closed = next(row.split('</tr>',1)[0] for row in rows if 'data-set-id="finished-set" data-leg="1"' in row)
+        opened = next(row.split('</tr>',1)[0] for row in rows if 'data-set-id="set-a" data-leg="1"' in row)
+        self.assertIn('Inactive (trade closed)', closed)
+        self.assertIn('Planned 1.12000', closed)
+        self.assertNotIn('(not confirmed)', closed)
+        self.assertIn('Planned 1.12000 (not confirmed)', opened)
+        detail = self.filtered(record_set='finished-set',record_leg='1').split('id="trade-record"',1)[1]
+        detail = detail.split('</section>',1)[0]
+        self.assertIn('Planned take-profit price</dt><dd>1.12000', detail)
+        self.assertNotIn('(not confirmed)', detail)
+        self.assertIn('Original stop-loss</dt><dd>1.09000', detail)
+
     def test_a14_missing_allocated_amounts_are_unavailable_not_zero(self):
         self.register(trade_ids=('40', None))
         self.metadata()

@@ -66,8 +66,8 @@
     <dt>Original stop-loss</dt><dd>{{ leg.original_stop|number(missing='Not recorded') }}</dd>
     <dt>Current stop-loss price</dt><dd>{% if leg.broker_state == 'not_opened' %}Not applicable{% elif leg.broker_state == 'closed' %}{% if leg.current_stop %}{{ leg.current_stop|number }} · {% endif %}Inactive (trade closed){% else %}{{ leg.current_stop|number(missing='Not recorded') }}{% endif %}</dd>
     <dt>Move stop to entry</dt><dd>{{ stop_change(leg) }}</dd>
-    <dt>Take-profit price</dt><dd>{{ leg.confirmed_target|number(missing='Not recorded') if leg.leg_no == 1 else 'Not applicable to Trade 2' }}{% if leg.leg_no == 1 and leg.broker_state == 'closed' %} (inactive, trade closed){% endif %}</dd>
-    {% if leg.leg_no == 1 and leg.intended_target %}<dt>Planned take-profit price</dt><dd>{{ leg.intended_target|number }}{% if not leg.confirmed_target %} (not confirmed){% endif %}</dd>{% endif %}
+    <dt>Take-profit price</dt><dd>{% if leg.leg_no != 1 %}Not applicable to Trade 2{% elif leg.broker_state == 'not_opened' %}Not applicable{% elif leg.broker_state == 'closed' %}{% if leg.confirmed_target %}{{ leg.confirmed_target|number }} · {% endif %}Inactive (trade closed){% else %}{{ leg.confirmed_target|number(missing='Not recorded') }}{% endif %}</dd>
+    {% if leg.leg_no == 1 and leg.intended_target %}<dt>Planned take-profit price</dt><dd>{{ leg.intended_target|number }}{% if not leg.confirmed_target and leg.broker_state not in ('closed', 'not_opened') %} (not confirmed){% endif %}</dd>{% endif %}
     <dt>Exit date/time</dt><dd>{{ final_value(leg, 'exit_at', 'time') }}</dd>
     <dt>Exit price</dt><dd>{{ final_value(leg, 'exit_price') }}</dd>
     <dt>Exit reason</dt><dd>{{ final_value(leg, 'exit_reason', 'reason') }}</dd>
@@ -115,9 +115,11 @@
         <td class="trade-time">{{ trade_time(leg.entry_at) }}</td>
         <td>{{ leg.entry_price|number(missing='Not recorded') }}</td>
         <td>{% if leg.broker_state == 'not_opened' %}<span class="muted">Not applicable</span>
-          {% else %}{{ leg.current_stop|number(missing='Not recorded') }}{% if leg.broker_state == 'closed' %}<small>Inactive (trade closed)</small>{% endif %}{% endif %}</td>
+          {% elif leg.broker_state == 'closed' %}{% if leg.current_stop %}{{ leg.current_stop|number }}{% endif %}<small>Inactive (trade closed)</small>
+          {% else %}{{ leg.current_stop|number(missing='Not recorded') }}{% endif %}</td>
         <td>{% if leg.leg_no != 1 or leg.broker_state == 'not_opened' %}<span class="muted">Not applicable</span>
-          {% else %}{{ leg.confirmed_target|number(missing='Not recorded') }}{% if leg.broker_state == 'closed' %}<small>Inactive (trade closed)</small>{% endif %}{% if leg.intended_target and not leg.confirmed_target %}<small class="warning">Planned {{ leg.intended_target|number }} (not confirmed)</small>{% endif %}{% endif %}</td>
+          {% elif leg.broker_state == 'closed' %}{% if leg.confirmed_target %}{{ leg.confirmed_target|number }}{% endif %}<small>Inactive (trade closed)</small>{% if leg.intended_target %}<small>Planned {{ leg.intended_target|number }}</small>{% endif %}
+          {% else %}{{ leg.confirmed_target|number(missing='Not recorded') }}{% if leg.intended_target and not leg.confirmed_target %}<small class="warning">Planned {{ leg.intended_target|number }} (not confirmed)</small>{% endif %}{% endif %}</td>
         <td>{{ leg.initial_units|number(missing='Not recorded') }} / {{ leg.current_units|number(missing='Not recorded') }}<small>Planned {{ leg.planned_units|number(missing='Not recorded') }}</small></td>
         <td>{{ final_value(leg, 'pips', 'amount') }}{% if leg.pip_location is none %}<small class="warning">Pip size not recorded</small>{% endif %}</td>
         <td>{{ final_value(leg, 'trading_pl', 'amount') }}</td>
