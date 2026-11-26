@@ -4,16 +4,18 @@ Updated 26 November 2026 (UTC).
 
 ## Current position
 
-The journal's single table, filters, wording review and readable dates were
-[merged into main](#journal-merge-to-main) from `journal-trades-table` on
-26 November 2026 (UTC). Its [latest offline and browser checks](#readable-trade-dates)
-pass. Production deployment is pending.
+The journal's single table, filters, readable labels and two-line dates are
+[deployed and verified](#production-journal-deployment) on production port 8879 /
+private HTTPS 8443. The live table contains all 12 saved trade records, with
+matching account totals, prices, charges, precise timestamps and fills. Trading
+code, schedules and dashboard restrictions are unchanged; the deployment did not
+start a trading run or contact OANDA.
 
-The [separate development preview](#development-preview-with-production-data)
-is installed and enabled on localhost 8880. Loading the actual production
-snapshot and enabling its private HTTPS 8444 route require the prepared one-time
-administrator command; those steps are pending. Production remains on 8879 / HTTPS
-8443, with its service process and existing routes unchanged.
+The earlier [development preview](#development-preview-with-production-data)
+remains separate on localhost 8880 without a loaded snapshot or HTTPS 8444.
+Its pre-USB snapshot setup command is retired; future development data must follow
+[USB worktree guidance](../AGENTS.md#development-worktrees). The production journal
+already provides the new layout with real saved records.
 
 The failed GBP-CAD entry is **closed at OANDA, reconciled in the notebook and
 resolved by evidenced operator disposition**. The owner completed the protected
@@ -24,7 +26,7 @@ entry, failed run, original attempt, Q0 and existing qualification claims remain
 intact; A0 is unset. The [completed recovery and independent verification](#verified-notebook-reconciliation-and-restored-schedule)
 retain the receipt, actual host checks, fresh broker response and rendered pages.
 
-Python 01 has **zero open trades, positions or pending orders**, with exact
+At the 23 November recovery verification, Python 01 had **zero open trades, positions or pending orders**, with exact
 balance **AUD 50,000.0032**. The notebook separately records the **AUD 43.8956
 trading loss**, **AUD 6.2319 financing** and owner's **AUD 50.03 virtual funding**.
 The journal shows the actual exit at **1.87819 / -9.7 pips**, no open issues and
@@ -895,12 +897,14 @@ manager has lingering enabled. `NoNewPrivileges=yes`, `UMask=0077` and the
 it cannot read the protected production notebook under `codexdev`'s current
 permissions. Its development banner will show when the copy was captured.
 
-**Pending administrator setup.** The production notebook is readable by
+**Historical preparation; snapshot setup not executed.** The production notebook is readable by
 `nnfx-view` / `nnfx-read`; `codexdev` has neither that access nor a general sudo
 grant. The prepared
 [one-time setup helper](../var/previews/journal-development-20261125/load_production_snapshot.py)
-therefore needs the serveradmin command documented in the
-[README](../README.md#development-journal-preview). It exports only notebook-a
+was prepared for a serveradmin invocation. Its internal-storage setup is now
+retired under the [USB policy](../AGENTS.md#development-worktrees); the
+[README](../README.md#development-journal-preview) records the disposition. The
+retained helper exports only notebook-a
 using SQLite backup after dropping to the existing reader identity, verifies that
 the reader cannot write the source, and copies no `.env` or credentials. It
 installs the private snapshot as `codexdev`, verifies readiness and adds only the
@@ -971,6 +975,58 @@ retains the commit and remote-reference results.
 
 Repository integration does not deploy the dashboard. Production deployment and
 the development preview's administrator snapshot/HTTPS setup remain separate.
+
+### Production journal deployment
+
+On 26 November 2026 (UTC), the owner authorized production deployment of the
+merged journal. Preparation and all new verification data used the mounted USB
+worktree at `/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126`.
+The deployment used the existing no-argument, allowlisted helper for `codexdev`.
+It restarted only the dashboard outside the trading window with the controller
+idle. The ordinary timer remains disabled/inactive; qualification remains
+enabled/active for 26 November 21:50 UTC.
+
+The initial six-file release applied the merged table, filters, wording and dates.
+Live review then exposed a display edge case: closing a trade clears active
+protection fields, so a historical planned target was labelled unconfirmed.
+Commit `52fe994` corrects that presentation. Closed protection is
+inactive and historical plans stay visible; open/unconfirmed targets retain
+their warnings. No broker state or recorded price was changed.
+
+The final release is `dashboard-deploy-47c54274a23e09eee665c3f0`, receipt
+`/var/lib/nnfx-dashboard-deploy/20261126T121104461876.json`. The
+[host verification](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/final-host-verification.json) confirms all 47
+release files, all 49 unchanged qualified trading files, unchanged trading
+controls, service restrictions, helper and deployment configuration. The process
+is active as `nnfx-view:nnfx-read`, PID `1097787`, on the existing port 8879.
+Existing Tailscale routes are retained.
+
+The [74 focused checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/checks.log) pass on the USB worktree. The
+[three targeted protection checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/protection-checks.log) pass after
+the correction, including a new regression case for cleared protection fields
+and preserved warnings on open targets. The
+[saved production-data comparison](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/live-data-checks.json) checks all
+12 trade records, account totals, IDs, prices, units, charges, closed results,
+precise entry/exit times and every recorded fill against the pre-deployment UI.
+The [live browser checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/browser-checks.json) pass at 320, 390, 716
+and 1280 pixels: one table with 22 columns, readable New York times, filters,
+clear/no-match states, details/fills, keyboard scrolling and navigation. Expanded
+records fit without page overflow or browser errors. Private HTTPS 8443 returns
+200 with normal certificate validation; the verifier maps the hostname to the
+existing tailnet IP to accommodate this host's local DNS behavior. The
+[desktop table](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/journal-live-1280.png) and
+[phone trade details](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/trade-details-live-390.png) were visually reviewed.
+
+Chromium's first launch exceeded Unix socket path limits in the deeply nested
+USB temporary directory. Browser working files therefore used the task-specific
+short USB path `/mnt/nnfx-usb/development/tmp/jp26`; captures and other artifacts
+remain with the worktree. Internal storage was not used as a fallback.
+
+These are production deployment and saved-data display checks. No broker request,
+notebook write, strategy change or trading-control change was performed. M10
+execution qualification and ordinary activation retain their existing scope and
+remaining requirements. The earlier internal-storage development snapshot setup
+was never executed and is retired; production can be viewed at the normal URL.
 
 ## Controller wording update
 

@@ -1,5 +1,15 @@
 # Working guidance
 
+## Development worktrees
+
+Create all new development worktrees under
+`/mnt/nnfx-usb/development/worktrees/<repository>/<task>`.
+Keep each worktree's development databases, artifacts and working data separate
+on the USB drive.
+
+Before creating a worktree or its development data, verify that `/mnt/nnfx-usb`
+is mounted. Stop if the drive is unavailable; do not fall back to internal storage.
+
 ## Purpose
 
 Build the NNFX practice trading application defined in [PROJECT_BRIEF.md](PROJECT_BRIEF.md).
