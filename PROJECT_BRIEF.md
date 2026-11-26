@@ -1,6 +1,6 @@
 # NNFX Practice Lab project brief
 
-Status: Final, version 1. Accepted on 10 November 2026 and updated with the owner's architecture review decisions on 15 November 2026.
+Status: Final, version 1. Accepted on 10 November 2026 and updated with the owner's architecture review decisions on 15 November 2026. The owner clarified the single-table journal and filter requirement on 25 November 2026 (UTC).
 
 ## Purpose and principles
 
@@ -98,7 +98,7 @@ Use the existing NNFX dashboard at <http://192.168.51.10:8877/> as the presentat
 
 The Controller page shows master runs, child-process progress, completion status, timing and failures. The Notebooks page lists each notebook's name, linked controller, strategy and signal rules, account balance, realised profit and realised loss. Clicking a notebook opens its detailed trading journal.
 
-The detailed notebook shows account balance, unrealised result, strategy rules and last refresh time, together with a trade table containing:
+The detailed notebook shows account balance, unrealised result, strategy rules and last refresh time, together with one trade table containing all recorded trades. Filters narrow the displayed records. The table contains:
 
 - Shared trade-set ID, individual trade ID and leg number.
 - FX pair, direction, units and entry date and time.

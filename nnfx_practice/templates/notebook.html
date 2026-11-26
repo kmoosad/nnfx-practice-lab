@@ -2,7 +2,8 @@
 {% from 'macros.html' import rules %}
 {% from 'controller_macros.html' import freshness, controller_issues %}
 {% from 'notebook_macros.html' import strategy_overview, reporting_details %}
-{% from 'journal_macros.html' import account_figures, balance_breakdown, trade_set, ledger_activity, request_outcomes %}
+{% from 'journal_macros.html' import account_figures, balance_breakdown, trade_table, leg_records, ledger_activity, request_outcomes %}
+{% block main_class %}journal-page{% endblock %}
 {% block content %}
 <a class="back" href="{{ url_for('notebook_list') }}">Back to notebooks</a>
 {% if view.error %}<section class="panel"><p class="controller-alert error">{{ view.error }}</p></section>
@@ -15,56 +16,76 @@
     <a class="journal-link" href="{{ url_for('controllers') }}#{{ view.experiment.controller_id }}">View controller</a>
   </div>
   {{ freshness(view) }}
-  {% if view.latest_run %}<p class="muted journal-run">Latest saved run: <strong>{{ view.latest_run.status|replace('_', ' ')|capitalize }}</strong> · {{ (view.latest_run.mode or 'Unclassified invocation')|title }}</p>{% endif %}
+  {% if view.latest_run %}<p class="muted journal-run">Latest recorded run: <strong>{{ view.latest_run.status|journal_label }}</strong> · {{ view.latest_run.mode|journal_label if view.latest_run.mode else 'Run type not recorded' }}</p>{% endif %}
   {{ controller_issues(view) }}
-  {% if newer %}<p class="journal-warning"><strong>After account snapshot:</strong> newer trade or ledger activity is recorded below. Account totals retain the last reconciled snapshot until a covering refresh.</p>{% endif %}
+  {% if newer %}<p class="journal-warning"><strong>Newer activity recorded:</strong> some activity below is newer than the account update above. Account totals will include it after a successful update that covers this activity.</p>{% endif %}
   <section class="notebook-results" aria-label="{{ view.report.period|title if view.report else 'Account' }} summary">
-    <h3>{{ view.report.period|title if view.report else 'Account' }} account summary</h3>
-    {% if not view.binding.activated_at %}<p class="reporting-note">Ordinary trading has not been activated.{% if view.report %} These are qualification results.{% else %} Awaiting a reconciled reporting baseline.{% endif %}</p>
-    {% else %}<p class="reporting-note">Results since ordinary activation. Qualification results are kept separately below.</p>{% endif %}
+    <h3>{{ (view.report.period|journal_label ~ ' account summary') if view.report else 'Account summary' }}</h3>
+    {% if not view.binding.activated_at %}<p class="reporting-note">Ordinary trading has not been activated.{% if view.report %} These results cover the practice qualification phase.{% else %} No confirmed starting account record is available.{% endif %}</p>
+    {% else %}<p class="reporting-note">Results since ordinary trading was activated. Earlier qualification results are shown separately below.</p>{% endif %}
     {{ account_figures(view.report, currency) }}
-    <p class="muted">Trading profit and loss exclude financing and other charges. Open or partly reduced trades have no final exit result.</p>
+    <p class="muted">Trading profit and loss exclude financing, commission and other charges. A trade's final result is shown only after it has fully closed.</p>
   </section>
-  <details class="notebook-details balance-details"><summary>Balance and charges breakdown</summary>{{ balance_breakdown(view.report, currency) }}</details>
+  <details class="notebook-details balance-details"><summary>Balance and charges breakdown</summary><p class="muted">Amounts recorded during this trading phase. Net balance change includes trading results, charges and cash adjustments.</p>{{ balance_breakdown(view.report, currency) }}</details>
   {% if view.binding.activated_at %}<details class="notebook-details qualification-history">
     <summary>Qualification results before activation</summary>
-    {% if view.reports.qualification %}<p class="muted">Qualification ends at the ordinary activation snapshot.</p>{{ account_figures(view.reports.qualification, currency) }}{{ balance_breakdown(view.reports.qualification, currency) }}
+    {% if view.reports.qualification %}<p class="muted">These results end when ordinary trading was activated.</p>{{ account_figures(view.reports.qualification, currency) }}{{ balance_breakdown(view.reports.qualification, currency) }}
     {% else %}<p class="error">Qualification figures unavailable.</p>{% endif %}
   </details>{% endif %}
   {{ reporting_details(view) }}
 </section>
 <section class="panel notebook-card journal-trades" id="trades">
-  <h2>Trades</h2>
-  <p class="muted">Trade 1 and Trade 2 stay together in each set. Results below exclude charges; exact records and fills are available under each trade.</p>
-  {% set active = view.journal_groups|rejectattr('finished')|list %}
-  {% set finished = view.journal_groups|selectattr('finished')|list %}
-  {% if not view.journal_groups %}<p class="journal-empty">No trades recorded yet.</p>
+  <div class="trade-table-heading"><h2>Trades</h2><p class="muted" id="trade-count">Showing {{ trades.rows|length }} of {{ trades.total }} trade records</p></div>
+  <p class="muted">One row per trade, including closed trades and entries that have not been confirmed. Select Trade 1 or Trade 2 to view its details and broker fills.</p>
+  <p class="muted">Filters apply to this table only. The account summary above covers the full trading phase.</p>
+  {% if not trades.total %}<p class="journal-empty">No trades recorded yet.</p>
   {% else %}
-    <section class="trade-group active-trades" aria-label="Open or unconfirmed trade sets">
-      <h3>Open or unconfirmed sets ({{ active|length }})</h3>
-      {% for group in active %}{{ trade_set(group, currency, view.report) }}{% else %}<p class="muted">No open or unconfirmed trade sets.</p>{% endfor %}
-    </section>
-    <section class="trade-group finished-trades" aria-label="Finished trade sets">
-      <h3>Finished sets ({{ finished|length }})</h3>
-      <p class="muted">All legs are closed or confirmed not opened.</p>
-      {% for group in finished %}{{ trade_set(group, currency, view.report) }}{% else %}<p class="muted">No finished trade sets.</p>{% endfor %}
-    </section>
+    <form class="trade-filters" method="get" action="{{ url_for('notebook_detail', notebook_id=view.experiment.notebook_id) }}#trades" aria-label="Filter trade records">
+      <div class="trade-filter trade-search"><label for="trade-query">Search trades</label><input id="trade-query" type="search" name="q" value="{{ trades.filters.q }}" placeholder="Pair, broker trade ID, set ID or exit reason"></div>
+      <div class="trade-filter"><label for="trade-pair">Pair</label><select id="trade-pair" name="pair"><option value="">All pairs</option>{% for pair in trades.pairs %}<option{% if trades.filters.pair == pair %} selected{% endif %}>{{ pair }}</option>{% endfor %}</select></div>
+      <div class="trade-filter"><label for="trade-status">Trade status</label><select id="trade-status" name="status"><option value="">All statuses</option>{% for value, label in [('open', 'Open'), ('closed', 'Closed'), ('not_opened', 'Not opened'), ('unconfirmed', 'Unconfirmed')] %}<option value="{{ value }}"{% if trades.filters.status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="trade-filter"><label for="trade-direction">Direction</label><select id="trade-direction" name="direction"><option value="">All directions</option>{% for value in ['long', 'short'] %}<option value="{{ value }}"{% if trades.filters.direction == value %} selected{% endif %}>{{ value|title }}</option>{% endfor %}</select></div>
+      <div class="trade-filter"><label for="trade-period">Trading phase</label><select id="trade-period" name="period"><option value="">All phases</option>{% for period in trades.periods %}<option value="{{ period }}"{% if trades.filters.period == period %} selected{% endif %}>{{ period|journal_label }}</option>{% endfor %}</select></div>
+      <div class="trade-filter"><label for="trade-from">Entry date from</label><input id="trade-from" type="date" name="entry_from" value="{{ trades.filters.entry_from }}"></div>
+      <div class="trade-filter"><label for="trade-to">Entry date to</label><input id="trade-to" type="date" name="entry_to" value="{{ trades.filters.entry_to }}"></div>
+      <div class="trade-filter-actions"><button type="submit">Apply filters</button><a href="{{ url_for('notebook_detail', notebook_id=view.experiment.notebook_id) }}#trades">Clear filters</a></div>
+    </form>
+    <p class="muted">Entry dates use New York time. Both the start and end dates are included.</p>
+    {% if trades.error %}<p class="controller-alert error" role="alert">{{ trades.error }}</p>{% endif %}
+    <details class="notebook-details trade-guide"><summary>How to read the trades table</summary>
+      <dl class="record-grid">
+        <dt>Trade sets</dt><dd>Trade 1 and Trade 2 belong to the same entry and share a trade set ID. Newest sets appear first. Filters may show only one trade from a set.</dd>
+        <dt>Trading phase</dt><dd>Qualification covers practice verification runs. Ordinary trading begins after activation and also uses a practice account.</dd>
+        <dt>Units: entry / current</dt><dd>Position size when the trade opened and the units still open at the last recorded update. Positive units indicate a long trade; negative units indicate a short trade. Planned units show the intended size.</dd>
+        <dt>Profit / loss</dt><dd>Final pips and profit or loss are shown only after a trade fully closes. Partial closes can already affect account totals. Financing, commission and other charges are shown separately.</dd>
+        <dt>Move stop to entry</dt><dd>Applies to Trade 2 after Trade 1 closes at its take-profit price. A requested stop change is shown as confirmed only when the broker confirms it.</dd>
+        <dt>Set entry status</dt><dd>Complete means both trades and their required protection were confirmed. This describes how the set was opened, even after a trade closes.</dd>
+        <dt>Missing values</dt><dd>Not recorded means no value is available in this notebook; it does not mean zero. Trades that are still open have no final exit yet.</dd>
+      </dl>
+    </details>
+    <p class="muted trade-scroll-hint">Scroll horizontally to see all columns.</p>
+    {{ trade_table(trades, view.experiment.notebook_id, currency) }}
+    {% if trades.selected %}<section class="trade-selected" id="trade-record" aria-label="Selected trade record" tabindex="-1">
+      <div class="trade-table-heading"><h3>{{ trades.selected.pair }} · {{ trades.selected.direction|title }} · Trade {{ trades.selected.leg_no }}</h3><a href="{{ url_for('notebook_detail', notebook_id=view.experiment.notebook_id, **trades.query) }}#trades">Hide trade details</a></div>
+      {{ leg_records(trades.selected, currency, view.report, expanded=true) }}
+    </section>{% endif %}
   {% endif %}
+  {% if trades.record_missing %}<p class="controller-alert error" role="alert">Trade record unavailable in this notebook.</p>{% endif %}
 </section>
 <section class="panel notebook-card journal-records">
-  <h2>Activity and request records</h2>
+  <h2>Account activity and broker requests</h2>
   {{ ledger_activity(view) }}
   {{ request_outcomes(view) }}
 </section>
 <section class="panel notebook-card journal-strategy">
-  {{ strategy_overview(view) }}
-  <details class="notebook-details strategy-details"><summary>Strategy settings and signal rules</summary>{{ rules(view) }}</details>
+  {{ strategy_overview(view, primary=true) }}
+  <details class="notebook-details strategy-details"><summary>Strategy settings and signal rules</summary><p class="muted">The saved definitions below identify the exact indicators, signals and settings used by this notebook.</p>{{ rules(view) }}</details>
   <details class="notebook-details"><summary>Notebook configuration and activation</summary>
     <dl class="record-grid">
-      <dt>Manifest</dt><dd>{{ view.binding.manifest_hash }}</dd>
-      <dt>Qualification baseline (Q0)</dt><dd>{{ view.binding.qualification_snapshot_id or 'Unavailable' }} / {{ view.binding.qualification_transaction_id or 'Unavailable' }}</dd>
-      <dt>Ordinary baseline (A0)</dt><dd>{{ view.binding.activation_snapshot_id or 'Unavailable' }} / {{ view.binding.activation_transaction_id or 'Unavailable' }}</dd>
-      <dt>Ordinary activation</dt><dd>{{ view.binding.activated_at|ny }}</dd>
+      <dt>Strategy definition hash</dt><dd>{{ view.binding.manifest_hash }}</dd>
+      <dt>Qualification starting record (Q0)</dt><dd>Account record {{ view.binding.qualification_snapshot_id or 'not recorded' }} · Transaction {{ view.binding.qualification_transaction_id or 'not recorded' }}</dd>
+      <dt>Ordinary trading starting record (A0)</dt><dd>Account record {{ view.binding.activation_snapshot_id or 'not recorded' }} · Transaction {{ view.binding.activation_transaction_id or 'not recorded' }}</dd>
+      <dt>Ordinary trading activated</dt><dd>{{ view.binding.activated_at|ny if view.binding.activated_at else 'Not activated' }}</dd>
     </dl>
   </details>
 </section>

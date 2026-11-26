@@ -3,7 +3,7 @@
 {% macro account_figures(report, currency) %}
 <dl class="notebook-metrics journal-metrics">
   <div><dt>Account balance ({{ currency }})</dt><dd>{{ amount(report.balance if report else none) }}</dd></div>
-  <div><dt>Unrealised result ({{ currency }})</dt><dd>{{ amount(report.unrealised_pl if report else none, signed=true) }}</dd></div>
+  <div><dt>Unrealised profit / loss ({{ currency }})</dt><dd>{{ amount(report.unrealised_pl if report else none, signed=true) }}</dd></div>
   <div><dt>Realised profit ({{ currency }})</dt><dd>{{ amount(report.realised_profit if report else none, signed=true) }}</dd></div>
   <div><dt>Realised loss ({{ currency }})</dt><dd>{{ amount(report.realised_loss if report else none, signed=true) }}</dd></div>
 </dl>
@@ -11,119 +11,157 @@
 
 {% macro balance_breakdown(report, currency) %}
 <dl class="record-grid">
-{% for label, key in [('Opening balance', 'opening_balance'), ('Financing', 'financing'), ('Commission', 'commission'), ('Other charges', 'other_charges'), ('Cash adjustments', 'cash_adjustments'), ('Net posted result', 'net_posted')] %}
+{% for label, key in [('Opening balance', 'opening_balance'), ('Financing', 'financing'), ('Commission', 'commission'), ('Other charges', 'other_charges'), ('Cash adjustments', 'cash_adjustments'), ('Net balance change', 'net_posted')] %}
   <dt>{{ label }} ({{ currency }})</dt><dd>{{ amount(report[key] if report else none, signed=(key != 'opening_balance')) }}</dd>
 {% endfor %}
 </dl>
 {% endmacro %}
 
 {% macro snapshot_label(after, has_report) -%}
-{{ 'After account snapshot' if after else 'At/before account snapshot' if has_report else 'No account snapshot' }}
+{{ 'Newer than account update' if after else 'At or before account update' if has_report else 'No confirmed account update' }}
 {%- endmacro %}
 
-{% macro leg_records(leg, currency, has_report) %}
-<details class="leg-records">
+{% macro trade_time(value) -%}
+  {% if value %}
+    {% set local = (value|ny_short).split(' · ') %}
+    <time datetime="{{ value }}" title="{{ value|ny }}"><span class="trade-date">{{ local[0] }}</span><small class="trade-clock">{{ local[1] }}</small></time>
+  {% else %}Not recorded{% endif %}
+{%- endmacro %}
+
+{% macro final_value(leg, key, kind='number') -%}
+  {% if leg.broker_state == 'closed' %}
+    {% if kind == 'time' %}{{ leg[key]|ny if leg[key] else 'Not recorded' }}
+    {% elif kind == 'table_time' %}{{ trade_time(leg[key]) }}
+    {% elif kind == 'reason' %}{{ leg[key]|journal_label }}
+    {% elif kind == 'amount' %}{{ amount(leg[key], signed=true, missing='Not recorded') }}
+    {% else %}{{ leg[key]|number(missing='Not recorded') }}{% endif %}
+  {% elif leg.broker_state == 'open' %}<span class="muted">Not closed yet</span>
+  {% elif leg.broker_state == 'not_opened' %}<span class="muted">Not applicable</span>
+  {% else %}<span class="warning">Unconfirmed</span>{% endif %}
+{%- endmacro %}
+
+{% macro stop_change(leg) -%}
+  {% if leg.stop_to_entry_status == 'not_due' and (leg.leg_no == 1 or leg.broker_state == 'not_opened') %}Not applicable
+  {% elif leg.stop_to_entry_status == 'not_due' and leg.broker_state == 'closed' %}Not needed (trade closed)
+  {% else %}{{ leg.stop_to_entry_status|journal_label }}{% endif %}
+{%- endmacro %}
+
+{% macro leg_records(leg, currency, has_report, expanded=false) %}
+<details class="leg-records"{% if expanded %} open{% endif %}>
   <summary>Trade {{ leg.leg_no }} details and fills</summary>
   <dl class="record-grid">
-    <dt>Set ID</dt><dd>{{ leg.set_id }}</dd>
-    <dt>Broker trade ID</dt><dd>{{ leg.broker_trade_id or 'Unavailable' }}</dd>
-    <dt>Leg</dt><dd>{{ leg.leg_no }}</dd>
+    <dt>Trade set ID</dt><dd>{{ leg.set_id }}</dd>
+    <dt>Broker trade ID</dt><dd>{{ leg.broker_trade_id or 'Not recorded' }}</dd>
+    <dt>Trade number</dt><dd>{{ leg.leg_no }}</dd>
     <dt>Pair</dt><dd>{{ leg.pair }}</dd>
-    <dt>Direction</dt><dd>{{ leg.direction }}</dd>
-    <dt>Reporting period</dt><dd>{{ leg.period }}</dd>
-    <dt>Initial / current units</dt><dd>{{ leg.initial_units|number }} / {{ leg.current_units|number }}</dd>
-    <dt>Planned units</dt><dd>{{ leg.planned_units|number }}</dd>
-    <dt>Entry time</dt><dd>{{ leg.entry_at|ny }}</dd>
-    <dt>Actual entry</dt><dd>{{ leg.entry_price|number }}</dd>
-    <dt>Original stop</dt><dd>{{ leg.original_stop|number }}</dd>
-    <dt>Current stop</dt><dd>{{ leg.current_stop|number }}</dd>
-    <dt>Stop-to-entry status</dt><dd>{{ leg.stop_to_entry_status }}</dd>
-    <dt>Trade 1 target</dt><dd>{{ leg.confirmed_target|number if leg.leg_no == 1 else 'Not applicable to Trade 2' }}</dd>
-    {% if leg.leg_no == 1 and leg.intended_target %}<dt>Planned target</dt><dd>{{ leg.intended_target|number }}</dd>{% endif %}
-    <dt>Final exit time</dt><dd>{{ leg.exit_at|ny }}</dd>
-    <dt>Exit price</dt><dd>{{ leg.exit_price|number }}</dd>
-    <dt>Exit reason</dt><dd>{{ leg.exit_reason or 'Unavailable' }}</dd>
-    <dt>Signed pips</dt><dd>{{ amount(leg.pips, signed=true) }}</dd>
-    <dt>Trading result ({{ currency }})</dt><dd>{{ amount(leg.trading_pl, signed=true) }}</dd>
-    <dt>Financing ({{ currency }})</dt><dd>{{ amount(leg.financing, signed=true) }}</dd>
-    <dt>Commission ({{ currency }})</dt><dd>{{ amount(leg.commission, signed=true) }}</dd>
-    <dt>Other charges ({{ currency }})</dt><dd>{{ amount(leg.other_charges, signed=true) }}</dd>
-    <dt>Broker state observed</dt><dd>{{ leg.broker_state_at|ny }}</dd>
-    <dt>State transaction</dt><dd>{{ leg.broker_state_transaction_id or 'Unavailable' }}</dd>
+    <dt>Direction</dt><dd>{{ leg.direction|journal_label }}</dd>
+    <dt>Trade status</dt><dd>{{ leg.broker_state|journal_label if leg.broker_state else 'Unconfirmed' }}</dd>
+    <dt>Trading phase</dt><dd>{{ leg.period|journal_label }}</dd>
+    <dt>Set entry status</dt><dd>{{ leg.establishment_status|journal_label }}</dd>
+    <dt>Compared with account update</dt><dd>{{ snapshot_label(leg.after_snapshot, has_report) }}</dd>
+    <dt>Units: entry / current</dt><dd>{{ leg.initial_units|number(missing='Not recorded') }} / {{ leg.current_units|number(missing='Not recorded') }}</dd>
+    <dt>Planned units</dt><dd>{{ leg.planned_units|number(missing='Not recorded') }}</dd>
+    <dt>Entry date/time</dt><dd>{{ leg.entry_at|ny if leg.entry_at else 'Not recorded' }}</dd>
+    <dt>Entry price</dt><dd>{{ leg.entry_price|number(missing='Not recorded') }}</dd>
+    <dt>Original stop-loss</dt><dd>{{ leg.original_stop|number(missing='Not recorded') }}</dd>
+    <dt>Current stop-loss price</dt><dd>{% if leg.broker_state == 'not_opened' %}Not applicable{% elif leg.broker_state == 'closed' %}{% if leg.current_stop %}{{ leg.current_stop|number }} · {% endif %}Inactive (trade closed){% else %}{{ leg.current_stop|number(missing='Not recorded') }}{% endif %}</dd>
+    <dt>Move stop to entry</dt><dd>{{ stop_change(leg) }}</dd>
+    <dt>Take-profit price</dt><dd>{{ leg.confirmed_target|number(missing='Not recorded') if leg.leg_no == 1 else 'Not applicable to Trade 2' }}{% if leg.leg_no == 1 and leg.broker_state == 'closed' %} (inactive, trade closed){% endif %}</dd>
+    {% if leg.leg_no == 1 and leg.intended_target %}<dt>Planned take-profit price</dt><dd>{{ leg.intended_target|number }}{% if not leg.confirmed_target %} (not confirmed){% endif %}</dd>{% endif %}
+    <dt>Exit date/time</dt><dd>{{ final_value(leg, 'exit_at', 'time') }}</dd>
+    <dt>Exit price</dt><dd>{{ final_value(leg, 'exit_price') }}</dd>
+    <dt>Exit reason</dt><dd>{{ final_value(leg, 'exit_reason', 'reason') }}</dd>
+    <dt>Result (pips)</dt><dd>{{ final_value(leg, 'pips', 'amount') }}</dd>
+    <dt>Profit / loss ({{ currency }})</dt><dd>{{ final_value(leg, 'trading_pl', 'amount') }}</dd>
+    <dt>Financing ({{ currency }})</dt><dd>{{ amount(leg.financing, signed=true, missing='Not recorded') }}</dd>
+    <dt>Commission ({{ currency }})</dt><dd>{{ amount(leg.commission, signed=true, missing='Not recorded') }}</dd>
+    <dt>Other charges ({{ currency }})</dt><dd>{{ amount(leg.other_charges, signed=true, missing='Not recorded') }}</dd>
+    <dt>Trade status last observed</dt><dd>{{ leg.broker_state_at|ny if leg.broker_state_at else 'Not recorded' }}</dd>
+    <dt>Last status transaction ID</dt><dd>{{ leg.broker_state_transaction_id or 'Not recorded' }}</dd>
+    <dt>Recorded exit reason code</dt><dd>{{ leg.exit_reason or 'Not recorded' }}</dd>
+    <dt>Recorded stop-change code</dt><dd>{{ leg.stop_to_entry_status }}</dd>
   </dl>
-  <p class="muted">Charges are recorded trade allocations; missing amounts are unavailable. Unallocated account charges remain in account activity.</p>
-  {% if leg.fills %}<h4>Fills</h4><ol class="evidence-list">
+  <p class="muted">These are the charges recorded for this trade. Charges without a trade allocation appear in account activity. Not recorded does not mean zero.</p>
+  {% if leg.fills %}<h4>Broker fills</h4><p class="muted">Each fill records an executed entry, partial exit or final exit.</p><ol class="evidence-list">
     {% for fill in leg.fills %}<li>
-      <p><strong>{{ fill.effect|title }}</strong> · {{ fill.units }} units at {{ fill.price|number }}</p>
+      <p><strong>{{ {'open': 'Entry fill', 'reduce': 'Partial exit fill', 'close': 'Final exit fill'}.get(fill.effect, fill.effect|journal_label) }}</strong> · {{ fill.units }} units at {{ fill.price|number(missing='Not recorded') }}</p>
       <p class="{{ 'warning' if fill.after_snapshot else 'muted' }}">{{ snapshot_label(fill.after_snapshot, has_report) }}</p>
       <dl class="record-grid">
-        <dt>Transaction</dt><dd>{{ fill.transaction_id }}</dd>
-        <dt>Broker time</dt><dd>{{ fill.filled_at|ny }}</dd>
-        <dt>Reason</dt><dd>{{ fill.reason or 'Unavailable' }}</dd>
+        <dt>Transaction ID</dt><dd>{{ fill.transaction_id }}</dd>
+        <dt>Execution date/time</dt><dd>{{ fill.filled_at|ny }}</dd>
+        <dt>Reason</dt><dd>{{ fill.reason|journal_label }}</dd>
+        <dt>Recorded broker reason code</dt><dd>{{ fill.reason or 'Not recorded' }}</dd>
       </dl>
     </li>{% endfor %}
-  </ol>{% else %}<p class="muted">No recorded fills.</p>{% endif %}
+  </ol>{% else %}<p class="muted">No broker fills recorded for this trade.</p>{% endif %}
 </details>
 {% endmacro %}
 
-{% macro trade_set(group, currency, has_report) %}
-<article class="trade-set" data-set-id="{{ group.set_id }}">
-  <div class="trade-set-heading"><h4>{{ group.pair }} · {{ group.direction|title }}</h4><span class="{{ 'warning' if group.establishment_status != 'complete' else 'muted' }}">Entry {{ group.establishment_status|replace('_', ' ') }}</span></div>
-  <p class="muted">{% if group.entry_at %}Entry recorded {{ group.entry_at|ny_short }}{% else %}Entry time unconfirmed{% endif %}</p>
+{% macro trade_table(trades, notebook_id, currency) %}
+<div class="table-wrap trade-table-wrap" role="region" aria-label="All trade records" tabindex="0">
   <table class="trade-table">
-    <caption class="sr-only">{{ group.pair }} {{ group.direction }} trade set {{ group.set_id }}</caption>
-    <thead><tr><th scope="col">Trade</th><th scope="col">Status</th><th scope="col">Entry / units</th><th scope="col">Protection</th><th scope="col">Result</th></tr></thead>
+    <caption class="sr-only">Trade records for {{ notebook_id }}. Dates and times are in New York time.</caption>
+    <thead><tr>
+      {% for label in ['Pair / trade', 'Trade status', 'Entry date/time', 'Entry price', 'Stop-loss price', 'Take-profit price', 'Units: entry / current', 'Result (pips)', 'Profit / loss (' ~ currency ~ ')', 'Exit price', 'Exit date/time', 'Exit reason', 'Original stop-loss', 'Move stop to entry', 'Financing (' ~ currency ~ ')', 'Commission (' ~ currency ~ ')', 'Other charges (' ~ currency ~ ')', 'Direction', 'Trading phase', 'Set entry status', 'Broker trade ID', 'Trade set ID'] %}<th scope="col">{{ label }}</th>{% endfor %}
+    </tr></thead>
     <tbody>
-    {% for leg in group.legs %}
-      {% set inactive = leg.broker_state in ('closed', 'not_opened') %}
+    {% for leg in trades.rows %}
       {% set stop_attention = leg.stop_to_entry_status in ('failed', 'unknown') %}
-      <tr class="leg-summary" data-leg="{{ leg.leg_no }}">
-        <th scope="row">Trade {{ leg.leg_no }}<small>{{ leg.period }}</small></th>
-        <td data-label="Status"><strong>{{ leg.broker_state|replace('_', ' ')|capitalize if leg.broker_state else 'Unconfirmed / planned' }}</strong>
-          {% if leg.after_snapshot %}<p class="warning">After account snapshot</p>{% endif %}
+      <tr class="leg-summary" data-set-id="{{ leg.set_id }}" data-leg="{{ leg.leg_no }}" data-set-start="{{ 'true' if loop.changed(leg.set_id) else 'false' }}">
+        <th scope="row">{{ leg.pair }}<small><a href="{{ url_for('notebook_detail', notebook_id=notebook_id, record_set=leg.set_id, record_leg=leg.leg_no, **trades.query) }}#trade-record" aria-label="{{ leg.pair }} Trade {{ leg.leg_no }} details and fills">Trade {{ leg.leg_no }}</a></small></th>
+        <td><strong>{{ leg.broker_state|journal_label if leg.broker_state else 'Unconfirmed' }}</strong>
+          {% if leg.after_snapshot %}<p class="warning">Newer than account update</p>{% endif %}
         </td>
-        <td data-label="Entry / units">{{ leg.entry_price|number }}<small>Current units {{ leg.current_units|number }}</small>
-          {% if leg.broker_trade_id is none %}<small class="warning">Planned {{ leg.planned_units|number }} units</small>{% endif %}
-        </td>
-        <td data-label="Protection">
-          {% if inactive %}<span class="muted">{{ 'Trade closed' if leg.broker_state == 'closed' else 'Not applicable' }}</span>
-          {% else %}<span>Stop {{ leg.current_stop|number }}</span>
-            {% if leg.leg_no == 1 %}<small>Target {{ leg.confirmed_target|number }}</small>{% if leg.intended_target and not leg.confirmed_target %}<small class="warning">Planned target {{ leg.intended_target|number }} · Unconfirmed</small>{% endif %}{% endif %}
-          {% endif %}
-          {% if stop_attention or (not inactive and (leg.leg_no == 2 or leg.stop_to_entry_status != 'not_due')) %}<small class="{{ 'error' if stop_attention else 'muted' }}">Stop to entry: {{ leg.stop_to_entry_status|replace('_', ' ') }}</small>{% endif %}
-        </td>
-        <td data-label="Result">{% if leg.broker_state == 'closed' %}{{ amount(leg.trading_pl, signed=true) }} {{ currency }}<small>{{ amount(leg.pips, signed=true) }} pips</small>
-          {% elif leg.broker_state == 'not_opened' %}<span class="muted">Not opened</span>
-          {% else %}<span class="muted">Not final</span><small>No final exit result</small>{% endif %}
-          {% if leg.pip_location is none %}<small class="warning">Pip metadata unavailable</small>{% endif %}
-        </td>
+        <td class="trade-time">{{ trade_time(leg.entry_at) }}</td>
+        <td>{{ leg.entry_price|number(missing='Not recorded') }}</td>
+        <td>{% if leg.broker_state == 'not_opened' %}<span class="muted">Not applicable</span>
+          {% else %}{{ leg.current_stop|number(missing='Not recorded') }}{% if leg.broker_state == 'closed' %}<small>Inactive (trade closed)</small>{% endif %}{% endif %}</td>
+        <td>{% if leg.leg_no != 1 or leg.broker_state == 'not_opened' %}<span class="muted">Not applicable</span>
+          {% else %}{{ leg.confirmed_target|number(missing='Not recorded') }}{% if leg.broker_state == 'closed' %}<small>Inactive (trade closed)</small>{% endif %}{% if leg.intended_target and not leg.confirmed_target %}<small class="warning">Planned {{ leg.intended_target|number }} (not confirmed)</small>{% endif %}{% endif %}</td>
+        <td>{{ leg.initial_units|number(missing='Not recorded') }} / {{ leg.current_units|number(missing='Not recorded') }}<small>Planned {{ leg.planned_units|number(missing='Not recorded') }}</small></td>
+        <td>{{ final_value(leg, 'pips', 'amount') }}{% if leg.pip_location is none %}<small class="warning">Pip size not recorded</small>{% endif %}</td>
+        <td>{{ final_value(leg, 'trading_pl', 'amount') }}</td>
+        <td>{{ final_value(leg, 'exit_price') }}</td>
+        <td class="trade-time">{{ final_value(leg, 'exit_at', 'table_time') }}</td>
+        <td>{{ final_value(leg, 'exit_reason', 'reason') }}</td>
+        <td>{{ leg.original_stop|number(missing='Not recorded') }}</td>
+        <td class="{{ 'error' if stop_attention else '' }}">{{ stop_change(leg) }}</td>
+        <td>{{ amount(leg.financing, signed=true, missing='Not recorded') }}</td>
+        <td>{{ amount(leg.commission, signed=true, missing='Not recorded') }}</td>
+        <td>{{ amount(leg.other_charges, signed=true, missing='Not recorded') }}</td>
+        <td>{{ leg.direction|title }}</td>
+        <td>{{ leg.period|journal_label }}</td>
+        <td class="{{ 'warning' if leg.establishment_status != 'complete' else '' }}">{{ leg.establishment_status|journal_label }}</td>
+        <td>{{ leg.broker_trade_id or 'Not recorded' }}</td>
+        <td>{{ leg.set_id }}</td>
       </tr>
-      <tr class="leg-detail-row"><td colspan="5">{{ leg_records(leg, currency, has_report) }}</td></tr>
+    {% else %}<tr><td colspan="22" class="journal-empty">No trade records match these filters.</td></tr>
     {% endfor %}
     </tbody>
   </table>
-</article>
+</div>
 {% endmacro %}
 
 {% macro ledger_activity(v) %}
 {% set newer = v.activity|selectattr('after_snapshot')|list %}
 <details class="journal-disclosure ledger-records"{% if newer %} open{% endif %}>
-  <summary>Account activity ({{ v.activity|length }}){% if newer %} · Includes newer activity{% endif %}</summary>
-  <p class="muted">Posted account amounts count once. Informational allocations explain those postings. Qualification activity ends at ordinary activation.</p>
+  <summary>Account activity ({{ v.activity|length }} entries){% if newer %} · Includes newer activity{% endif %}</summary>
+  <p class="muted">Account postings change the balance. Trade breakdowns show how those amounts relate to individual trades; they are not counted again. Each entry shows its trading phase.</p>
   <ol class="evidence-list">
   {% for row in v.activity %}<li>
-    <div class="activity-heading"><strong>{{ row.category|replace('_', ' ')|capitalize }}</strong><span>{{ amount(row.amount, signed=true) }} {{ v.binding.home_currency }}</span></div>
-    <p>{{ 'Posted account amount' if row.posted else 'Informational allocation' }} · {{ row.period }}</p>
+    <div class="activity-heading"><strong>{{ row.category|journal_label }}</strong><span>{{ amount(row.amount, signed=true) }} {{ v.binding.home_currency }}</span></div>
+    <p>{{ 'Account posting' if row.posted else 'Trade breakdown only' }} · {{ row.period|journal_label }}</p>
     <p class="muted">{{ row.broker_at|ny_short }}</p>
-    {% if row.after_snapshot %}<p class="warning">After account snapshot · Not included in account totals yet.</p>{% endif %}
+    {% if row.after_snapshot %}<p class="warning">Newer than account update. Not included in account totals yet.</p>{% endif %}
     <details><summary>Transaction details</summary><dl class="record-grid">
-      <dt>Transaction</dt><dd>{{ row.transaction_id }}</dd>
-      <dt>Broker time</dt><dd>{{ row.broker_at|ny }}</dd>
-      <dt>Trade</dt><dd>{{ row.broker_trade_id or 'Unallocated account posting' }}</dd>
-      <dt>Category / source</dt><dd>{{ row.category }} / {{ row.source_field }}</dd>
-      <dt>Snapshot relation</dt><dd>{{ snapshot_label(row.after_snapshot, v.report) }}</dd>
+      <dt>Transaction ID</dt><dd>{{ row.transaction_id }}</dd>
+      <dt>Transaction date/time</dt><dd>{{ row.broker_at|ny }}</dd>
+      <dt>Broker trade ID</dt><dd>{{ row.broker_trade_id or 'Account-level entry' }}</dd>
+      <dt>Recorded category code</dt><dd>{{ row.category }}</dd>
+      <dt>Broker source field</dt><dd>{{ row.source_field }}</dd>
+      <dt>Compared with account update</dt><dd>{{ snapshot_label(row.after_snapshot, v.report) }}</dd>
     </dl></details>
-  </li>{% else %}<li>No recorded ledger activity.</li>{% endfor %}
+  </li>{% else %}<li>No account activity recorded.</li>{% endfor %}
   </ol>
 </details>
 {% endmacro %}
@@ -131,22 +169,26 @@
 {% macro request_outcomes(v) %}
 {% set attention = v.attempts|rejectattr('outcome', 'equalto', 'confirmed')|list %}
 <details class="journal-disclosure request-records"{% if attention %} open{% endif %}>
-  <summary>Request outcomes ({{ v.attempts|length }}){% if attention %} · {{ attention|length }} unconfirmed or unsuccessful{% endif %}</summary>
+  <summary>Broker requests ({{ v.attempts|length }}){% if attention %} · {{ attention|length }} unconfirmed or unsuccessful{% endif %}</summary>
+  <p class="muted">These are requests sent or prepared for the broker. A request to open, close or protect a trade is complete only when the broker confirms it.</p>
   <ol class="evidence-list">
   {% for row in v.attempts %}<li>
-    <p><strong>{{ row.purpose|replace('_', ' ')|capitalize }} · {{ row.pair or 'Account' }}</strong> · <span class="{{ 'error' if row.outcome != 'confirmed' else '' }}">{{ row.outcome|title }}</span></p>
+    <p><strong>{{ row.purpose|journal_label }} · {{ row.pair or 'Account' }}</strong> · <span class="{{ 'error' if row.outcome != 'confirmed' else '' }}">{{ row.outcome|journal_label }}</span></p>
     <p class="muted">{{ row.prepared_at|ny_short }}</p>
     {% if row.error %}<p class="error">{{ row.error }}</p>{% endif %}
     <details><summary>Request details</summary><dl class="record-grid">
-      <dt>Attempt / run</dt><dd>{{ row.attempt_id }} / {{ row.run_id }}</dd>
-      <dt>Set / leg</dt><dd>{{ row.set_id or '—' }} / {{ row.leg_no or '—' }}</dd>
-      <dt>Request</dt><dd>{{ row.method }} {{ row.path }}</dd>
-      <dt>Prepared / responded</dt><dd>{{ row.prepared_at|ny }}<br>{{ row.responded_at|ny }}</dd>
-      <dt>HTTP status</dt><dd>{{ row.http_status or 'Unavailable' }}</dd>
-      <dt>Broker order</dt><dd>{{ row.broker_order_id or 'Unavailable' }}</dd>
-      <dt>Broker trade</dt><dd>{{ row.broker_trade_id or 'Unavailable' }}</dd>
-      <dt>Broker transaction</dt><dd>{{ row.broker_transaction_id or 'Unavailable' }}</dd>
-      <dt>Broker request ID</dt><dd>{{ row.request_id or 'Unavailable' }}</dd>
+      <dt>Request attempt ID</dt><dd>{{ row.attempt_id }}</dd>
+      <dt>Run ID</dt><dd>{{ row.run_id }}</dd>
+      <dt>Trade set ID</dt><dd>{{ row.set_id or 'Not recorded' }}</dd>
+      <dt>Trade number</dt><dd>{{ row.leg_no or 'Not recorded' }}</dd>
+      <dt>HTTP request</dt><dd>{{ row.method }} {{ row.path }}</dd>
+      <dt>Request prepared</dt><dd>{{ row.prepared_at|ny }}</dd>
+      <dt>Broker response received</dt><dd>{{ row.responded_at|ny if row.responded_at else 'No response recorded' }}</dd>
+      <dt>HTTP status code</dt><dd>{{ row.http_status or 'Not recorded' }}</dd>
+      <dt>Broker order ID</dt><dd>{{ row.broker_order_id or 'Not recorded' }}</dd>
+      <dt>Broker trade ID</dt><dd>{{ row.broker_trade_id or 'Not recorded' }}</dd>
+      <dt>Broker transaction ID</dt><dd>{{ row.broker_transaction_id or 'Not recorded' }}</dd>
+      <dt>Broker request ID</dt><dd>{{ row.request_id or 'Not recorded' }}</dd>
     </dl></details>
   </li>{% else %}<li>No recorded requests.</li>{% endfor %}
   </ol>

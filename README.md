@@ -177,6 +177,43 @@ NNFX_M08_EVIDENCE_DIR=var/m08/fixtures .venv/bin/python -m unittest tests.test_m
 
 See [M08 evidence and dependencies](docs/STATUS.md#m08-observational-dashboard).
 
+### Development journal preview
+
+The separate development dashboard uses a frozen copy of `journal-trades-table`
+and a read-only snapshot of production's `notebook-a`. Its user service is
+`nnfx-practice-dev.service`, listening on localhost **8880**. The
+[development preview status](docs/STATUS.md#development-preview-with-production-data)
+records whether the real-data snapshot and private HTTPS route are ready.
+
+To load the production snapshot and add its separate Tailscale HTTPS endpoint,
+run this one-time command from the **serveradmin** terminal:
+
+```sh
+sudo /opt/nnfx-practice/.venv/bin/python -I -B \
+  /home/codexdev/projects/nnfx-practice-lab/var/previews/journal-development-20261125/load_production_snapshot.py
+```
+
+The [setup helper](var/previews/journal-development-20261125/load_production_snapshot.py)
+opens SQLite as the existing dashboard reader, includes committed WAL data through
+SQLite backup, and copies no credentials. It installs the snapshot privately for
+`codexdev`, verifies the development service and adds only HTTPS **8444**, retaining
+the existing 443 and 8443 routes. It refuses to replace an existing snapshot or
+another service on 8444. No production service, schedule or notebook permission
+is changed.
+
+After setup, open the [development journal](https://thinkbook-server.tail57730c.ts.net:8444/notebooks/notebook-a)
+while connected to Tailscale. The banner shows the capture time. Reloading reads
+the saved snapshot; it does not refresh data from OANDA. Production remains at
+HTTPS 8443 / local 8879.
+
+The user service is enabled across restarts through the existing lingering user
+manager. Run these commands as `codexdev` to inspect or stop only the preview:
+
+```sh
+systemctl --user status nnfx-practice-dev.service
+systemctl --user stop nnfx-practice-dev.service
+```
+
 ### Deploy the merged dashboard layouts
 
 The owner completed live dashboard deployment on 20 November 2026, verified at

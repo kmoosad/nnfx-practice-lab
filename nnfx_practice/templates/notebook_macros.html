@@ -1,5 +1,5 @@
-{% macro amount(value, signed=false) -%}
-<span{% if signed %} class="{{ value|tone }}"{% endif %}>{{ value|number(signed=(signed and value != 0), grouped=true) }}</span>
+{% macro amount(value, signed=false, missing='Unavailable') -%}
+<span{% if signed %} class="{{ value|tone }}"{% endif %}>{{ value|number(signed=(signed and value != 0), grouped=true, missing=missing) }}</span>
 {%- endmacro %}
 
 {% macro results(report, currency) %}
@@ -10,10 +10,10 @@
 </dl>
 {% endmacro %}
 
-{% macro strategy_overview(v) %}
+{% macro strategy_overview(v, primary=false) %}
 <section class="notebook-strategy" aria-label="Strategy overview">
-  <h3>Strategy</h3>
-  <p class="muted">{{ v.binding.strategy_version }} · {{ v.binding.lookback_candles }} daily candles</p>
+  {% if primary %}<h2>Strategy</h2>{% else %}<h3>Strategy</h3>{% endif %}
+  <p class="muted">Version {{ v.binding.strategy_version }} · Uses {{ v.binding.lookback_candles }} daily candles per run</p>
   <dl class="signal-overview">
     {% for name, rule in v.manifest.get('signal_rules', {}).items() %}
       <div>
@@ -27,24 +27,24 @@
 
 {% macro reporting_details(v) %}
 <details class="notebook-details reporting-details">
-  <summary>Reporting details</summary>
+  <summary>Account reporting details</summary>
   {% for period, report in v.reports.items() %}
     <section class="period-records">
-      <h4>{{ period|title }}</h4>
+      <h4>{{ period|journal_label }}</h4>
       {% if report %}
         <dl class="record-grid">
-          <dt>Opening snapshot</dt><dd>{{ report.opening_snapshot_id }}</dd>
-          <dt>Reporting snapshot</dt><dd>{{ report.snapshot_id }}</dd>
-          <dt>Transaction boundary</dt><dd>{{ report.boundary }}</dd>
-          <dt>Last successful refresh</dt><dd>{{ report.refreshed_at|ny }}</dd>
+          <dt>Opening account record ID</dt><dd>{{ report.opening_snapshot_id }}</dd>
+          <dt>Reporting account record ID</dt><dd>{{ report.snapshot_id }}</dd>
+          <dt>Last transaction included</dt><dd>{{ report.boundary }}</dd>
+          <dt>Last successful account update</dt><dd>{{ report.refreshed_at|ny }}</dd>
         </dl>
-      {% else %}<p>Unavailable{% if period == 'ordinary' and not v.binding.activated_at %} — notebook unactivated{% endif %}</p>{% endif %}
+      {% else %}<p>{% if period == 'ordinary' and not v.binding.activated_at %}Ordinary trading has not been activated.{% else %}No confirmed account figures for this phase.{% endif %}</p>{% endif %}
     </section>
   {% endfor %}
   <dl class="record-grid">
-    <dt>Age at page load</dt><dd>{{ v.refresh_age }}</dd>
+    <dt>Time since account update at page load</dt><dd>{{ v.refresh_age }}</dd>
     {% if v.latest_run %}<dt>Latest run ID</dt><dd>{{ v.latest_run.run_id }}</dd><dt>Last run progress</dt><dd>{{ v.latest_run.last_progress_at|ny }}</dd>{% endif %}
-    {% if v.refresh_problem %}<dt>Unsuccessful refresh snapshot</dt><dd>{{ v.refresh_problem.snapshot_id }}</dd><dt>Refresh requested</dt><dd>{{ v.refresh_problem.requested_at|ny }}</dd>{% endif %}
+    {% if v.refresh_problem %}<dt>Unsuccessful account update ID</dt><dd>{{ v.refresh_problem.snapshot_id }}</dd><dt>Account update requested</dt><dd>{{ v.refresh_problem.requested_at|ny }}</dd>{% endif %}
   </dl>
 </details>
 {% endmacro %}

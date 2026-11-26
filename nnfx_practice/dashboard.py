@@ -9,7 +9,7 @@ import re
 import sqlite3
 from zoneinfo import ZoneInfo
 
-from flask import Flask, abort, render_template
+from flask import Flask, abort, render_template, request
 
 from .config import ConfigurationError, read_registry
 from .ledger import account_report, trade_journal, transaction_key
@@ -49,11 +49,30 @@ def session_date(value):
     return date.fromisoformat(value).strftime('%d %b %Y')
 
 
-def number(value, *, signed=False, grouped=False):
+def number(value, *, signed=False, grouped=False, missing='Unavailable'):
     if value is None:
-        return 'Unavailable'
+        return missing
     value = Decimal(value)
     return format(value, ('+' if signed else '') + (',' if grouped else '') + 'f')
+
+
+def journal_label(value):
+    """Readable display labels; the original broker codes remain in record details."""
+    if not value:
+        return 'Not recorded'
+    labels = {
+        'ordinary': 'Ordinary trading', 'unclassified': 'Run type not recorded',
+        'before q0': 'Before qualification', 'not_due': 'Not yet due',
+        'due': 'Awaiting stop change', 'unknown': 'Unconfirmed',
+        'pending': 'Awaiting confirmation', 'prepared': 'Outcome not confirmed',
+        'stop_to_entry': 'Move stop to entry', 'signal_close': 'Close trade on signal',
+        'entry': 'Open trade', 'entry_target': 'Set take-profit price',
+        'market_order_trade_close': 'Trade close order', 'take_profit_order': 'Take-profit order',
+        'stop_loss_order': 'Stop-loss order', 'guaranteed_stop_loss_order': 'Guaranteed stop-loss order',
+        'trailing_stop_loss_order': 'Trailing stop-loss order',
+        'trading_pl': 'Trading profit / loss', 'cash_adjustment': 'Cash adjustment', 'other_charge': 'Other charge',
+    }
+    return labels.get(value.casefold(), value.replace('_', ' ').capitalize())
 
 
 def tone(value):
@@ -146,6 +165,50 @@ def _journal(db, binding, boundary):
             leg.update(exit_at=None, exit_price=None, exit_reason=None, pips=None, trading_pl=None)
         journal.append(leg)
     return journal
+
+
+def journal_table(view, args):
+    """Filter committed trade records for display; account reports stay untouched."""
+    rows = [leg for group in view['journal_groups'] for leg in group['legs']]
+    filters = {key: args.get(key, '').strip() for key in
+               ('q', 'pair', 'status', 'direction', 'period', 'entry_from', 'entry_to')}
+    pairs = sorted({leg['pair'] for leg in rows})
+    periods = sorted({leg['period'] for leg in rows})
+    error = None
+    bounds = {}
+    try:
+        bounds = {key: date.fromisoformat(filters[key]) if filters[key] else None
+                  for key in ('entry_from', 'entry_to')}
+        if bounds['entry_from'] and bounds['entry_to'] and bounds['entry_from'] > bounds['entry_to']:
+            error = 'The start date must be on or before the end date.'
+    except ValueError:
+        error = 'Enter valid entry dates in YYYY-MM-DD format.'
+    choices = dict(pair=pairs, period=periods, direction=('long', 'short'),
+                   status=('open', 'closed', 'not_opened', 'unconfirmed'))
+    if any(filters[key] and filters[key] not in values for key, values in choices.items()):
+        error = 'Choose an available pair, status, direction or reporting period.'
+
+    def matches(leg):
+        values = dict(leg, status=leg['broker_state'] or 'unconfirmed')
+        if any(filters[key] and filters[key] != values[key] for key in choices):
+            return False
+        if bounds['entry_from'] or bounds['entry_to']:
+            entered = _instant(leg['entry_at']).astimezone(NEW_YORK).date() if leg['entry_at'] else None
+            if entered is None or (bounds['entry_from'] and entered < bounds['entry_from']) or (
+                    bounds['entry_to'] and entered > bounds['entry_to']):
+                return False
+        searchable = ' '.join(str(leg.get(key) or '') for key in
+                              ('pair', 'direction', 'set_id', 'broker_trade_id', 'run_id',
+                               'exit_reason', 'period', 'broker_state')).casefold()
+        searchable += ' ' + journal_label(leg['exit_reason']).casefold()
+        return all(term in searchable for term in filters['q'].casefold().split())
+
+    selected = next((leg for leg in rows if leg['set_id'] == args.get('record_set')
+                     and str(leg['leg_no']) == args.get('record_leg')), None)
+    return dict(rows=[] if error else [leg for leg in rows if matches(leg)], total=len(rows),
+                filters=filters, query={key: value for key, value in filters.items() if value},
+                pairs=pairs, periods=periods, error=error, selected=selected,
+                record_missing=bool(args.get('record_set') or args.get('record_leg')) and selected is None)
 
 
 def _read_run(db, run_id):
@@ -289,7 +352,7 @@ def create_app(root=None, *, now=None):
     notebooks = {e.notebook_id: e for e in registry.values()}
     app = Flask(__name__, static_folder=None)
     app.jinja_env.filters.update(ny=ny_time, ny_short=ny_short, duration=duration,
-                                session_date=session_date, number=number, tone=tone)
+                                session_date=session_date, number=number, tone=tone, journal_label=journal_label)
 
     @app.after_request
     def committed_response(response):
@@ -323,8 +386,9 @@ def create_app(root=None, *, now=None):
         experiment = notebooks.get(notebook_id)
         if experiment is None:
             abort(404)
-        return render_template('notebook.html', title=experiment.notebook_name,
-                               view=read_view(root, experiment, clock(), detail=True))
+        view = read_view(root, experiment, clock(), detail=True)
+        return render_template('notebook.html', title=experiment.notebook_name, view=view,
+                               trades=journal_table(view, request.args) if view['error'] is None else None)
 
     return app
 

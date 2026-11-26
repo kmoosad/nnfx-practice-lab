@@ -103,28 +103,40 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
   .notebook-heading,.notebook-run{align-items:flex-start;flex-direction:column}
 }
 
-/* Trading journal: paired legs in compact, responsive tables. */
+/* Trading journal: one filterable table over every recorded trade. */
+.journal-page{max-width:1600px}
 .journal-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
 .journal-warning{padding:12px 14px;border-left:3px solid #997126;background:#fff7e7;color:#705000;border-radius:0 5px 5px 0}
-.journal-trades>h2,.journal-records>h2{font-size:22px;margin-bottom:8px}
+.journal-trades h2,.journal-records>h2,.journal-strategy h2{font-size:22px;margin-bottom:8px}
 .journal-empty{padding:20px 0;color:var(--muted)}
-.trade-group{margin-top:24px}
-.trade-set{border-top:1px solid var(--line);margin-top:16px;padding-top:16px}
-.trade-set-heading,.activity-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px}
-.trade-set-heading{margin-bottom:12px}
-.trade-set-heading h4{font-size:17px;margin:0}
-.trade-set-heading>span{font-size:14px}
-.trade-table{table-layout:fixed;width:100%}
-.trade-table th,.trade-table td{padding:12px 10px;overflow-wrap:anywhere;white-space:normal}
-.trade-table thead th:first-child{width:18%}
-.trade-table thead th:nth-child(2){width:16%}
-.trade-table thead th:nth-child(3){width:22%}
-.trade-table thead th:nth-child(4){width:24%}
-.trade-table thead th:last-child{width:20%}
-.trade-table tbody th{background:transparent;font-weight:600}
+.trade-table-heading,.activity-heading{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px}
+.trade-table-heading>h2,.trade-table-heading>p{margin:0}
+.trade-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 18px;padding:18px;background:#f7f9fb;border:1px solid var(--line);border-radius:6px;margin:20px 0 12px}
+.trade-filter{display:flex;flex-direction:column;gap:5px;min-width:0}
+.trade-filter label{font-size:14px;font-weight:500}
+.trade-filters .trade-search{grid-column:span 2}
+.trade-filters input,.trade-filters select,.trade-filters button{font:inherit;color:var(--ink);min-height:44px;max-width:100%;width:100%;padding:9px 10px;background:white;border:1px solid #b9c8d1;border-radius:4px}
+.trade-filter-actions{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;font-size:14px}
+.trade-filter-actions button{width:auto;background:var(--accent);border-color:var(--accent);color:white;cursor:pointer;padding:9px 18px}
+.trade-filter-actions a{padding:10px 0;min-height:44px}
+.trade-table-wrap{max-width:100%;max-height:70vh;border:1px solid var(--line);border-radius:6px}
+.trade-table{width:100%;white-space:nowrap;font-variant-numeric:tabular-nums}
+.trade-table th,.trade-table td{padding:12px 14px;min-width:115px;white-space:nowrap}
+.trade-table thead th{position:sticky;top:0;z-index:2;background:#edf2f5}
+.trade-table tbody th{font-weight:600}
+.trade-table .leg-summary>th,.trade-table thead th:first-child{position:sticky;left:0;box-shadow:1px 0 0 var(--line)}
+.trade-table thead th:first-child{z-index:3}
+.trade-table .leg-summary>th{z-index:1;background:white}
+.trade-table tr[data-set-start="true"]>th,.trade-table tr[data-set-start="true"]>td{border-top:2px solid #ccd8df}
+.trade-table tbody tr:first-child>th,.trade-table tbody tr:first-child>td{border-top:0}
+.trade-table tbody tr:hover>th,.trade-table tbody tr:hover>td{background:#f1f6f9}
+.trade-table a{display:inline-block;padding:4px 0;font-weight:500}
 .trade-table small{font-size:14px;font-weight:400}
 .trade-table p{margin:5px 0}
-.trade-table .leg-detail-row>td{padding:0 10px 6px}
+.trade-table .trade-time{white-space:normal;min-width:185px}
+.trade-date{display:block;font-weight:500;white-space:nowrap}
+.trade-table .trade-clock{white-space:nowrap}
+.trade-selected{margin-top:24px;padding:18px;border:1px solid var(--line);border-radius:6px;background:#f7f9fb;scroll-margin-top:20px}
 .leg-records{margin:0}
 .leg-records>summary,.journal-disclosure>summary,.evidence-list summary{padding:11px 0;min-height:44px;color:var(--accent);font-weight:500;font-size:14px;overflow-wrap:anywhere}
 .leg-records .record-grid{margin-top:10px}
@@ -136,14 +148,6 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
 .evidence-list p{margin:4px 0}
 .evidence-list details{margin-top:4px}
 .journal-strategy .notebook-strategy{margin-top:0;padding-top:0;border-top:0}
-@media(max-width:800px){.journal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){
-  .trade-table,.trade-table tbody,.trade-table tr,.trade-table th,.trade-table td{display:block;width:100%}
-  .trade-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-  .trade-table .leg-summary{border-top:1px solid var(--line);padding:10px 0}
-  .trade-table .leg-summary th,.trade-table .leg-summary td{border:0;padding:7px 0}
-  .trade-table .leg-summary th{font-size:16px}
-  .trade-table td[data-label]::before{content:attr(data-label);display:block;color:var(--muted);font-size:14px;margin-bottom:3px}
-  .trade-table .leg-detail-row>td{padding:0 0 8px}
-}
+@media(max-width:800px){.journal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.trade-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.trade-filters{grid-template-columns:minmax(0,1fr);padding:12px}.trade-filters .trade-search{grid-column:auto}}
 @media(max-width:420px){.journal-metrics{grid-template-columns:minmax(0,1fr)}}

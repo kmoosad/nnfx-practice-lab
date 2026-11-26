@@ -1,8 +1,19 @@
 # Project status
 
-Updated 23 November 2026 (Australia/Melbourne).
+Updated 26 November 2026 (UTC).
 
 ## Current position
+
+The journal's single table, filters, wording review and readable dates are
+implemented locally on `journal-trades-table`. Its
+[latest offline and browser checks](#readable-trade-dates) pass; merge and
+production deployment are pending.
+
+The [separate development preview](#development-preview-with-production-data)
+is installed and enabled on localhost 8880. Loading the actual production
+snapshot and enabling its private HTTPS 8444 route require the prepared one-time
+administrator command; those steps are pending. Production remains on 8879 / HTTPS
+8443, with its service process and existing routes unchanged.
 
 The failed GBP-CAD entry is **closed at OANDA, reconciled in the notebook and
 resolved by evidenced operator disposition**. The owner completed the protected
@@ -792,6 +803,153 @@ dashboard remains active on its existing release and port 8879. Both prior failu
 archives and the original backup remain protected and preserved. **The GBP-CAD
 cleanup and notebook issue resolution are complete. M10 remains incomplete and
 ordinary trading remains unauthorized/unactivated.**
+
+## Journal trade table and filters
+
+On 25 November 2026 (UTC), the owner requested one table with filters and all
+trade records in the journal at `/notebooks/notebook-a`, on a new branch. The
+change is on `journal-trades-table` and applies to every notebook's shared
+journal template. The [brief](../PROJECT_BRIEF.md#notebook-and-observational-dashboard)
+owns the accepted presentation requirement, and the
+[design](DETAILED_DESIGN.md) describes the display and read-only filter contracts.
+
+The table defaults to every recorded leg, including open, closed, confirmed not
+opened and unconfirmed/planned records. Newest sets appear first with their legs
+adjacent. Its 22 columns include entry/exit records, units, protection, signed
+pips, trading result, separate charges, period, entry status and broker/set IDs.
+Search and pair/status/direction/period/entry-date filters combine through GET
+requests. Dates use inclusive New York days; invalid ranges/choices show an
+error. Matching/total counts and a clear link make the current view explicit.
+Filters leave account summary totals at their original reconciled boundary.
+Each row links to its full record and fills below the table, keeping active
+filters. The wider journal has one scroll region with pinned pair/leg identity
+and column headings. No JavaScript or new runtime dependency was added.
+
+The [74 focused offline checks](../var/verification/journal-all-records-20261125/checks.log)
+pass: the 45 M08 checks, M09 retained-WAL reader and 28 dashboard deployment
+boundary checks. New controlled cases cover combined filters, every status,
+search, empty results, New York date boundaries in standard/daylight time,
+validation, preserved totals, escaping and notebook-bound record selection.
+The [browser checks](../var/verification/journal-all-records-20261125/browser-checks.json)
+pass at 320, 390, 716, 1280 and 1600 pixels against temporary synthetic notebooks.
+All 34 sample records appear in one table with 22 columns. Actual filter submit,
+reset, no matches, unconfirmed records, record/fill navigation, preserved filters,
+empty notebooks, keyboard scrolling and pinned identity/headings pass with no
+page-level horizontal overflow or browser errors. The
+[desktop table](../var/verification/journal-all-records-20261125/trades-1280.png)
+and [filtered phone view](../var/verification/journal-all-records-20261125/filtered-390.png)
+were visually reviewed.
+
+These are local layout checks, separate from actual OANDA practice execution.
+Merge and deployment remain pending; the installed dashboard, notebook records
+and trading operation have not been changed by this work.
+
+### Journal wording review
+
+On 25 November 2026 (UTC), the owner requested a human-readability review of the
+journal's headings and content. The same branch now uses consistent labels such
+as Pair / trade, Entry price, Profit / loss and Trading phase. The guide explains
+paired trade sets, phase boundaries, units, final results, stop changes and
+missing values. Filter notes state the New York date rules and that account
+totals are independent of the table filters. Strategy is now a section-level
+heading, and Hide trade details avoids suggesting that the link closes a trade.
+
+Open trades show Not closed yet in final-result fields; confirmed unopened legs
+show Not applicable, unconfirmed states remain explicit and missing amounts show
+Not recorded. Zero still displays as zero. Closed stops are labelled inactive.
+Readable stop statuses and exit reasons replace raw codes in the table; full
+record/fill details retain the original broker codes and identifiers. Search
+accepts both the displayed exit reason and its broker code. Account activity now
+distinguishes account postings from trade breakdowns, and broker request copy
+keeps prepared/requested outcomes separate from broker confirmation. Account
+reporting/configuration labels explain the identifiers and activation records.
+
+The [74 focused checks](../var/verification/journal-wording-20261125/checks.log)
+pass after the wording changes, retaining the accounting, filter, read-only and
+deployment-boundary checks. The
+[final browser checks](../var/verification/journal-wording-20261125/browser-checks.json)
+pass at 320, 390, 716, 1280 and 1600 pixels with synthetic notebooks. They cover
+headings, contextual open-trade values, the guide, readable and original reason
+codes, expanded details, filters and navigation, with no page overflow or browser
+errors. The [revised table](../var/verification/journal-wording-20261125/trades-1280.png)
+and [phone trade details](../var/verification/journal-wording-20261125/record-390.png)
+were visually reviewed. These supersede the earlier preview captions above.
+This is local display verification; merge/deployment remain pending and no
+broker operation or notebook-data change was performed.
+
+### Development preview with production data
+
+On 25 November 2026 (UTC), the owner requested a development version using current
+production data. The frozen
+[preview package](../var/previews/journal-development-20261125/source-manifest.json)
+combines the active dashboard's qualified runtime with this branch's dashboard
+files. The two schema/transaction resources absent from the deployed reader-only
+bundle were copied from the installed qualified runtime for a complete 49-file
+package. All 49 source identities are retained. Production code was not changed.
+
+The [preview launcher](../var/previews/journal-development-20261125/run_preview.py)
+runs as `codexdev` in the enabled, non-transient user service
+`nnfx-practice-dev.service`, listening only on localhost 8880. The existing user
+manager has lingering enabled. `NoNewPrivileges=yes`, `UMask=0077` and the
+`connect` syscall denial are active. The service uses only its private snapshot;
+it cannot read the protected production notebook under `codexdev`'s current
+permissions. Its development banner will show when the copy was captured.
+
+**Pending administrator setup.** The production notebook is readable by
+`nnfx-view` / `nnfx-read`; `codexdev` has neither that access nor a general sudo
+grant. The prepared
+[one-time setup helper](../var/previews/journal-development-20261125/load_production_snapshot.py)
+therefore needs the serveradmin command documented in the
+[README](../README.md#development-journal-preview). It exports only notebook-a
+using SQLite backup after dropping to the existing reader identity, verifies that
+the reader cannot write the source, and copies no `.env` or credentials. It
+installs the private snapshot as `codexdev`, verifies readiness and adds only the
+private HTTPS 8444 forward. It checks the existing 443/8443 routes and refuses
+an occupied preview endpoint or an existing snapshot. No production/trading
+service, timer or notebook permission is changed by the helper.
+
+The [46 frozen-package checks](../var/verification/journal-development-20261125/frozen-checks.log)
+pass. The [controlled export/preview check](../var/verification/journal-development-20261125/offline-checks.json)
+also passes: committed WAL rows survive backup, source DB/WAL/SHM hashes stay
+unchanged, credentials are absent from the export, filters and fills work, and
+mutation requests are rejected. These are synthetic fixture results.
+The [host preparation record](../var/verification/journal-development-20261125/host-preparation.json)
+confirms the real development service is active/enabled and waiting for its
+production snapshot. Production `/notebooks/notebook-a` returns HTTP 200; its
+service PID remains `526722` and both existing Tailscale routes are unchanged.
+No actual production snapshot has been copied, HTTPS 8444 is not configured yet,
+and the preview deliberately returns HTTP 503 while awaiting setup. Actual-data
+rendering and private HTTPS verification remain pending after owner execution.
+The journal branch remains unmerged and production deployment is pending.
+
+### Readable trade dates
+
+On 26 November 2026 (UTC), the owner requested clearer entry date/time text before
+loading the production snapshot. Entry and exit cells now show a readable date,
+such as `25 Nov 2026`, above the time, such as `16:50:11 EST -0500`. The existing
+New York formatter supplies the timezone and UTC offset. Fractional seconds are
+omitted from the visible table text; the complete original timestamp remains in
+the HTML time element, the exact New York tooltip and the expanded trade record.
+The date columns are narrower and each date/time line stays together.
+
+The [74 focused source checks](../var/verification/journal-dates-20261126/checks.log)
+pass, including the existing New York date-boundary cases extended to inspect
+the visible date/time in standard and daylight time. The
+[browser checks](../var/verification/journal-dates-20261126/browser-checks.json)
+pass at 320, 390, 716, 1280 and 1600 pixels with a Melbourne browser timezone.
+They verify the two-line display, compact column width, exact timestamp
+attributes/details and consistent entry/exit formatting, alongside the existing
+filters and navigation checks. There are no browser errors or page overflow.
+The [updated table](../var/verification/journal-dates-20261126/trades-1280.png)
+was visually reviewed. These checks use synthetic notebooks.
+
+The [49-file development package](../var/verification/journal-dates-20261126/development-package.json)
+was refreshed with the two template/style files, and its
+[46 focused checks](../var/verification/journal-dates-20261126/frozen-checks.log)
+pass. Only `nnfx-practice-dev.service` was restarted. The production dashboard
+remains active with PID `526722`; loading production data and adding HTTPS 8444
+are still pending. The administrator setup helper is unchanged, so the previously
+provided command remains valid.
 
 ## Controller wording update
 
@@ -1658,8 +1816,9 @@ are all closed or confirmed not opened enter the finished group. Pair, direction
 entry time/status, prices/units, protection and final results are easy to scan.
 Closed trades show that protection is no longer active rather than a misleading
 missing-protection warning. Original protection, exact times, identifiers, final
-exit evidence, charges and fills remain in per-trade disclosures. Phone layouts
-stack labelled fields without a wide scrolling table. Strategy/configuration
+exit evidence, charges and fills remain in per-trade disclosures. The original
+phone layout stacked labelled fields; the [25 November table update](#journal-trade-table-and-filters)
+replaces that layout. Strategy/configuration
 details follow the trades, account activity and request outcomes.
 
 Post-snapshot activity has a visible top warning and an expanded activity section;

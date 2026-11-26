@@ -694,19 +694,39 @@ and exact reporting snapshot IDs/boundaries/times remain in expandable details.
 The trading journal follows the same presentation: freshness, visible issues and
 latest saved-run status, then balance, unrealised result and separate realised
 profit/loss. Balance/charge components and capped qualification results have
-their own disclosures. Group both legs by set, newest sets first, and keep mixed
-open/closed sets together under “Open or unconfirmed sets”. A set is “Finished”
-only when every leg is closed or confirmed not opened. Show pair, direction,
-recorded entry time and entry status above compact trade rows. Each row shows
-status, entry/current units, current protection and final result. Closed trades
-do not imply a missing active stop or unconfirmed planned target; their recorded
-protection remains in the details. Stop-to-entry failures/unknown outcomes stay
-visible. Small screens stack these fields with labels instead of requiring
-horizontal scrolling.
+their own disclosures. Use one table containing every recorded leg, including
+open, closed, confirmed not opened and unconfirmed/planned records. Default to
+newest sets first, with Trade 1 and Trade 2 adjacent and identified by their shared
+Set ID. Read-only GET filters cover search, pair, status, direction, reporting
+period and inclusive entry dates in New York time. Combine selected filters and
+show matching/total record counts; clearing filters restores all records. Filters
+do not recalculate the notebook's account summary. Invalid choices or date ranges
+show an error rather than an unfiltered result.
 
-Native per-trade disclosures retain identifiers, exact timestamps, original and
-current protection, final exit evidence, charges and fills. Account activity and
-request outcomes follow the trades in expandable sections. Show a top warning for
+The table presents prices, units, protection, final outcomes, charges and
+identifiers in columns, with horizontal scrolling on all screen sizes as needed.
+Keep pair/leg identity pinned while scrolling horizontally and headers pinned
+while scrolling vertically. Closed trades show their recorded protection as
+inactive; they do not imply a missing active stop or unconfirmed planned target.
+Stop-to-entry failures/unknown outcomes remain explicit.
+
+Each row links to its complete record and fills below the table, preserving
+selected filters. Resolve record selections only within the selected notebook.
+The selected record opens as a native disclosure, retaining identifiers, exact
+timestamps, original/current protection, final exit evidence and charges.
+Use readable headings and status/reason labels. Explain trading phases, paired
+trades, units and the separation between table filters and account totals in
+expandable help. Distinguish a trade still open, a trade confirmed not opened,
+an unconfirmed state and missing recorded values; missing amounts never imply
+zero. Closed trades' stops are inactive, rather than missing active protection.
+Keep original broker reason and stop-change codes in the record details beside
+their readable descriptions. Search accepts displayed exit reasons as well as
+the original broker codes. Use heading levels that reflect the journal sections.
+Show table entry/exit dates as day, abbreviated month and year, with the 24-hour
+New York time, timezone abbreviation and UTC offset on a separate line. Omit
+fractional seconds from the table text; keep the complete broker timestamp in
+the time element, its tooltip and the expanded trade record.
+Account activity and request outcomes follow the trades in expandable sections. Show a top warning for
 activity after the account snapshot and expand its activity section by default;
 uncertain or unsuccessful requests also expand by default. Posted amounts remain
 distinct from informational allocations. Strategy settings and notebook activation

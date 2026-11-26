@@ -4,11 +4,13 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from decimal import Decimal
 from hashlib import sha256
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
 import sqlite3
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 from nnfx_practice.broker import BrokerError
 from nnfx_practice.config import PERMITTED_PAIRS
@@ -20,6 +22,18 @@ from nnfx_practice.reconciliation import import_through, reconcile_snapshot, rec
 from .support import ACCOUNT, TOKEN, Call, NotebookCase
 from . import test_m02 as m02
 from .test_m02 import ROOT, STAMP, account, event, open_trade, order_fill, reply
+
+
+class TradeRows(HTMLParser):
+    def __init__(self, html):
+        super().__init__()
+        self.rows = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'tr' and attrs.get('class') == 'leg-summary':
+            self.rows.append((attrs['data-set-id'], int(attrs['data-leg'])))
 
 
 class DashboardChecks(NotebookCase):
@@ -51,6 +65,24 @@ class DashboardChecks(NotebookCase):
         result = read_view(self.root, self.bound.experiment, self.clock.now(), detail=detail)
         self.assertIsNone(result['error'])
         return result
+
+    def filtered(self, **args):
+        return self.get('/notebooks/notebook-a?' + urlencode(args))
+
+    def filter_fixture(self):
+        self.register()
+        self.metadata()
+        self.register(set_id='finished-set', pair='GBP-USD', trade_ids=('60', '61'), run_id='run-b')
+        self.metadata('GBP-USD')
+        self.snapshot(account(103, '1030', trades=[open_trade(40, leg=1)]),
+                      order_fill(101, 41, pl='10', reason='TAKE_PROFIT_ORDER'),
+                      order_fill(102, 60, name='GBP_USD', pl='10'),
+                      order_fill(103, 61, name='GBP_USD', pl='10'))
+        self.register(set_id='pending-set', pair='USD-JPY', direction='short',
+                      trade_ids=(None, None), status='pending', run_id='run-c')
+        self.db.execute("INSERT INTO run_invocations VALUES ('run-a','qualification','{}')")
+        self.db.execute("INSERT INTO run_invocations VALUES ('run-b','ordinary','{}')")
+        self.db.execute("INSERT INTO run_invocations VALUES ('run-c','qualification','{}')")
 
     def metadata(self, pair='EUR-USD', location=-4):
         self.db.execute('''UPDATE pair_decisions SET sizing_json = ? WHERE pair = ? AND stage = 'manage_new' ''',
@@ -91,10 +123,10 @@ class DashboardChecks(NotebookCase):
         self.assertEqual((leg['pips'], leg['trading_pl']), (Decimal(100), Decimal(100)))
         html = self.get('/notebooks/notebook-a')
         self.assertIn('class="win">+100', html)
-        self.assertIn('Trading result (USD)', html)
-        for column in ('Set ID', 'Broker trade ID', 'Leg', 'Pair', 'Direction', 'Initial / current units',
-                       'Entry time', 'Status', 'Actual entry', 'Original stop', 'Current stop',
-                       'Trade 1 target', 'Final exit time', 'Exit price', 'Exit reason', 'Signed pips',
+        self.assertIn('Profit / loss (USD)', html)
+        for column in ('Trade set ID', 'Broker trade ID', 'Pair / trade', 'Direction', 'Units: entry / current',
+                       'Entry date/time', 'Trade status', 'Entry price', 'Original stop-loss', 'Stop-loss price',
+                       'Take-profit price', 'Exit date/time', 'Exit price', 'Exit reason', 'Result (pips)',
                        'Financing (USD)', 'Other charges (USD)'):
             self.assertIn(column, html)
 
@@ -122,14 +154,14 @@ class DashboardChecks(NotebookCase):
         self.close()
         self.db.execute('UPDATE pair_decisions SET sizing_json = NULL')
         self.assertIsNone(self.model()['journal'][0]['pips'])
-        self.assertIn('Pip metadata unavailable', self.get('/notebooks/notebook-a'))
+        self.assertIn('Pip size not recorded', self.get('/notebooks/notebook-a'))
 
     def test_a14_missing_unrealised_result_stays_unavailable(self):
         self.close()
         self.db.execute("UPDATE account_snapshots SET unrealised_pl = NULL WHERE snapshot_id='snapshot'")
         self.assertIsNone(self.model()['report'].unrealised_pl)
         html = self.get('/notebooks/notebook-a')
-        self.assertIn('Unrealised result (USD)</dt><dd><span class="">Unavailable', html)
+        self.assertIn('Unrealised profit / loss (USD)</dt><dd><span class="">Unavailable', html)
 
     def test_a14_split_reductions_charges_and_weighted_exit(self):
         self.register(trade_ids=('40', None))
@@ -146,7 +178,7 @@ class DashboardChecks(NotebookCase):
                           report.cash_adjustments, report.net_posted), tuple(map(Decimal, ('10', '-1.5', '-2', '-.5', '50', '56'))))
         html = self.get('/notebooks/notebook-a')
         trade = html.split('class="leg-summary"', 1)[1].split('</tr>', 1)[0]
-        self.assertIn('No final exit result', trade)
+        self.assertIn('Not closed yet', trade)
         self.assertNotIn('class="win">+10', trade)
         final = order_fill(104, 40, units='600', price='1.11300', pl='100', reason='MARKET_ORDER_TRADE_CLOSE')
         final['time'] = '2026-11-16T21:50:01.123456789Z'
@@ -157,8 +189,8 @@ class DashboardChecks(NotebookCase):
         self.assertEqual(len(leg['fills']), 2)
         html = self.get('/notebooks/notebook-a')
         self.assertIn('1.10980', html)
-        self.assertIn('Informational allocation', html)
-        self.assertIn('Unallocated account posting', html)
+        self.assertIn('Trade breakdown only', html)
+        self.assertIn('Account-level entry', html)
         self.assertIn('class="loss">-2', html)
         self.assertIn('.123456789 EST -0500', html)
         # Duplicate import does not add either aggregate postings or allocations.
@@ -187,7 +219,7 @@ class DashboardChecks(NotebookCase):
         self.assertTrue(failed['journal'][0]['after_snapshot'])
         self.assertEqual(failed['journal'][0]['trading_pl'], Decimal(100))
         html = self.get('/notebooks/notebook-a')
-        self.assertIn('After account snapshot', html)
+        self.assertIn('Newer than account update', html)
         self.assertIn('Refresh failed', html)
         self.assertIn('showing the last confirmed account figures', html)
         self.assertIn('<span>1,000.00</span>', html)
@@ -217,7 +249,7 @@ class DashboardChecks(NotebookCase):
         self.assertEqual(view['report'].financing, Decimal(0))
         self.assertEqual(leg['broker_state_transaction_id'], '101')
         html = self.get('/notebooks/notebook-a')
-        self.assertIn('After account snapshot', html)
+        self.assertIn('Newer than account update', html)
         self.assertIn('class="loss">-5', html)
 
     def test_a14_q0_plus_100_a0_then_ordinary_plus_20(self):
@@ -226,7 +258,7 @@ class DashboardChecks(NotebookCase):
         self.db.execute("INSERT INTO run_invocations VALUES ('run-a','qualification','{}')")
         self.snapshot(account(101, '1100', trades=[open_trade(41)]), order_fill(101, 40, pl='100'), name='qual')
         html = self.get('/notebooks/notebook-a')
-        self.assertIn('notebook unactivated', html)
+        self.assertIn('Ordinary trading has not been activated.', html)
         self.assertIsNone(self.model()['reports']['ordinary'])
         self.snapshot(account(102, '1100'), order_fill(102, 41), cursor=101, name='a0')
         self.db.execute('''UPDATE notebook SET activation_snapshot_id = 'a0', activation_transaction_id = '102',
@@ -246,8 +278,8 @@ class DashboardChecks(NotebookCase):
         self.assertEqual({r['period'] for r in model['journal'] if r['set_id'] == 'set-a'}, {'Qualification'})
         html = self.get('/notebooks/notebook-a')
         self.assertIn('Qualification results before activation', html)
-        self.assertIn('Qualification baseline (Q0)</dt><dd>q0 / 0100', html)
-        self.assertIn('Ordinary baseline (A0)</dt><dd>a0 / 102', html)
+        self.assertIn('Qualification starting record (Q0)</dt><dd>Account record q0 · Transaction 0100', html)
+        self.assertIn('Ordinary trading starting record (A0)</dt><dd>Account record a0 · Transaction 102', html)
         self.assertIn('class="win">+20', html)
         overview = self.get('/notebooks')
         ordinary = overview.split('aria-label="Ordinary results"', 1)[1].split('</section>', 1)[0]
@@ -273,7 +305,7 @@ class DashboardChecks(NotebookCase):
         self.assertIn('Open trading journal', html)
         self.assertNotIn('<table', html)
 
-    def test_journal_keeps_paired_legs_together_until_both_are_finished(self):
+    def test_journal_shows_all_sets_in_one_table_with_paired_legs_adjacent(self):
         self.register()
         self.metadata()
         self.register(set_id='finished-set', pair='GBP-USD', trade_ids=('60', '61'), run_id='run-b')
@@ -288,12 +320,88 @@ class DashboardChecks(NotebookCase):
         self.assertEqual([[leg['leg_no'] for leg in g['legs']] for g in groups], [[1, 2], [1, 2]])
         self.assertEqual([leg['broker_state'] for leg in groups[1]['legs']], ['open', 'closed'])
         html = self.get('/notebooks/notebook-a')
-        active, finished = html.split('class="trade-group finished-trades"', 1)
-        self.assertIn('data-set-id="set-a"', active)
-        self.assertNotIn('data-set-id="finished-set"', active)
-        self.assertIn('data-set-id="finished-set"', finished)
-        self.assertNotIn('data-set-id="set-a"', finished)
-        self.assertEqual(html.count('class="leg-summary"'), 4)
+        self.assertEqual(html.count('<table class="trade-table">'), 1)
+        self.assertEqual(TradeRows(html).rows, [('finished-set', 1), ('finished-set', 2), ('set-a', 1), ('set-a', 2)])
+        self.assertIn('Showing 4 of 4 trade records', html)
+        self.assertNotIn('class="trade-set"', html)
+
+    def test_journal_combines_filters_and_keeps_totals_and_filter_choices(self):
+        self.filter_fixture()
+        before = self.model()['report']
+        html = self.filtered(pair='EUR-USD', status='closed', direction='long', period='Qualification',
+                             entry_from='2026-11-16', entry_to='2026-11-16', q='SET-A eur-usd')
+        self.assertEqual(TradeRows(html).rows, [('set-a', 2)])
+        self.assertIn('Showing 1 of 6 trade records', html)
+        self.assertIn('<option>GBP-USD</option>', html)
+        self.assertIn('<span>1,030</span>', html)
+        self.assertEqual(self.model()['report'], before)
+        self.assertEqual(TradeRows(self.filtered(q='60')).rows, [('finished-set', 1)])
+        self.assertEqual(TradeRows(self.filtered(q='take_profit_order')).rows, [('set-a', 2)])
+        self.assertEqual(TradeRows(self.filtered(q='take-profit order')).rows, [('set-a', 2)])
+        empty = self.filtered(pair='GBP-USD', direction='short')
+        self.assertEqual(TradeRows(empty).rows, [])
+        self.assertIn('No trade records match these filters.', empty)
+        self.assertEqual(len(TradeRows(self.get('/notebooks/notebook-a')).rows), 6)
+
+    def test_journal_filters_open_closed_not_opened_and_unconfirmed_individually(self):
+        self.filter_fixture()
+        self.db.execute("UPDATE trade_legs SET broker_state='not_opened' WHERE set_id='pending-set' AND leg_no=2")
+        for status, expected in (
+                ('open', [('set-a', 1)]),
+                ('closed', [('finished-set', 1), ('finished-set', 2), ('set-a', 2)]),
+                ('not_opened', [('pending-set', 2)]),
+                ('unconfirmed', [('pending-set', 1)])):
+            with self.subTest(status=status):
+                self.assertEqual(TradeRows(self.filtered(status=status)).rows, expected)
+        self.assertEqual(TradeRows(self.filtered(direction='short')).rows, [('pending-set', 1), ('pending-set', 2)])
+        self.assertEqual(TradeRows(self.filtered(period='Ordinary')).rows, [('finished-set', 1), ('finished-set', 2)])
+
+    def test_journal_entry_dates_use_new_york_days_and_validate_ranges(self):
+        self.filter_fixture()
+        self.db.execute("UPDATE trade_legs SET entry_at='2026-11-17T04:59:59Z' WHERE set_id='set-a' AND leg_no=1")
+        self.db.execute("UPDATE trade_legs SET entry_at='2026-11-17T05:00:00Z' WHERE set_id='set-a' AND leg_no=2")
+        html = self.filtered(entry_from='2026-11-16', entry_to='2026-11-16')
+        self.assertEqual(TradeRows(html).rows, [('finished-set', 1), ('finished-set', 2), ('set-a', 1)])
+        self.assertIn('<span class="trade-date">16 Nov 2026</span>', html)
+        self.assertIn('<small class="trade-clock">23:59:59 EST -0500</small>', html)
+        self.assertEqual(TradeRows(self.filtered(entry_from='2026-11-17', entry_to='2026-11-17')).rows, [('set-a', 2)])
+        for query, message in ((dict(entry_from='bad'), 'Enter valid entry dates'),
+                               (dict(entry_from='2026-11-17', entry_to='2026-11-16'), 'must be on or before'),
+                               (dict(status='invalid'), 'Choose an available')):
+            with self.subTest(query=query):
+                html = self.filtered(**query)
+                self.assertEqual(TradeRows(html).rows, [])
+                self.assertIn(message, html)
+        self.db.execute("UPDATE trade_legs SET entry_at='2026-07-01T03:59:59Z' WHERE set_id='set-a' AND leg_no=1")
+        self.db.execute("UPDATE trade_legs SET entry_at='2026-07-01T04:00:00Z' WHERE set_id='set-a' AND leg_no=2")
+        summer = self.filtered(entry_from='2026-06-30', entry_to='2026-06-30')
+        self.assertEqual(TradeRows(summer).rows, [('set-a', 1)])
+        self.assertIn('<span class="trade-date">30 Jun 2026</span>', summer)
+        self.assertIn('<small class="trade-clock">23:59:59 EDT -0400</small>', summer)
+        self.assertEqual(TradeRows(self.filtered(entry_from='2026-07-01', entry_to='2026-07-01')).rows, [('set-a', 2)])
+
+    def test_journal_record_links_preserve_filters_and_stay_in_the_selected_notebook(self):
+        self.filter_fixture()
+        html = self.filtered(status='closed', record_set='set-a', record_leg='2')
+        self.assertIn('id="trade-record"', html)
+        self.assertIn('class="leg-records" open', html)
+        self.assertIn('href="/notebooks/notebook-a?status=closed#trades">Hide trade details', html)
+        self.assertEqual(TradeRows(html).rows, [('finished-set', 1), ('finished-set', 2), ('set-a', 2)])
+        self.assertIn('Trade record unavailable in this notebook.', self.filtered(record_set='absent', record_leg='1'))
+        self.opening(self.notebook(self.other_bound), currency='EUR')
+        other = self.get('/notebooks/notebook-b?record_set=set-a&record_leg=2')
+        self.assertIn('Trade record unavailable in this notebook.', other)
+        self.assertNotIn('id="trade-record"', other)
+        self.assertNotIn('TAKE_PROFIT_ORDER', other)
+
+    def test_journal_search_is_escaped_and_only_reads_records(self):
+        self.filter_fixture()
+        before = self.db.total_changes
+        html = self.filtered(q='<script>alert(1)</script>')
+        self.assertIn('&lt;script&gt;alert(1)&lt;/script&gt;', html)
+        self.assertNotIn('<script>', html)
+        self.assertEqual(TradeRows(html).rows, [])
+        self.assertEqual(self.db.total_changes, before)
 
     def test_a14_missing_allocated_amounts_are_unavailable_not_zero(self):
         self.register(trade_ids=('40', None))
@@ -302,7 +410,7 @@ class DashboardChecks(NotebookCase):
         del close['tradesClosed'][0]['realizedPL']
         self.snapshot(account(101, '1100'), close)
         self.assertIsNone(self.model()['journal'][0]['trading_pl'])
-        self.assertIn('Unavailable', self.get('/notebooks/notebook-a'))
+        self.assertIn('Not recorded', self.get('/notebooks/notebook-a'))
 
     def test_a15_committed_outcomes_exclude_unfinished_and_show_children(self):
         self.start_run(self.db)
@@ -559,7 +667,8 @@ class DashboardChecks(NotebookCase):
              patch('nnfx_practice.master.run_master', side_effect=AssertionError('master called')), \
              patch('socket.socket.connect', side_effect=AssertionError('network')):
             self.client = create_app(self.root, now=self.clock.now).test_client()
-            for path in ('/controllers', '/controllers/controller-a/runs/run-a', '/notebooks', '/notebooks/notebook-a'):
+            for path in ('/controllers', '/controllers/controller-a/runs/run-a', '/notebooks', '/notebooks/notebook-a',
+                         '/notebooks/notebook-a?status=closed&record_set=absent&record_leg=1'):
                 self.get(path)
 
     def test_a15_local_command_disables_dotenv_debug_and_reloader(self):
@@ -639,10 +748,11 @@ class DashboardChecks(NotebookCase):
         self.assertIn('&lt;script&gt;', html)
         self.assertNotIn('<script>', html)
         self.assertIn('uncertain broker response', html)
-        self.assertIn('Unconfirmed / planned', html)
+        self.assertIn('Unconfirmed', html)
         self.assertFalse(self.model()['journal_groups'][0]['finished'])
         self.assertIn('class="journal-disclosure request-records" open', html)
-        self.assertNotIn('<form', html)
+        self.assertIn('<form class="trade-filters" method="get"', html)
+        self.assertNotIn('method="post"', html)
         self.assertIn('&lt;script&gt;', self.get('/controllers'))
 
     def test_a16_independent_notebooks_do_not_mix_currency_totals_or_journals(self):
