@@ -4003,7 +4003,18 @@ immutable bindings were not overwritten. Build tools were copied to a separate
 USB directory and used directly without dependency downloads; preliminary
 frontend invocations failed because that optional frontend is absent on the host.
 
-The frozen release is ready for administrator installation; production is still
+The first administrator attempt stopped before maintenance because Python 02's
+not-yet-run controller had no `notebook-b.lock`. Installed application hashes and
+both existing active schedules were verified unchanged. Only a protected backup
+archive was created; no production notebook, plan or configuration was modified.
+The installer now creates that missing lock with native writer ownership, retains
+existing lock inodes, and records lock-open failures in its receipt. All **15
+deployment/history/bootstrap guard checks** passed, including real lock contention
+and invalid-lock rejection. The [failure record](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/pre-maintenance-lock-failure.json)
+retains the observed state. The application package and its 42-test evidence are
+unchanged by this installer-only correction.
+
+The corrected frozen release is ready for administrator installation; production is still
 unchanged. Private candidate configuration and all development evidence are on USB
 under `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/`. Development
 uses the existing checkout on `codex/python-03`, with no new worktree. Existing

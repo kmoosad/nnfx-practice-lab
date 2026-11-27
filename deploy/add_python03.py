@@ -92,6 +92,27 @@ def updated_bootstrap(old, code_hash, config_hash, controls_ref):
     return result
 
 
+def open_pending_notebook_lock(path, writer):
+    """Create the not-yet-run controller's lock with its native writer ownership."""
+    created = False
+    try:
+        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+        created = True
+    except FileExistsError:
+        descriptor = os.open(path, os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        if created:
+            os.fchown(descriptor, writer.pw_uid, writer.pw_gid)
+        info = os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != writer.pw_uid
+                or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1):
+            raise ValueError('Pending controller lock must be a private, writer-owned regular file')
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', type=Path, default=BASE)
@@ -118,8 +139,8 @@ def main():
     if not re.search(r'Ran 42 tests in [\d.]+s\s+OK(?:\s|$)', suite):
         raise ValueError('The final 42 focused checks must pass before deployment')
     guards = (evidence / 'deployment-tests.log').read_text()
-    if not re.search(r'Ran 13 tests in [\d.]+s\s+OK(?:\s|$)', guards):
-        raise ValueError('The 13 history/deployment/bootstrap guard checks must pass before deployment')
+    if not re.search(r'Ran 15 tests in [\d.]+s\s+OK(?:\s|$)', guards):
+        raise ValueError('The 15 history/deployment/bootstrap guard checks must pass before deployment')
     strategy_report = json.loads((ROOT / 'strategies/eye_age_supertrend_v1/qualification.json').read_bytes())
     if (strategy_report.get('status') != 'passed' or strategy_report.get('exhaustive') is not True
             or strategy_report.get('history_initialization') != dict(mode='anchored',
@@ -229,10 +250,11 @@ def main():
     receipt = dict(status='prepared', archive=str(archive), broker_requests=0,
                    python03_q0_initialized=False, python03_timer_enabled=False,
                    source_hashes=source_hashes, python03_account_binding_sha256=q.account_identity(bound))
-    fd = os.open(DATA / 'var/notebooks/notebook-a.lock', os.O_RDWR | os.O_NOFOLLOW)
-    fd_b = os.open(DATA / 'var/notebooks/notebook-b.lock', os.O_RDWR | os.O_NOFOLLOW)
+    fd = fd_b = None
     excluded = False
     try:
+        fd = os.open(DATA / 'var/notebooks/notebook-a.lock', os.O_RDWR | os.O_NOFOLLOW)
+        fd_b = open_pending_notebook_lock(DATA / 'var/notebooks/notebook-b.lock', writer)
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         fcntl.flock(fd_b, fcntl.LOCK_EX | fcntl.LOCK_NB)
         before = file_fingerprints()
@@ -369,8 +391,10 @@ def main():
             command('systemctl', 'stop', 'nnfx-python02-prepare.timer')
         raise
     finally:
-        os.close(fd)
-        os.close(fd_b)
+        if fd is not None:
+            os.close(fd)
+        if fd_b is not None:
+            os.close(fd_b)
         path = evidence / (ident + '-deployment.json')
         with path.open('x') as target:
             json.dump(receipt, target, indent=2)

@@ -2,9 +2,15 @@
 
 from copy import deepcopy
 from datetime import UTC, datetime
+import fcntl
 import io
 import json
 from hashlib import sha256
+import os
+from pathlib import Path
+import stat
+import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -80,6 +86,48 @@ class DeploymentChecks(unittest.TestCase):
 
 
 class PendingPython02Checks(unittest.TestCase):
+    def test_missing_lock_is_created_for_writer_and_reuses_the_exclusion_inode(self):
+        writer = SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid())
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'notebook-b.lock'
+            first = deployment.open_pending_notebook_lock(path, writer)
+            try:
+                info = os.fstat(first)
+                self.assertEqual((info.st_uid, info.st_gid, stat.S_IMODE(info.st_mode)),
+                                 (writer.pw_uid, writer.pw_gid, 0o600))
+                os.write(first, b'preserved lock contents')
+                fcntl.flock(first, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                second = deployment.open_pending_notebook_lock(path, writer)
+                try:
+                    self.assertEqual(os.fstat(second).st_ino, info.st_ino)
+                    with self.assertRaises(BlockingIOError):
+                        fcntl.flock(second, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    os.close(first)
+                    first = None
+                    fcntl.flock(second, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    self.assertEqual(path.read_bytes(), b'preserved lock contents')
+                finally:
+                    os.close(second)
+            finally:
+                if first is not None:
+                    os.close(first)
+
+    def test_pending_lock_rejects_symlink_or_wrong_permissions_without_changing_target(self):
+        writer = SimpleNamespace(pw_uid=os.getuid(), pw_gid=os.getgid())
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / 'target'
+            target.write_bytes(b'untouched')
+            target.chmod(0o600)
+            link = Path(directory) / 'notebook-b.lock'
+            link.symlink_to(target)
+            with self.assertRaises(OSError):
+                deployment.open_pending_notebook_lock(link, writer)
+            target.chmod(0o644)
+            with self.assertRaises(ValueError):
+                deployment.open_pending_notebook_lock(target, writer)
+            self.assertEqual(target.read_bytes(), b'untouched')
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o644)
+
     def test_pending_setup_update_changes_only_shared_identities_and_controls(self):
         original = dict(code_sha256='old-code', config_sha256='old-config', kernel='kernel',
             account_binding_sha256='account-b', manifest_sha256='manifest-b', bootstrap_sha256='helper',
