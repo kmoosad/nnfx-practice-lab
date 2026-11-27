@@ -4,7 +4,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
-from strategies import drm_adaptive_bandpass_v1, t3_bandpass_v1
+from strategies import drm_adaptive_bandpass_v1, eye_age_supertrend_v1, t3_bandpass_v1
 
 from .config import ConfigurationError
 from .evidence import canonical_json
@@ -13,6 +13,7 @@ from .evidence import canonical_json
 STRATEGIES = {
     "t3_bandpass_v1": t3_bandpass_v1,
     "drm_adaptive_bandpass_v1": drm_adaptive_bandpass_v1,
+    "eye_age_supertrend_v1": eye_age_supertrend_v1,
 }
 
 

@@ -63,6 +63,11 @@ Its [registry entry](deploy/python02-experiment.toml) and versioned strategy are
 deployed from `codex/python-02`; see [status](docs/STATUS.md#python-02) for the
 verified installation and scheduled initialization.
 
+[Python 03 setup](docs/PYTHON_03.md) records the selected Eye Trend Zones and
+Age Adaptive Supertrend combination and separate account/controller/notebook
+binding. Its calculations retain the fixed research start and weekday history;
+see [status](docs/STATUS.md#python-03) for verification and installation state.
+
 The [notebook module](nnfx_practice/notebook.py) derives each database path as
 `var/notebooks/<notebook-id>.sqlite3`. Explicit creation binds the notebook to its
 account and exact manifest. The storage layer provides a writer and a read-only

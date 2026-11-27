@@ -71,6 +71,20 @@ longer for C1/Exit. A change to it, an indicator parameter or an accepted signal
 rule creates a new strategy/controller/account/notebook combination. Token
 rotation and display-name edits do not alter the immutable trading binding.
 
+The brief's [fixed-origin history rule](../PROJECT_BRIEF.md#strategy-selection)
+adds an optional `history_initialization` manifest object with `mode=anchored`,
+an exact UTC `start` and `calendar=new_york_weekdays`. Capture still requests and
+validates the exact bound count, OHLC, ordering and 17:00 New York alignment.
+For anchored history only, completed Friday/Saturday-start rows can enter the
+raw capture; the indicator suffix excludes them, matching the lab dataset.
+The final partial candle never receives that exception. Capture requires the
+origin candle and at least 15 retained candles, and records
+`indicator_history_start`, `indicator_candle_count` and
+`excluded_non_session_candles`. C1, Exit and the unchanged sizing ATR formula use
+the retained weekday suffix. No notebook schema, persisted
+candle cache or mutable indicator state is introduced. Existing strategies have
+no origin field and keep their original rolling initialization.
+
 Before activating ordinary scheduled trading, record:
 
 1. Strategy selection and identical-input lab equivalence, including the chosen

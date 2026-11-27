@@ -4,6 +4,13 @@ Updated 27 November 2026 (UTC).
 
 ## Current position
 
+**Python 03 is being prepared on `codex/python-03`.** Its intended AUD practice
+account passed read-only preflight. The selected Eye Trend Zones / Age Adaptive
+Supertrend calculations pass with the authorized fixed-origin weekday history.
+The 72-file package and 42 final controller regression checks pass. It is ready
+for administrator installation. See [Python 03](#python-03); production remains
+unchanged.
+
 **Python 02 is installed from `codex/python-02`.** Its independent controller and
 notebook are visible on the production dashboard. The selected DRM/adaptive
 BandPass strategy passed the archived comparison, and its AUD practice account
@@ -3917,6 +3924,99 @@ unset. The screenshot balance was not used as Q0. Neither scheduled candle
 coverage nor actual Python 02 trading execution has been claimed as verified.
 Python 01's qualification continues under its existing rules. Do not rerun the
 installer or manually invoke the one-time setup ahead of its scheduled window.
+
+## Python 03
+
+On **27 November 2026**, the owner requested **Python 03**, using research result
+`18771091-9f76-4daf-bee9-a23f28634bae` and the attached native-v20 AUD account
+named Python 3, ending 002. Existing OANDA details, trading rules and criteria
+continue. The proposed `practice-c` / `notebook-c` binding and exact selected
+confluence C1 / opposite-position Exit events are recorded in
+[setup](PYTHON_03.md). No production controller or notebook has been added yet.
+
+**Account preflight passed.** Read-only intended-account OANDA responses confirm
+the alias and AUD currency, balance **50,000.9696**, no open trades or pending
+orders, and all 28 instrument/pricing/conversion checks. The division is retained
+from the owner's instruction that OANDA details remain the same, separately
+from API evidence. The [account report](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/account-preflight.json)
+is on USB. This balance is not Q0, and no order or account mutation was sent.
+
+**Calculation investigation.** Both conversions and each role's exact registered
+Pine dependency are frozen with import-path changes only. All archived output
+series and sizing ATR match the saved four-pair result exactly. The C1 dependency
+is an earlier version than Exit's, so they are deliberately separate. The
+[reference check](../tests/check_python03_reference.py) verifies artifact and
+dataset identities, original calculations, rolling current/prior event operands,
+sizing ATR and modified partial snapshots.
+
+Rolling counts 512, 1,024 and 1,536 failed sampled checks; the exhaustive
+[1,792-candle check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/reference-1792.json)
+also found Exit differences. The [1,972-candle archived check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/reference-1972.json)
+passed all 404 available windows and 12 partial snapshots, but leaves only 101
+comparison endpoints per pair. A larger sample was therefore required before
+claiming qualification.
+
+Read-only OANDA history retrieval retained 6,000 daily candles for each of the
+four research pairs. On these identical inputs, original and packaged outputs
+still agree exactly. However, the [1,972-candle extended check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-1972-probe.json)
+found three EUR-GBP Exit mismatches across 508 sampled windows. A sampled
+[5,000-candle check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-5000-probe.json)
+passed 132 windows and 12 modified partial snapshots, but the subsequent
+[exhaustive check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-5000.json)
+found one missed EUR-USD Exit event, visible in the current/prior comparisons on
+20 and 21 March 2023. These are offline calculations using retained market data,
+not scheduled 16:50 candle coverage or actual trading execution.
+
+**History support authorized.** The owner requested continuing with this exact
+combination and extending history handling while preserving indicators, signals,
+sizing and trading rules. The implementation pins the research first candle,
+**1 January 2013 at 22:00 UTC**, within each 5,000-candle capture. It retains the
+weekday history from that origin rather than resetting at a moving boundary.
+Missing origin fails capture. Completed Friday/Saturday-start bars from OANDA's
+older history are excluded, with the count recorded; strict current-candle and
+OHLC validation remains. This normalization reproduces the archived **8,288
+research timestamps and OHLC rows exactly** across all four pairs.
+The [brief](../PROJECT_BRIEF.md#strategy-selection) owns the accepted history
+rule; the manifest owns the exact origin and count. No schema migration or
+persistent candle/indicator store is added.
+
+All [28 intended-account history checks](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-availability.json)
+passed with the required origin present. This was a daytime availability check,
+not the required scheduled partial-candle qualification. The
+[final normalized comparison](../strategies/eye_age_supertrend_v1/qualification.json)
+passed **11,256 endpoints and 156 partial snapshots**. The initial 40 focused
+checks and the [13 history/deployment/bootstrap guards](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/deployment-tests.log)
+passed. The [42 final source checks](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/final-tests.log)
+then passed in 431.407 seconds, including the normalized capture, missing-origin
+entry block, both C1 directions, opposite-position Exit mapping, two-leg entry and
+close, all three notebook views, existing Python 02 behavior and independent
+qualification evidence. These are offline broker/service fixtures.
+
+The [package check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/package-check.json)
+matches all **72 application/resource files** and imports all three strategies
+from the extracted wheel at 386/512/5,000 candles. The
+[final development notebook](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/prepared-notebook.json)
+has the qualified manifest, SQLite integrity `ok`, and Q0/activation unset.
+Its rendered notebook page returns 200 with both selected indicators. The earlier
+development notebook is retained separately under `preliminary-prepared`;
+immutable bindings were not overwritten. Build tools were copied to a separate
+USB directory and used directly without dependency downloads; preliminary
+frontend invocations failed because that optional frontend is absent on the host.
+
+The frozen release is ready for administrator installation; production is still
+unchanged. Private candidate configuration and all development evidence are on USB
+under `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/`. Development
+uses the existing checkout on `codex/python-03`, with no new worktree. Existing
+documentation work was preserved.
+
+**Deployment dependency.** The live login has only the scoped dashboard-deploy
+sudo grant. Trading installation requires the administrator terminal. Python 02
+has a pending one-time setup at **28 November 08:50 Melbourne**; shared-code and
+registry changes must preserve that job and refresh its protected context as well
+as Python 01's protected plan. The Python 02-only installer cannot add this third
+experiment. No existing timer, protected plan, production notebook or dashboard
+has been changed by this preparation.
+
 
 ## Next work
 

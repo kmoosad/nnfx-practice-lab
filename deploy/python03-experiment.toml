@@ -1,0 +1,6 @@
+[[experiments]]
+controller_id = "practice-c"
+notebook_id = "notebook-c"
+notebook_name = "Python 03"
+strategy_version = "eye_age_supertrend_v1"
+connection_key = "PRACTICE_C"

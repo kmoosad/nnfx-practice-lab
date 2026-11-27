@@ -1,0 +1,291 @@
+{
+  "conversion_hashes": {
+    "c1": "b4e65f6bfc5cc99f7d2132f8cc481d585e983ecd85849a1ae65390b36fef7c4a",
+    "exit": "b2f1de4b95b898bbdc4b02038b56ffeaa9d572534a09da27ab403e07b654d7ff"
+  },
+  "dependency_hashes": {
+    "c1:inputs/dependencies/pine_compat_v1.py": "b20a0fb76211c99abcd49ab1557d452afde740a9a8e051a86245553fe556555b",
+    "exit:inputs/dependencies/pine_compat_v1.py": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+    "nnfx_practice/candles.py": "b46a9c9c87b716c93a11b79f1a200a7de1ae697517301e625170b9b98b691a84"
+  },
+  "history_initialization": {
+    "calendar": "new_york_weekdays",
+    "mode": "anchored",
+    "start": "2013-01-01T22:00:00+00:00"
+  },
+  "implementation_hashes": {
+    "__init__.py": "f7d9f44371b87d2c4e044c542388810cb87f01957f531b6dd60e055b1ba748a2",
+    "atr.py": "05a441fdf4f463a06d95cc58719bfc137197240fc0a9799c8004f0da9f2dd076",
+    "c1.py": "ac70efa05fc141261d07e9149b793e01e0c57245f426b861c461f38a9396d3cd",
+    "c1_pine_compat.py": "b20a0fb76211c99abcd49ab1557d452afde740a9a8e051a86245553fe556555b",
+    "comparisons.py": "cddda5f1adfb2d4e7ca454cf8ab82de2baee1037875418bc98aac7e05c3b7fae",
+    "exit.py": "9a8a4d0c20e99f768a7dbc81fe72e2a83d2a4aa6aabd34c231c2f7a68fb3b055",
+    "exit_pine_compat.py": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+    "interface.py": "918a7dd052e1ceb7d294f9619b201c91642abf68354a9359d478ef32dfbb8dd0",
+    "signals.py": "41c34bbcdb96136be99b464a3f88b1f8bdc391adb21aeb1c49b67ce97addf6d1"
+  },
+  "lab_numeric_semantics": {
+    "events": "Paired Boolean confluence_buy/confluence_sell C1 events; buySignal closes shorts and sellSignal closes longs",
+    "indicator_calculations": "Exact frozen conversions with separate registered Pine compatibility dependencies",
+    "initialization": "Initialize C1, Exit and sizing ATR from the research first candle, 2013-01-01 22:00 UTC, excluding Friday/Saturday 17:00 New York starts exactly as the research dataset; require that origin in every 5000-candle capture; never silently truncate or reset",
+    "sizing_atr": "Unchanged lab ATR(14) simple mean, original true-range tie and floating-point semantics",
+    "snapshot": "Evaluate the saved Lab conversions on each stage's still-forming daily candle"
+  },
+  "output_bindings": {
+    "c1": {
+      "long": {
+        "output_id": "571d0851-a9dd-4773-bd49-a34bbe1dd212",
+        "python_name": "confluence_buy",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "78acb7c8-f17b-4033-8ea5-c3bf365d7351",
+        "python_name": "confluence_sell",
+        "value_kind": "boolean"
+      }
+    },
+    "exit": {
+      "long": {
+        "output_id": "a0911741-5ef9-401d-bf32-86044a59c48c",
+        "python_name": "buySignal",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "f7accef5-1d99-49b8-bf4f-60ba89b6dc1e",
+        "python_name": "sellSignal",
+        "value_kind": "boolean"
+      }
+    }
+  },
+  "parameters": {
+    "c1": {
+      "atrLen": 25,
+      "detailAlerts": true,
+      "factor": 2.5,
+      "impulse": 1.0,
+      "rsiDnLv": 20,
+      "rsiLenL": 14,
+      "rsiLook": 10,
+      "rsiUpLv": 80,
+      "showFlip": true,
+      "showStar": true,
+      "showZones": true,
+      "swingLen": 8
+    },
+    "exit": {
+      "atrLen": 10,
+      "baseMult": 3.0,
+      "erHi": 0.4,
+      "floorMult": 1.2,
+      "halfLife": 40.0,
+      "kExp": 1.0,
+      "showRef": false,
+      "useEr": true
+    }
+  },
+  "qualification_evidence": [
+    "strategies/eye_age_supertrend_v1/qualification.json",
+    "tests/check_python03_anchored.py"
+  ],
+  "qualification_report_sha256": "54a56f99a2e2fb49595ce5bb4527ce9585262c61bfce5364c79d648883b971e9",
+  "qualified_total_candle_count": 5000,
+  "research_provenance": {
+    "combination_id": "3b497df7-f910-418d-9014-6d5255c7736f",
+    "dataset": {
+      "id": "d965d1fe-37c2-424c-8047-454650f1a3b1",
+      "manifest_sha256": "d9807930cd21302d33a69d7476d8504e76a2ea69afa315b99daea64a4160fdfd",
+      "members": [
+        {
+          "member": {
+            "id": "df77fc42-e037-40a0-a6ca-181f54e7504d",
+            "sha256": "b44745c3024fa06def28a8088a27124e0d0489052ea3bd05a7b9eb0fca701925"
+          },
+          "pair": "EUR/USD"
+        },
+        {
+          "member": {
+            "id": "07bbec41-e459-4872-878a-ba4e3644737a",
+            "sha256": "7e5c86cbacefc4a132eb0893595b943903317b607000da901e2f7994c4ef3cbd"
+          },
+          "pair": "EUR/GBP"
+        },
+        {
+          "member": {
+            "id": "50076670-5bd3-4cad-8a0c-31acac563a33",
+            "sha256": "9b44978f3a933e704b4fd70ed88ad1799c82acf44029e7b4387337819f144251"
+          },
+          "pair": "AUD/NZD"
+        },
+        {
+          "member": {
+            "id": "5fb97921-b62f-473b-a5a6-b5cfb9e74f6a",
+            "sha256": "59ba6adf51801b11fb52c50b922e83de10f60a27721150637bf570fe599b4c0e"
+          },
+          "pair": "CHF/JPY"
+        }
+      ]
+    },
+    "dependencies": {
+      "c1": {
+        "id": "36218a8b-d5af-47b4-abec-fe9b2211f0a0",
+        "path": "inputs/dependencies/pine_compat_v1.py",
+        "sha256": "b20a0fb76211c99abcd49ab1557d452afde740a9a8e051a86245553fe556555b",
+        "source_commit": "48afe10cc11c3d8f00740bbe99395e151e1dffbd"
+      },
+      "exit": {
+        "id": "f40238c0-8244-4db6-b5e5-adbdd5b2b4ec",
+        "path": "inputs/dependencies/pine_compat_v1.py",
+        "sha256": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+        "source_commit": "0e500dc207815231fc84702c2a6179f53292b927"
+      }
+    },
+    "plan_artifact": {
+      "id": "a50f94d5-6a14-4903-ac0c-489c033bda98",
+      "sha256": "c1c889781324dd692c9cab03d773250ef816428b909a1009c32ba15f8bf5c561"
+    },
+    "plan_id": "447626dc-9514-40d4-a36e-654903730b8f",
+    "result_artifact": {
+      "id": "e1c67913-5418-4271-9481-19b092e99c86",
+      "sha256": "b8d4ed383e5cbcc444e846e258e790815ca3ee09d2033eff9bbefc62ad35957c"
+    },
+    "roles": {
+      "c1": {
+        "candidate": {
+          "id": "4d2f5e72-42cd-437b-9a5b-d00f013eccd3",
+          "sha256": "98ea96ff4fe1983e4334c76d9aa258b05bfd5781ea424e415f45dce39a1618ab"
+        },
+        "conversion": {
+          "id": "1b75a5bc-28ef-4a93-8a94-df6867e5ef7d",
+          "sha256": "b4e65f6bfc5cc99f7d2132f8cc481d585e983ecd85849a1ae65390b36fef7c4a"
+        },
+        "parameters": {
+          "atrLen": 25,
+          "detailAlerts": true,
+          "factor": 2.5,
+          "impulse": 1.0,
+          "rsiDnLv": 20,
+          "rsiLenL": 14,
+          "rsiLook": 10,
+          "rsiUpLv": 80,
+          "showFlip": true,
+          "showStar": true,
+          "showZones": true,
+          "swingLen": 8
+        },
+        "source": {
+          "id": "45269a7e-3ad7-4f09-96e1-0799d127543a",
+          "sha256": "4bcfc93c09c34a942e980c49d2e8ec2ac7c138ce95bd0154a87d1c07cda616a2"
+        },
+        "source_version_id": "300065cd-91fe-422f-99c6-28a4e65dc157",
+        "title": "Eye Trend Zones [EyeAlgo]"
+      },
+      "exit": {
+        "candidate": {
+          "id": "b36dce54-e4d4-467e-b855-92657124c085",
+          "sha256": "eea385a86d31cd2ab16c84001326cf74ed03981c5a4718069a755e7c3efe2bc5"
+        },
+        "conversion": {
+          "id": "18f47274-2dbf-4a30-90a5-ae9afa5499ec",
+          "sha256": "b2f1de4b95b898bbdc4b02038b56ffeaa9d572534a09da27ab403e07b654d7ff"
+        },
+        "parameters": {
+          "atrLen": 10,
+          "baseMult": 3.0,
+          "erHi": 0.4,
+          "floorMult": 1.2,
+          "halfLife": 40.0,
+          "kExp": 1.0,
+          "showRef": false,
+          "useEr": true
+        },
+        "source": {
+          "id": "1caa9e08-8071-4ed0-ac88-d75c14373a87",
+          "sha256": "1f0e06ad8eef9f8b9b1c7f3f1f37730a39655518b96c884f52702913ace08abe"
+        },
+        "source_version_id": "cf20b972-b065-421d-beeb-0cc7a894414a",
+        "title": "Age Adaptive Supertrend"
+      }
+    },
+    "standards": [
+      {
+        "binding": {
+          "id": "3497adb5-8a7c-42ad-bf87-d4b389bcc43d",
+          "sha256": "3c3544bc9af29fa249ad828e2cb30a7c3e0b0d57f461734144cd7cb9141f7ee5",
+          "version": 1
+        },
+        "name": "exit_assessment"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "assessment_reference"
+      },
+      {
+        "binding": {
+          "id": "8b037fb4-5725-4aea-839d-9e69383abd2b",
+          "sha256": "957f6446e4e82086214ece87c9628d7d82ac71231b86b68181dcb4cd10c3c0f5",
+          "version": 1
+        },
+        "name": "exit_signal"
+      },
+      {
+        "binding": {
+          "id": "35b7a0d4-b517-4df8-9b04-8a5bf880f0b9",
+          "sha256": "7e27f670eb9cb5fbdcd8ecf48933815170575de17d2bb83caeae6b317992d897",
+          "version": 9
+        },
+        "name": "exit_signal_reference"
+      },
+      {
+        "binding": {
+          "id": "91d13302-fc72-4ab4-bd19-131eef3cf625",
+          "sha256": "8c4dfb701c3d1cc7a665f5398bf44dbc66add82a08c71ff339f5470c82ee58ef",
+          "version": 7
+        },
+        "name": "c1_signal"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "c1_assessment"
+      }
+    ]
+  },
+  "research_result_id": "18771091-9f76-4daf-bee9-a23f28634bae",
+  "signal_rules": {
+    "c1": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "571d0851-a9dd-4773-bd49-a34bbe1dd212",
+        "short_output_id": "78acb7c8-f17b-4033-8ea5-c3bf365d7351"
+      },
+      "evidence": {
+        "id": "5295532e-95b5-4c35-a693-0b960308aadf",
+        "sha256": "a6a99bee31158da07599f55f4c36ba16d0dba58f9b4ff20a664579ed531b3a49"
+      },
+      "id": "f3706d96-6e6e-41f1-8e2c-5bb91192401a",
+      "proposal_rule_key": "rs_confluence_buy_sell"
+    },
+    "exit": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "a0911741-5ef9-401d-bf32-86044a59c48c",
+        "short_output_id": "f7accef5-1d99-49b8-bf4f-60ba89b6dc1e"
+      },
+      "evidence": {
+        "id": "ccdb5b95-50f6-46be-aa82-8b49d96b07b9",
+        "sha256": "6ac1d7ffceeed5644230ca3799e81c4601cf3b366cb41cddaa75d033535ba97c"
+      },
+      "id": "cba54d80-6acd-47a2-aca7-f9908ce16958",
+      "proposal_rule_key": "rs_buy_sell_exit"
+    }
+  },
+  "source_commit": "cda6efba1a8b89c04b87cbf0f6e7aade9dfaa1b3",
+  "strategy_version": "eye_age_supertrend_v1"
+}

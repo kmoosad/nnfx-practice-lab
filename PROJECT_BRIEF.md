@@ -16,6 +16,20 @@ Select the indicator combination manually through work with Codex. Record its so
 
 Use the trading and signal semantics of `nnfx-indicator-lab`, with the execution timing and actual broker-fill behaviour specified here. The lab currently assesses four pairs; this project extends the selected combination to the 28 pairs below. Its practice results therefore cover a broader market set.
 
+For a history-dependent combination, the owner authorized additional history
+support on 27 November 2026. Its manifest pins the research dataset's first candle.
+Each calculation retains every supplied candle from that origin through the
+current partial candle; earlier candles in the requested window do not initialize
+the indicators. The full origin must remain available in the configured window.
+For this history mode, omit historical candles starting Friday or Saturday at
+17:00 New York, matching the research dataset's weekday series. Record the
+excluded count. The current partial candle retains the existing strict session
+validation, and C1, Exit and sizing ATR use the resulting weekday series.
+If it is missing, report unavailable input rather than reset or truncate the
+indicator history. This preserves the selected indicator rules and parameters;
+changing the origin requires a new immutable strategy binding. Ordinary candle
+windows remain in memory, without a new persistent indicator-state store.
+
 ## Accounts and permitted pairs
 
 Each configured master controller is linked to one distinct OANDA practice account and its notebook. An individual master run is one execution of that controller. OANDA supplies the actual account balance, including the first run's balance.

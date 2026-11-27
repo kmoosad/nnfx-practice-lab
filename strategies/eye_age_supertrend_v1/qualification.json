@@ -1,0 +1,58 @@
+{
+  "source": "offline_lab_reference_with_anchored_history",
+  "status": "passed",
+  "exhaustive": true,
+  "result_id": "18771091-9f76-4daf-bee9-a23f28634bae",
+  "qualified_total_candle_count": 5000,
+  "history_initialization": {
+    "mode": "anchored",
+    "start": "2013-01-01T22:00:00+00:00",
+    "calendar": "new_york_weekdays"
+  },
+  "pairs": [
+    {
+      "pair": "EUR/USD",
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "archived_windows": 1813,
+      "extended_windows": 1001,
+      "extended_input_sha256": "02cdfb08f4f21ae9f6161e0aac74bb8515d833d14ce239640e7c6d871f83c56a",
+      "partial_snapshots": 39,
+      "normalized_research_dates_and_ohlc": "exact",
+      "status": "passed"
+    },
+    {
+      "pair": "EUR/GBP",
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "archived_windows": 1813,
+      "extended_windows": 1001,
+      "extended_input_sha256": "def4f7b19a9e268ff69beec334d3d2890754465f99b4dc27f178b78b045b872b",
+      "partial_snapshots": 39,
+      "normalized_research_dates_and_ohlc": "exact",
+      "status": "passed"
+    },
+    {
+      "pair": "AUD/NZD",
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "archived_windows": 1813,
+      "extended_windows": 1001,
+      "extended_input_sha256": "2bde78b7d212d8047dee07870cb98b58534791fd975c753ec828c4854b0973d7",
+      "partial_snapshots": 39,
+      "normalized_research_dates_and_ohlc": "exact",
+      "status": "passed"
+    },
+    {
+      "pair": "CHF/JPY",
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "archived_windows": 1813,
+      "extended_windows": 1001,
+      "extended_input_sha256": "7dfa1e3cf549888e58830a7227f1a64b9d19f8e4bbc11f37c55cd16a5ecbb129",
+      "partial_snapshots": 39,
+      "normalized_research_dates_and_ohlc": "exact",
+      "status": "passed"
+    }
+  ]
+}

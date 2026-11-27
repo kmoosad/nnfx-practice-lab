@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
+import json
 import re
 from zoneinfo import ZoneInfo
 
@@ -32,7 +33,7 @@ class CandleCapture:
     metadata: dict
 
 
-def _candle_start(row):
+def _candle_start(row, *, historical_weekend=False):
     value = row.get("time") if isinstance(row, dict) else None
     if isinstance(value, str) and _CANDLE_TIME.fullmatch(value):
         try:
@@ -43,13 +44,13 @@ def _candle_start(row):
         else:
             # The Sunday opening bar is Monday's session. Friday and Saturday
             # evenings do not start FX daily sessions.
-            if local.time() == _DAILY_ALIGNMENT and local.weekday() not in (4, 5):
+            if local.time() == _DAILY_ALIGNMENT and (historical_weekend or local.weekday() not in (4, 5)):
                 return start
     raise ValueError("Invalid daily candle start")
 
 
-def _candle(row, *, complete):
-    start = _candle_start(row)
+def _candle(row, *, complete, historical_weekend=False):
+    start = _candle_start(row, historical_weekend=historical_weekend)
     if row.get("complete") is not complete:
         raise ValueError("Expected completed history and a final partial candle")
     mid = row.get("mid")
@@ -62,6 +63,17 @@ def _candle(row, *, complete):
     if "volume" in row and (type(volume) is not int or volume < 0):
         raise ValueError("Invalid candle volume")
     return Candle(start, float(opening), float(high), float(low), float(close), volume)
+
+
+def anchored_history(candles, origin):
+    """Use the lab's weekday series from its immutable first candle."""
+    starts = [i for i, candle in enumerate(candles) if candle.timestamp == origin]
+    if len(starts) != 1:
+        raise ValueError("Required indicator history start candle is unavailable")
+    history = tuple(c for c in candles[starts[0]:] if c.timestamp.astimezone(_NEW_YORK).weekday() not in (4, 5))
+    if len(history) < 15 or history[0].timestamp != origin:
+        raise ValueError("Required indicator history start candle is unavailable")
+    return history
 
 
 def capture_daily_candles(broker, pair, *, session_date: date) -> CandleCapture:
@@ -115,11 +127,24 @@ def capture_daily_candles(broker, pair, *, session_date: date) -> CandleCapture:
         responded = datetime.fromisoformat(read.responded_at)
         if not start <= requested <= responded < end:
             raise ValueError("Capture time falls outside the intended session")
-        candles = tuple(_candle(row, complete=index < count - 1) for index, row in enumerate(rows))
+        history = json.loads(broker.binding.manifest.body).get("history_initialization")
+        candles = tuple(_candle(row, complete=index < count - 1,
+                               historical_weekend=history is not None and index < count - 1)
+                        for index, row in enumerate(rows))
         if candles[-1].timestamp != start:
             raise ValueError("Final candle belongs to a different session")
         if any(prior.timestamp >= current.timestamp for prior, current in zip(candles, candles[1:])):
             raise ValueError("Daily candles are duplicated or out of order")
+        if history is not None:
+            if (not isinstance(history, dict) or set(history) != {"mode", "start", "calendar"}
+                    or history["mode"] != "anchored" or not isinstance(history["start"], str)
+                    or history["calendar"] != "new_york_weekdays"):
+                raise ValueError("Unsupported indicator history initialization")
+            origin = datetime.fromisoformat(history["start"])
+            metadata["indicator_history_start"] = history["start"]
+            metadata["indicator_candle_count"] = len(anchored_history(candles, origin))
+            metadata["excluded_non_session_candles"] = sum(
+                c.timestamp.astimezone(_NEW_YORK).weekday() in (4, 5) for c in candles)
     except ValueError as failure:
         metadata["reason"] = str(failure)
         return CandleCapture(None, metadata)
