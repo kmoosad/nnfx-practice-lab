@@ -18,7 +18,8 @@ on 27 November 2026. This is an independent experiment under the existing
 | Division | OANDA Australia Pty Ltd; the owner confirmed existing OANDA details continue |
 | Private connection prefix | `PRACTICE_C` |
 
-The [registry entry](../deploy/python03-experiment.toml) is prepared for installation.
+The [registry entry](../deploy/python03-experiment.toml) was installed on
+27 November 2026. Its controller and notebook are visible on the live dashboard.
 The [provenance record](../strategies/eye_age_supertrend_v1/provenance.json) retains
 the exact selected sources, rules, parameters and dependency identities. Account
 ID and token are in private USB configuration, outside version control. The
@@ -93,16 +94,25 @@ fresh clear account pass, then enables future weekday qualification. It does not
 trade during the capture window or enable ordinary activation. Failed or
 interrupted setup retains an exclusive receipt and cannot automatically repeat.
 
-The administrator first exports the protected host identities with
-[the read-only inspector](../deploy/inspect_python03_host.py). The frozen USB
-release is then installed with:
+The administrator exported the protected host identities with
+[the read-only inspector](../deploy/inspect_python03_host.py), then installed the
+corrected frozen USB release with this command (retained for the deployment record):
 
 ```sh
 sudo python3 /mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/release/deploy/add_python03.py
 ```
 
-Run this only once after preparation is verified. A partial failure retains a
-receipt and scheduling exclusion for investigation; never blindly rerun it.
+**Installation is complete; do not rerun this command.** The first attempt stopped
+before maintenance because the uninitialized Python 02 controller had no lock
+file. The corrected installer creates that lock with native writer ownership;
+the subsequent installation and native host checks passed. Both existing
+notebooks and schedules were preserved.
+
+Python 03's one-time check is scheduled for **28 November 2026 at 08:50
+Melbourne**. Its starting balance (Q0) remains unset until that check and fresh
+account validation pass. Successful setup enables the first possible regular
+qualification run on **1 December at 08:50 Melbourne**. Ordinary activation
+remains disabled. See [observed installation evidence](STATUS.md#verified-python-03-installation).
 
 Development uses `codex/python-03` in the existing checkout. All new development
 data, private configuration, notebooks and artifacts belong under

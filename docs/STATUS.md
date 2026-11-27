@@ -4,12 +4,14 @@ Updated 27 November 2026 (UTC).
 
 ## Current position
 
-**Python 03 is being prepared on `codex/python-03`.** Its intended AUD practice
-account passed read-only preflight. The selected Eye Trend Zones / Age Adaptive
-Supertrend calculations pass with the authorized fixed-origin weekday history.
-The 72-file package and 42 final controller regression checks pass. It is ready
-for administrator installation. See [Python 03](#python-03); production remains
-unchanged.
+**Python 03 is installed and verified**, developed on `codex/python-03`.
+Its independent controller and notebook show the selected Eye Trend Zones / Age
+Adaptive Supertrend combination with the authorized fixed-origin weekday history.
+The 72-file installed package, 42 application regression checks, 15 revised
+deployment guards and native host checks pass. Python 01 and Python 02's records
+and schedules were preserved. Python 03's initial candle check is scheduled for
+**28 November 08:50 Melbourne**; Q0 and qualification scheduling remain pending
+that check and guarded initialization. See [Python 03](#python-03).
 
 **Python 02 is installed from `codex/python-02`.** Its independent controller and
 notebook are visible on the production dashboard. The selected DRM/adaptive
@@ -3930,9 +3932,9 @@ installer or manually invoke the one-time setup ahead of its scheduled window.
 On **27 November 2026**, the owner requested **Python 03**, using research result
 `18771091-9f76-4daf-bee9-a23f28634bae` and the attached native-v20 AUD account
 named Python 3, ending 002. Existing OANDA details, trading rules and criteria
-continue. The proposed `practice-c` / `notebook-c` binding and exact selected
+continue. The installed `practice-c` / `notebook-c` binding and exact selected
 confluence C1 / opposite-position Exit events are recorded in
-[setup](PYTHON_03.md). No production controller or notebook has been added yet.
+[setup](PYTHON_03.md).
 
 **Account preflight passed.** Read-only intended-account OANDA responses confirm
 the alias and AUD currency, balance **50,000.9696**, no open trades or pending
@@ -4014,25 +4016,56 @@ and invalid-lock rejection. The [failure record](/mnt/nnfx-usb/development/data/
 retains the observed state. The application package and its 42-test evidence are
 unchanged by this installer-only correction.
 
-The corrected frozen release is ready for administrator installation; production is still
-unchanged. Private candidate configuration and all development evidence are on USB
+The corrected frozen release was installed by the administrator. Private candidate
+configuration and all development evidence are on USB
 under `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/`. Development
 uses the existing checkout on `codex/python-03`, with no new worktree. Existing
 documentation work was preserved.
 
-**Deployment dependency.** The live login has only the scoped dashboard-deploy
-sudo grant. Trading installation requires the administrator terminal. Python 02
-has a pending one-time setup at **28 November 08:50 Melbourne**; shared-code and
-registry changes must preserve that job and refresh its protected context as well
-as Python 01's protected plan. The Python 02-only installer cannot add this third
-experiment. No existing timer, protected plan, production notebook or dashboard
-has been changed by this preparation.
+### Verified Python 03 installation
+
+The administrator completed the corrected installation on **27 November 2026**.
+The [deployment receipt](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/python03-337bdc27b2c1-deployment.json)
+records `installed; Python 03 awaiting candle preflight and Q0`, zero broker
+requests and preservation of both existing notebooks and retained claims.
+Python 01's protected plan and Python 02's pending setup context reference the
+new shared code, registry and host-control evidence. Their account/strategy
+bindings, authority and replay identities remain unchanged. Python 02's helper
+and setup unit bytes were preserved.
+
+The [native system report](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/python03-337bdc27b2c1-system.json)
+passed controller exclusion, maintenance restoration, independent controller,
+no-catch-up/restart and dashboard sandbox/WAL checks, with actual notebook files
+preserved and no cleanup errors. These are broker-free host fixtures.
+
+Read-only [post-installation verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/post-deployment.json)
+at **12:21 UTC / 23:21 Melbourne** confirms all **72 application/resource files**
+match the reviewed wheel in both installed source and the native Python package.
+The code identity is `a345c96c4d7e6076299c7695d30f84b2f28cf26a13237a73ff1f7a8458185bc4`.
+The controller list, notebook list and all three notebook pages return HTTP 200.
+Python 03 shows both selected indicators, its exact manifest and an empty journal;
+Q0 and ordinary activation are unset. Python 01 currently has 16 saved trade
+records; the receipt's before/after file fingerprints establish preservation.
+
+Python 01 qualification and both Python 02/Python 03 initial-check timers are
+enabled, active and waiting for **27 November 21:50 UTC / 28 November 08:50
+Melbourne**. All three ordinary timers remain disabled/inactive, and all controller
+services are unmasked and idle. Python 03's qualification timer remains disabled
+until its own scheduled 28-pair candle check and fresh clear-account Q0 pass.
+Successful setup can enable the next weekday qualification run at **30 November
+21:50 UTC / 1 December 08:50 Melbourne**; neither setup nor that future run is
+claimed as already completed. Installation did not start a trading run.
+
+The login still has only the scoped dashboard-deploy sudo grant; the owner used
+the administrator terminal for this installation. **Do not rerun either installer
+or bootstrap manually.** Inspect the retained scheduled-setup receipt if the
+initial check fails.
 
 
 ## Next work
 
-Review the [Python 02 scheduled setup result](#python-02) after 28 November
-08:50 Melbourne, before its first possible regular qualification run on
+Review the [Python 02](#python-02) and [Python 03](#python-03) scheduled setup
+results after 28 November 08:50 Melbourne, before their first possible regular qualification runs on
 1 December. Preserve any failed setup evidence and resolve it before retrying.
 
 **Owner operating plan, agreed 20 November 2026.** Leave automatic qualification

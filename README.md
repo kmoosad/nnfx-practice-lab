@@ -64,9 +64,10 @@ deployed from `codex/python-02`; see [status](docs/STATUS.md#python-02) for the
 verified installation and scheduled initialization.
 
 [Python 03 setup](docs/PYTHON_03.md) records the selected Eye Trend Zones and
-Age Adaptive Supertrend combination and separate account/controller/notebook
-binding. Its calculations retain the fixed research start and weekday history;
-see [status](docs/STATUS.md#python-03) for verification and installation state.
+Age Adaptive Supertrend combination and installed independent account/controller/
+notebook binding. Its calculations retain the fixed research start and weekday
+history; see [status](docs/STATUS.md#python-03) for verified installation and the
+scheduled initial check.
 
 The [notebook module](nnfx_practice/notebook.py) derives each database path as
 `var/notebooks/<notebook-id>.sqlite3`. Explicit creation binds the notebook to its
