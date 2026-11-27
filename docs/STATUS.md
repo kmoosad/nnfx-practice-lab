@@ -56,6 +56,14 @@ Ordinary scheduling remains disabled/inactive; no ordinary activation or trading
 run was started by maintenance. **This incident is resolved; M10 remains
 incomplete.** Do not rerun the incident deployment or recovery commands.
 
+Both dashboards are **available through Tailscale**. The owner reported working
+access after the administrator setup. Verification at **21:39 Melbourne on
+20 November** confirms indicator lab HTTPS 443 forwards to local 8878 and practice
+HTTPS 8443 forwards to local 8879; both dashboard URLs return HTTP 200. The
+[Tailscale access record](#tailscale-access-to-both-dashboards) retains the evidence,
+and the [README](../README.md#access-both-dashboards-through-tailscale) owns the
+client addresses and setup reference.
+
 The owner authorized [scoped dashboard deployment access](#scoped-dashboard-deployment-access)
 for `codexdev`. The corrected one-time setup and the
 [Controller wording update](#controller-wording-update) are **installed and deployed**.
@@ -1003,38 +1011,84 @@ their warnings. No broker state or recorded price was changed.
 
 The final release is `dashboard-deploy-47c54274a23e09eee665c3f0`, receipt
 `/var/lib/nnfx-dashboard-deploy/20261126T121104461876.json`. The
-[host verification](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/final-host-verification.json) confirms all 47
+[host verification](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/final-host-verification.json) confirms all 47
 release files, all 49 unchanged qualified trading files, unchanged trading
 controls, service restrictions, helper and deployment configuration. The process
 is active as `nnfx-view:nnfx-read`, PID `1097787`, on the existing port 8879.
 Existing Tailscale routes are retained.
 
-The [74 focused checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/checks.log) pass on the USB worktree. The
-[three targeted protection checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/protection-checks.log) pass after
+The [74 focused checks](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/checks.log) pass on the USB worktree. The
+[three targeted protection checks](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/protection-checks.log) pass after
 the correction, including a new regression case for cleared protection fields
 and preserved warnings on open targets. The
-[saved production-data comparison](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/live-data-checks.json) checks all
+[saved production-data comparison](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/live-data-checks.json) checks all
 12 trade records, account totals, IDs, prices, units, charges, closed results,
 precise entry/exit times and every recorded fill against the pre-deployment UI.
-The [live browser checks](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/browser-checks.json) pass at 320, 390, 716
+The [live browser checks](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/browser-checks.json) pass at 320, 390, 716
 and 1280 pixels: one table with 22 columns, readable New York times, filters,
 clear/no-match states, details/fills, keyboard scrolling and navigation. Expanded
 records fit without page overflow or browser errors. Private HTTPS 8443 returns
 200 with normal certificate validation; the verifier maps the hostname to the
 existing tailnet IP to accommodate this host's local DNS behavior. The
-[desktop table](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/journal-live-1280.png) and
-[phone trade details](/mnt/nnfx-usb/development/worktrees/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/trade-details-live-390.png) were visually reviewed.
+[desktop table](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/journal-live-1280.png) and
+[phone trade details](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126/trade-details-live-390.png) were visually reviewed.
 
 Chromium's first launch exceeded Unix socket path limits in the deeply nested
 USB temporary directory. Browser working files therefore used the task-specific
 short USB path `/mnt/nnfx-usb/development/tmp/jp26`; captures and other artifacts
-remain with the worktree. Internal storage was not used as a fallback.
+were retained on USB and archived during the cleanup below. Internal storage
+was not used as a fallback.
+
+On 26 November 2026, repository cleanup removed the merged
+`deploy-journal-20261126` worktree and the merged local branches
+`deploy-journal-20261126` and `journal-trades-table`. Only the main checkout and
+local `main` branch remain. All 191 worktree data/artifact files were moved to
+`/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var`,
+with matching contents and metadata verified before removal. The evidence links
+above now use that archive; the [cleanup record](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/cleanup-record.json)
+retains the file hashes and removed branch commits.
 
 These are production deployment and saved-data display checks. No broker request,
 notebook write, strategy change or trading-control change was performed. M10
 execution qualification and ordinary activation retain their existing scope and
 remaining requirements. The earlier internal-storage development snapshot setup
 was never executed and is retired; production can be viewed at the normal URL.
+
+## Tailscale access to both dashboards
+
+On 20 November 2026, the owner requested access to both the indicator lab and
+practice dashboards through the current Tailscale setup. The active Serve
+configuration has HTTPS 443 at `thinkbook-server.tail57730c.ts.net` forwarding
+`/` to `http://127.0.0.1:8878`. HTTPS 8443 on the same hostname forwards `/` to
+`http://127.0.0.1:8879`. The
+[README](../README.md#access-both-dashboards-through-tailscale) owns the command
+and client addresses.
+
+**Initial attempt at 18:49 Melbourne.** Direct configuration returned
+`Access denied: serve config denied`; the exact non-interactive sudo attempt was
+also denied for `codexdev`. A subsequent `tailscale serve status --json` matched
+the captured pre-change configuration, with only the existing 443 endpoint.
+No 8443 endpoint was installed by that attempt. The existing indicator HTTPS endpoint returned
+HTTP 200 with normal certificate validation and an explicit DNS-to-Tailscale-IP
+mapping (`100.106.59.99`); this host's ordinary lookup of its MagicDNS hostname
+failed. The practice LAN `/controllers` page also returned HTTP 200.
+
+The [verification summary](../var/verification/tailscale-dashboards-20261120/verification.json)
+and [original Serve configuration](../var/verification/tailscale-dashboards-20261120/serve-before.json)
+retain that initial result.
+
+**Completed and verified at 21:39 Melbourne.** After the phone-key and
+administrator setup instructions, the owner reported that access was working.
+Read-only `tailscale serve status --json` confirms both HTTPS forwards above,
+with the original 443 route preserved. Indicator lab `/` and practice
+`/controllers` both return HTTP 200 over HTTPS with normal certificate validation.
+These local requests use an explicit hostname-to-Tailscale-IP mapping because of
+the earlier local MagicDNS lookup failure; client access is owner-reported.
+Additional remote browser/navigation checks were not performed for this setup.
+The [completion summary](../var/verification/tailscale-dashboards-20261120/completion.json)
+and [active Serve configuration](../var/verification/tailscale-dashboards-20261120/serve-active.json)
+retain the observed result. No application deployment, trading run, broker request
+or timer change was performed for this access work.
 
 ## Controller wording update
 

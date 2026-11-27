@@ -213,6 +213,34 @@ systemctl --user status nnfx-practice-dev.service
 systemctl --user stop nnfx-practice-dev.service
 ```
 
+### Access both dashboards through Tailscale
+
+Both dashboards are available through this server's Tailscale hostname. The
+indicator lab uses HTTPS port 443, and the practice dashboard uses HTTPS port
+8443, forwarding to its existing local listener on 8879. The owner completed
+setup on 20 November 2026; the
+[access record](docs/STATUS.md#tailscale-access-to-both-dashboards) records both
+active forwards, successful HTTPS requests and owner-reported working access.
+
+The one-time administrator command is retained as a setup reference:
+
+```sh
+sudo tailscale serve --bg --https=8443 http://127.0.0.1:8879
+tailscale serve status
+```
+
+Connect the client device to Tailscale and use:
+
+| Dashboard | Address | Local target |
+| --- | --- | --- |
+| Indicator lab | <https://thinkbook-server.tail57730c.ts.net/> | `127.0.0.1:8878` |
+| Practice | <https://thinkbook-server.tail57730c.ts.net:8443/controllers> | `127.0.0.1:8879` |
+
+The `--bg` setting persists the additional forwarding. Each dashboard keeps its
+own root URL so navigation and assets use the corresponding HTTPS port.
+[Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve) provides
+tailnet access subject to the tailnet's access rules.
+
 ### Deploy the merged dashboard layouts
 
 The owner completed live dashboard deployment on 20 November 2026, verified at
