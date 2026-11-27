@@ -1,8 +1,16 @@
 # Project status
 
-Updated 26 November 2026 (UTC).
+Updated 27 November 2026 (UTC).
 
 ## Current position
+
+**Python 02 is installed from `codex/python-02`.** Its independent controller and
+notebook are visible on the production dashboard. The selected DRM/adaptive
+BandPass strategy passed the archived comparison, and its AUD practice account
+passed read-only preflight. Python 01's records and schedule were preserved.
+The initial candle check is scheduled for **28 November 08:50 Melbourne**;
+Python 02's Q0 and qualification scheduling remain pending that check and guarded
+initialization. See [Python 02](#python-02) for the observed deployment evidence.
 
 The journal's single table, filters, readable labels and two-line dates are
 [deployed and verified](#production-journal-deployment) on production port 8879 /
@@ -3757,7 +3765,110 @@ updates. It did not rerun deployment, change controls, contact OANDA or read pri
 credentials. Scheduled signal-dependent execution and final activation acceptance
 remain pending; successful deployment does not complete M10.
 
+## Python 02
+
+On **27 November 2026**, the owner requested an additional independent test named
+**Python 02**, using research result `a83ffe21-90eb-4674-99e3-7c80d6871a6c` and the
+attached native-v20 AUD practice account named Python 2, ending 003. The owner
+confirmed **OANDA Australia Pty Ltd**. Trading criteria and operating rules remain
+unchanged. [Setup and deployment order](PYTHON_02.md) records the binding and
+integration boundary; the versioned manifest owns the indicator definitions.
+
+**Implementation.** `practice-b` / `notebook-b` uses Distributional Rank Momentum
+(`BullishFlip` / `BearishFlip`) and L2 Ehlers Adaptive BandPass (`doLongExit` /
+`doShortExit` with the accepted opposite-position mapping). Both saved conversions
+and their exact Pine dependency are packaged locally. Explicit strategy selection
+replaces Python 01-specific assumptions in management, entry, lifecycle and
+qualification checks. Each binding still requires its immutable packaged manifest
+and exact qualified count. Python 01's strategy files and manifest are unchanged.
+
+**Archived qualification passed.** All output series and sizing ATR match the
+archived four-pair result and original code. The **512-candle** window has zero
+current/prior signal mismatches across **6,244 rolling windows** and **144 modified
+partial-candle snapshots**. The [packaged report](../strategies/drm_adaptive_bandpass_v1/qualification.json)
+and [reproducible comparison](../tests/check_python02_reference.py) retain the
+scope. This is offline calculation evidence, not broker execution qualification.
+
+**Account preflight passed.** The existing private token can access the specified
+account. Read-only OANDA evidence confirms its name/currency, exact balance
+**AUD 50,000.6603**, zero open trades and pending orders, all 28 instrument
+definitions and required pricing/conversion coverage. Division confirmation is
+owner evidence, distinct from the API response. The redacted
+[account report](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/account-preflight.json)
+is retained on USB. No order or account mutation was submitted.
+
+**Prepared artifacts.** The USB [development notebook record](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/prepared-notebook.json)
+confirms `practice-b`, `notebook-b`, AUD, the 512-candle strategy and SQLite integrity
+`ok`; Q0 and activation are unset. Its connection file is owner-only. The
+[wheel check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/package-check.json)
+verifies all **60 application/resource files** and isolated imports of both
+strategies at their respective 386/512 counts. Source, wheel, notebook and
+verification data are separate under the mounted USB drive. The existing
+checkout is on the new branch; unrelated documentation edits were preserved.
+
+**Controller verification passed.** The [16 focused checks](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/final-tests.log)
+cover both strategy manifests, exact windows, fresh-event and Exit direction
+semantics, two-leg entry and subsequent opposite Exit, separate notebooks and
+dashboard pages, Python 01 regression behavior and account/strategy qualification
+gates. The [nine deployment/setup checks](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/deployment-tests.log)
+cover registry/private-binding preservation, existing plan replay identities,
+administrator refusal, next-weekday/DST scheduling, failed candle coverage,
+initialization failure and non-replay. These are offline fixtures. A preliminary
+test correctly rejected a reused fixture's account-A transactions for account B;
+the fixture was corrected before the passing run. The interrupted broader
+preliminary run is not claimed as an all-passing suite.
+
+**Administrator installation completed.** The owner ran the
+[read-only inspector](../deploy/inspect_python02_host.py), then the frozen
+[scoped installer](../deploy/add_python02.py). Administrator execution was needed
+because `codexdev` has only the dashboard-deployment sudo grant. The
+[inspection](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/host-inspection.json)
+captured the original protected Python 01 plan and notebook identities. The
+[deployment receipt](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/python02-618a04984fb7-deployment.json)
+confirms the installed shared application, separate native Python 02 notebook,
+private binding and scheduled setup job. Python 01's notebook/sidecar/claim
+files were preserved. Its protected plan retains its original schedule and
+replay identity with updated code/configuration and host-control evidence;
+its qualification timer is enabled, active and waiting. Deployment made no
+broker requests and did not initialize Python 02's Q0 or start a trading run.
+
+**Native and live verification passed at 22:14 Melbourne / 11:14 UTC.** The
+[actual system-control fixtures](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/python02-618a04984fb7-system.json)
+passed with existing notebook files preserved and no cleanup errors. The owner
+restarted the observational dashboard to load the new registry. All four live
+Controllers, Notebooks and individual notebook pages return HTTP 200; Python 02
+shows its own selected indicators and an unrecorded Q0. Its private HTTPS
+notebook page also returns HTTP 200 with normal certificate validation. The
+[independent verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/post-deployment-check.json)
+matches all **60 application/resource files** across working source, installed
+source and installed package, and the installed bootstrap matches the frozen
+release. Both controllers are idle; both ordinary timers remain disabled.
+The source installer now includes the dashboard restart; the frozen executed
+release and original deployment receipt remain unchanged. The
+[final nine setup checks](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/evidence/final-setup-checks.log)
+passed again after that addition.
+
+**Scheduled initialization remains pending.** The one-time setup timer is
+enabled, active and waiting for **28 November 08:50 Melbourne / 27 November
+21:50 UTC**. It captures Python 02's own weekday **16:50 New York** 28-pair candle
+evidence. Only a pass and a fresh clear account snapshot can proceed through
+guarded Q0 initialization and enable the protected automatic qualification plan.
+The first regular Python 02 qualification run would then be **1 December
+08:50 Melbourne / 30 November 21:50 UTC**. The job never invokes a trading run
+in the capture window and refuses to repeat an attempted setup. On failure,
+inspect its protected `bootstrap-receipt.json` before any recovery.
+
+Python 02's qualification timer is currently disabled, with Q0 and activation
+unset. The screenshot balance was not used as Q0. Neither scheduled candle
+coverage nor actual Python 02 trading execution has been claimed as verified.
+Python 01's qualification continues under its existing rules. Do not rerun the
+installer or manually invoke the one-time setup ahead of its scheduled window.
+
 ## Next work
+
+Review the [Python 02 scheduled setup result](#python-02) after 28 November
+08:50 Melbourne, before its first possible regular qualification run on
+1 December. Preserve any failed setup evidence and resolve it before retrying.
 
 **Owner operating plan, agreed 20 November 2026.** Leave automatic qualification
 running. The owner will check the dashboard **Tuesday–Saturday at 09:30 Melbourne**

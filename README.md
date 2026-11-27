@@ -57,6 +57,12 @@ The manifest records the selected research result, fixed settings and
 386-candle window. The package exposes `observe_c1`, `observe_exit` and
 `sizing_atr` for an exact window.
 
+[Python 02 setup](docs/PYTHON_02.md) adds Distributional Rank Momentum and the
+adaptive BandPass Exit through a separate controller, account and notebook.
+Its [registry entry](deploy/python02-experiment.toml) and versioned strategy are
+deployed from `codex/python-02`; see [status](docs/STATUS.md#python-02) for the
+verified installation and scheduled initialization.
+
 The [notebook module](nnfx_practice/notebook.py) derives each database path as
 `var/notebooks/<notebook-id>.sqlite3`. Explicit creation binds the notebook to its
 account and exact manifest. The storage layer provides a writer and a read-only

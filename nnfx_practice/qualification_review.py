@@ -60,6 +60,7 @@ def report_values(db):
 
 def facts(db, plan):
     """Concrete record IDs, including missing requirements; useful before review."""
+    count = db.execute('SELECT lookback_candles FROM notebook').fetchone()[0]
     runs = {r['run_id']: dict(r) for r in db.execute('''SELECT r.* FROM runs r JOIN run_invocations i USING(run_id)
         WHERE i.mode = 'qualification' ''') if json.loads(db.execute(
         'SELECT evidence_json FROM run_invocations WHERE run_id = ?', (r['run_id'],)).fetchone()[0]).get('source') == 'practice_execution'
@@ -136,7 +137,7 @@ def facts(db, plan):
         if (run['status'] == 'completed' and run['ended_at'] and run['duration_seconds'] is not None
                 and math.isfinite(run['duration_seconds']) and run['duration_seconds'] >= 0
                 and start.weekday() < 5 and (start.hour, start.minute) == (16, 50)
-                and run['lookback_candles'] == 386 and run['final_snapshot_id'] and not run['refresh_error']
+                and run['lookback_candles'] == count and run['final_snapshot_id'] and not run['refresh_error']
                 and len(stages) == 2 and all(s['status'] == 'completed' for s in stages)
                 and [r['pair'] for r in entries] == list(PERMITTED_PAIRS)
                 and all(r['outcome'] in ('completed', 'skipped') for r in entries)

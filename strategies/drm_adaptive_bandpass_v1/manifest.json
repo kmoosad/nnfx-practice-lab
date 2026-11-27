@@ -1,0 +1,275 @@
+{
+  "conversion_hashes": {
+    "c1": "9da7623873819e24ecc1d530464a7941eaa0d1a4c56219143885db44c2eec181",
+    "exit": "c640fdaaf28a0578ea661f0b80f380157d4816e9786f7bbb501db62ed1ebe908"
+  },
+  "dependency_hashes": {
+    "inputs/dependencies/pine_compat_v1.py": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+    "nnfx/assessment.py": "d86dca0aa4528139a58ee65d55a7c8dadcabffd152a699fa611dc58c8c7826ec",
+    "nnfx/comparisons.py": "cddda5f1adfb2d4e7ca454cf8ab82de2baee1037875418bc98aac7e05c3b7fae",
+    "nnfx/interface.py": "9a6ac7730830cce7a9f08743f0a3abd861c1dcb409783b5197dd6feba210f8a4",
+    "nnfx/signals.py": "096a7b887fdf48124810e28ccd0b870bf0d765b7fc608faf5b8f52b81eb46c3e"
+  },
+  "implementation_hashes": {
+    "__init__.py": "ca4b9900ef85040067ae37c4d16e145b7d08a8495d3d62fa6f71b98a2f270179",
+    "atr.py": "05a441fdf4f463a06d95cc58719bfc137197240fc0a9799c8004f0da9f2dd076",
+    "c1.py": "435b4b7e59d44d989b89317f7302576bf4b862f24d69f2a0b5b21ce35cfc60a5",
+    "comparisons.py": "cddda5f1adfb2d4e7ca454cf8ab82de2baee1037875418bc98aac7e05c3b7fae",
+    "exit.py": "0695af5892c1200a3ff9d77d20c2253254344ce0276d21b8a0627e968c5d9eb2",
+    "interface.py": "918a7dd052e1ceb7d294f9619b201c91642abf68354a9359d478ef32dfbb8dd0",
+    "pine_compat.py": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+    "signals.py": "41c34bbcdb96136be99b464a3f88b1f8bdc391adb21aeb1c49b67ce97addf6d1"
+  },
+  "lab_numeric_semantics": {
+    "events": "Paired Boolean events: BullishFlip is Long; BearishFlip is Short; doLongExit closes shorts; doShortExit closes longs",
+    "indicator_calculations": "Frozen binary64 conversions and exact registered Pine compatibility dependency",
+    "sizing_atr": "ATR(14) simple mean via math.fsum and original true-range candidate order, nine-decimal ties retain first full-precision winner",
+    "snapshot": "Evaluate the saved Lab conversions on each stage's 16:50 partial-candle snapshot; retained confirmClose=true"
+  },
+  "output_bindings": {
+    "c1": {
+      "long": {
+        "output_id": "de000d0a-54e6-4274-b517-138f935084cc",
+        "python_name": "BullishFlip",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "26ddd25c-6b98-4253-a4fd-46428277291c",
+        "python_name": "BearishFlip",
+        "value_kind": "boolean"
+      }
+    },
+    "exit": {
+      "long": {
+        "output_id": "970a5830-dff9-4fa5-8c9b-bc252f091c38",
+        "python_name": "doLongExit",
+        "value_kind": "boolean"
+      },
+      "short": {
+        "output_id": "694e8cf1-3963-49c2-84a9-c634d2cbfce2",
+        "python_name": "doShortExit",
+        "value_kind": "boolean"
+      }
+    }
+  },
+  "parameters": {
+    "c1": {
+      "EMALength": 30,
+      "Lookback": 60,
+      "UseEMAConfluence": true,
+      "lThreshold": 40.0,
+      "momLen": 60,
+      "uThreshold": 90.0
+    },
+    "exit": {
+      "atrLen": 14,
+      "avgLength": 3,
+      "bandwidth": 0.3,
+      "confirmClose": true,
+      "cooldownBars": 2,
+      "cycleMode": "Adaptive (Hilbert)",
+      "fixedCycle": 48,
+      "hpPeriod": 48.0,
+      "lbL": 5,
+      "lbR": 5,
+      "leadDecay": 0.93,
+      "leadGain": 1.3,
+      "lpPeriod": 10.0,
+      "maxCycle": 48.0,
+      "minCycle": 10.0,
+      "peakDecay": 0.991,
+      "plotBear": true,
+      "plotBull": true,
+      "plotHiddenBear": false,
+      "plotHiddenBull": false,
+      "rangeLower": 5,
+      "rangeUpper": 60,
+      "showStateBG": true,
+      "slMult": 2.0,
+      "tpMult": 3.0,
+      "trailLen": 10,
+      "trailMult": 3.0,
+      "trigFactor": 0.9,
+      "useTPSL": true,
+      "useTrail": false,
+      "useZeroExit": true,
+      "useZeroFilter": false
+    }
+  },
+  "qualification_evidence": [
+    "strategies/drm_adaptive_bandpass_v1/qualification.json",
+    "tests/check_python02_reference.py"
+  ],
+  "qualification_report_sha256": "736e9614c62b5216d788541c20f9a1ab17d5b3c66ade3c421d1728ba4cc3d31f",
+  "qualified_total_candle_count": 512,
+  "research_provenance": {
+    "combination_id": "edbc4738-f912-4172-91bd-df0e736bbbe2",
+    "confirmation_average_win_percentage": 68.68019300743553,
+    "confirmation_result_id": "d1b35846-2425-4cdc-8831-cc8c98b03871",
+    "dataset": {
+      "id": "d965d1fe-37c2-424c-8047-454650f1a3b1",
+      "manifest_sha256": "d9807930cd21302d33a69d7476d8504e76a2ea69afa315b99daea64a4160fdfd",
+      "members": [
+        {
+          "member": {
+            "id": "df77fc42-e037-40a0-a6ca-181f54e7504d",
+            "sha256": "b44745c3024fa06def28a8088a27124e0d0489052ea3bd05a7b9eb0fca701925"
+          },
+          "pair": "EUR/USD"
+        },
+        {
+          "member": {
+            "id": "07bbec41-e459-4872-878a-ba4e3644737a",
+            "sha256": "7e5c86cbacefc4a132eb0893595b943903317b607000da901e2f7994c4ef3cbd"
+          },
+          "pair": "EUR/GBP"
+        },
+        {
+          "member": {
+            "id": "50076670-5bd3-4cad-8a0c-31acac563a33",
+            "sha256": "9b44978f3a933e704b4fd70ed88ad1799c82acf44029e7b4387337819f144251"
+          },
+          "pair": "AUD/NZD"
+        },
+        {
+          "member": {
+            "id": "5fb97921-b62f-473b-a5a6-b5cfb9e74f6a",
+            "sha256": "59ba6adf51801b11fb52c50b922e83de10f60a27721150637bf570fe599b4c0e"
+          },
+          "pair": "CHF/JPY"
+        }
+      ]
+    },
+    "pine_dependency": {
+      "id": "f40238c0-8244-4db6-b5e5-adbdd5b2b4ec",
+      "path": "inputs/dependencies/pine_compat_v1.py",
+      "sha256": "40e2b2794f58bdcf52a3565308c8713016e5f100acaf2472ff1061e32c115e30",
+      "source_commit": "0e500dc207815231fc84702c2a6179f53292b927"
+    },
+    "plan_artifact": {
+      "id": "116ea726-e9ec-4f7d-9627-50328f4f16f0",
+      "sha256": "1ab698f4dfa6c96f4df459f6ae246ad5c1b0c445eaeb4e0ab23b09dfd810cd69"
+    },
+    "plan_id": "e5455aae-71be-4315-a6dd-b4a7c9916e18",
+    "result_artifact": {
+      "id": "6e00cc56-d19a-43b1-a6e1-528eb075dc9e",
+      "sha256": "5a5561a11985a3841bd7a043450769007c6cf5fcc00c5433b418c32300d16296"
+    },
+    "roles": {
+      "c1": {
+        "candidate": {
+          "id": "77136e9a-14d4-4f42-a671-f38f77dc04d8",
+          "sha256": "3621999a43827a521ce7435718809cb9992481161152f96fbe0064b00d6a6357"
+        },
+        "conversion": {
+          "id": "a5b180b0-decf-4902-b19a-f5da69c3db23",
+          "sha256": "9da7623873819e24ecc1d530464a7941eaa0d1a4c56219143885db44c2eec181"
+        },
+        "source": {
+          "id": "d07886c4-58ce-43b3-896f-47bd6a14162c",
+          "sha256": "53cfa27611473eb05615380ddc2fa7de60f9fb75b47f951778f3a659f23bc08e"
+        },
+        "source_version_id": "a167b3bc-3f30-4044-9a03-f61006bd37a4",
+        "title": "Distributional Rank Momentum | NAL"
+      },
+      "exit": {
+        "candidate": {
+          "id": "d5af8971-8af4-4378-84b7-458c9ca0b603",
+          "sha256": "bf72a579d7d46d0195e78aaf09d9612be78f0632b3e1da39a16f47f6cbe86138"
+        },
+        "conversion": {
+          "id": "68cc0637-3098-4916-a5eb-31a5a491ae20",
+          "sha256": "c640fdaaf28a0578ea661f0b80f380157d4816e9786f7bbb501db62ed1ebe908"
+        },
+        "source": {
+          "id": "28d8df09-5d05-4c47-8210-f4c3dd736194",
+          "sha256": "072fdd92efaf12026e838c85024140ee380343e3cdd81b29d249ec099b2d34eb"
+        },
+        "source_version_id": "d1cda481-15e4-4691-9b00-4b5a8e84d844",
+        "title": "[blackcat] L2 Ehlers Adaptive BandPass Filter"
+      }
+    },
+    "standards": [
+      {
+        "binding": {
+          "id": "3497adb5-8a7c-42ad-bf87-d4b389bcc43d",
+          "sha256": "3c3544bc9af29fa249ad828e2cb30a7c3e0b0d57f461734144cd7cb9141f7ee5",
+          "version": 1
+        },
+        "name": "exit_assessment"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "assessment_reference"
+      },
+      {
+        "binding": {
+          "id": "8b037fb4-5725-4aea-839d-9e69383abd2b",
+          "sha256": "957f6446e4e82086214ece87c9628d7d82ac71231b86b68181dcb4cd10c3c0f5",
+          "version": 1
+        },
+        "name": "exit_signal"
+      },
+      {
+        "binding": {
+          "id": "35b7a0d4-b517-4df8-9b04-8a5bf880f0b9",
+          "sha256": "7e27f670eb9cb5fbdcd8ecf48933815170575de17d2bb83caeae6b317992d897",
+          "version": 9
+        },
+        "name": "exit_signal_reference"
+      },
+      {
+        "binding": {
+          "id": "d56e9db2-c9fc-4e36-9904-fd9b225402d8",
+          "sha256": "a05ca238bb24a79020e22f5ab9736e0adeb8c82f1f4ea0bebbaf7b02c69c935c",
+          "version": 10
+        },
+        "name": "c1_signal"
+      },
+      {
+        "binding": {
+          "id": "bf889c23-2b91-4fe5-bcd9-a5ccdbd5a9b3",
+          "sha256": "ce96f31281ecb396e64454f315f2cf90d9faa2388476f2f45ce412fd12b76659",
+          "version": 2
+        },
+        "name": "c1_assessment"
+      }
+    ],
+    "total_research_pips": 7356.771428571429
+  },
+  "research_result_id": "a83ffe21-90eb-4674-99e3-7c80d6871a6c",
+  "signal_rules": {
+    "c1": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "de000d0a-54e6-4274-b517-138f935084cc",
+        "short_output_id": "26ddd25c-6b98-4253-a4fd-46428277291c"
+      },
+      "evidence": {
+        "id": "7a7e9761-ecb4-4eb7-b56e-016214f9da52",
+        "sha256": "ae16c9daf0d6eb997bb93f3125f6ea799c1d4b0ac7a7e75c0a9a7d11a952696d"
+      },
+      "id": "62fe02f8-a816-473e-9bb0-c87be2fea36d",
+      "proposal_rule_key": "rule_set_1"
+    },
+    "exit": {
+      "definition": {
+        "form": "paired_directional_events",
+        "long_output_id": "970a5830-dff9-4fa5-8c9b-bc252f091c38",
+        "short_output_id": "694e8cf1-3963-49c2-84a9-c634d2cbfce2"
+      },
+      "evidence": {
+        "id": "fd23db95-5b78-4bf7-a834-626583448cba",
+        "sha256": "239a00e0b289438974952d42febfd5d180e9f8adc4f4081720c90f51fb99c22b"
+      },
+      "id": "e439e29b-5d80-498d-b503-2d694a730b4c",
+      "proposal_rule_key": "exit_rule_1"
+    }
+  },
+  "source_commit": "cda6efba1a8b89c04b87cbf0f6e7aade9dfaa1b3",
+  "strategy_version": "drm_adaptive_bandpass_v1"
+}

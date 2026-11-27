@@ -1,0 +1,8 @@
+# Append this entry to the reviewed registry during the multi-account deployment.
+# Private account and token fields belong only in the service-owned .env file.
+[[experiments]]
+controller_id = "practice-b"
+notebook_id = "notebook-b"
+notebook_name = "Python 02"
+strategy_version = "drm_adaptive_bandpass_v1"
+connection_key = "PRACTICE_B"

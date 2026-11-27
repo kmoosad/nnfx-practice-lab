@@ -1,17 +1,14 @@
 """Explicit qualification and ordinary activation; no timer or order operations."""
 
-import json
-from pathlib import Path
 from uuid import uuid4
-
-from strategies import t3_bandpass_v1 as strategy
 
 from .broker import money
 from .config import ConfigurationError, load_binding
 from .control import maintenance
-from .evidence import canonical_json, encode_evidence
+from .evidence import encode_evidence
 from .notebook import _check_binding, open_notebook, transaction
 from .reconciliation import _save_snapshot, _snapshot, reconcile_snapshot
+from .strategy import select_strategy
 
 
 INITIAL_REQUIREMENTS = ('strategy_qualification', 'account_preflight', 'candle_preflight', 'initial_account_resolution')
@@ -20,11 +17,7 @@ ACTIVATION_REQUIREMENTS = (*EXECUTION_REQUIREMENTS, 'm10_final', *(f'A{i:02}' fo
 
 
 def validate_strategy(binding):
-    packaged = json.loads(Path(strategy.__file__).with_name('manifest.json').read_text())
-    if (binding.experiment.strategy_version != 't3_bandpass_v1'
-            or binding.manifest.body != canonical_json(packaged)
-            or binding.connection.lookback_candles != strategy.LOOKBACK_CANDLES):
-        raise ConfigurationError('Lifecycle requires qualified t3_bandpass_v1 and exactly 386 candles')
+    select_strategy(binding)
 
 
 def evidence_record(broker, evidence, requirements):

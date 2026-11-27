@@ -9,15 +9,12 @@ from datetime import datetime
 from decimal import localcontext
 from itertools import groupby
 import json
-from pathlib import Path
 from uuid import uuid4
-
-from strategies import t3_bandpass_v1 as strategy
 
 from .broker import BrokerError, broker_id, instrument, money
 from .candles import capture_pair_candles
-from .config import ConfigurationError, PERMITTED_PAIRS
-from .evidence import canonical_json, encode_evidence, redact
+from .config import PERMITTED_PAIRS
+from .evidence import encode_evidence, redact
 from .ledger import fill_details
 from .manage_open import _legs, _observe, _response_transactions
 from .notebook import _check_binding, finish_pair, pair_is_available, prepare_attempt, reserve_set, transaction
@@ -25,6 +22,7 @@ from .preflight import _one_row, _tradeable_price
 from .reconciliation import _issue, _release_closed_sets, apply_confirmed_transactions, import_through
 from .signal_actions import entry_signal
 from .sizing import levels, margin_requirement, size_candidate
+from .strategy import select_strategy
 
 
 STAGE = "manage_new"
@@ -35,8 +33,9 @@ class EntryFailure(ValueError):
 
 
 class _Candidate:
-    def __init__(self, db, broker, run_id, pair):
+    def __init__(self, db, broker, run_id, pair, strategy):
         self.db, self.broker, self.run_id, self.pair = db, broker, run_id, pair
+        self.strategy = strategy
         self.set_id = None
         self.evidence = {"reads": []}
         self.plan = None
@@ -352,7 +351,8 @@ class _Candidate:
             raise BrokerError("Broker authentication or account access failed")
         if capture.candles is None:
             return self.finish("skipped", capture.metadata["reason"])
-        c1 = _observe(capture.candles, "c1")
+        strategy = self.strategy
+        c1 = _observe(capture.candles, "c1", strategy)
         try:
             atr = strategy.sizing_atr(capture.candles)
         except (ArithmeticError, LookupError, TypeError, ValueError):
@@ -408,16 +408,12 @@ def enter_candidate(db, broker, *, run_id, pair):
     broker.require_controller_execution()
     if db.in_transaction or pair not in PERMITTED_PAIRS:
         raise ValueError("Candidate requires an idle notebook and permitted pair")
-    packaged = json.loads(Path(strategy.__file__).with_name("manifest.json").read_text())
-    if (broker.binding.experiment.strategy_version != "t3_bandpass_v1"
-            or broker.binding.manifest.body != canonical_json(packaged)
-            or broker.binding.connection.lookback_candles != strategy.LOOKBACK_CANDLES):
-        raise ConfigurationError("Entry requires qualified t3_bandpass_v1 and exactly 386 candles")
+    strategy = select_strategy(broker.binding)
     run = db.execute("SELECT * FROM runs WHERE run_id = ?", (run_id,)).fetchone()
     if (run is None or run["status"] != "running" or run["sizing_balance"] is None
             or run["strategy_hash"] != broker.binding.manifest.hash or run["lookback_candles"] != strategy.LOOKBACK_CANDLES):
         raise ValueError("Candidate requires a matching running run and its committed 4.1 balance")
-    candidate = _Candidate(db, broker, run_id, pair)
+    candidate = _Candidate(db, broker, run_id, pair, strategy)
     candidate.account_guard()
     with transaction(db):
         db.execute("INSERT INTO pair_decisions (run_id, stage, pair, pair_order, started_at) VALUES (?, ?, ?, ?, ?)",

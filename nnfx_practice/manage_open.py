@@ -8,22 +8,20 @@ from dataclasses import asdict
 from datetime import datetime
 from decimal import localcontext
 import json
-from pathlib import Path
 from time import monotonic
 from uuid import uuid4
 
-from strategies import t3_bandpass_v1 as strategy
-
 from .broker import BrokerError, broker_id, money
 from .candles import capture_pair_candles
-from .config import ConfigurationError, PERMITTED_PAIRS
-from .evidence import canonical_json, encode_evidence, redact
+from .config import PERMITTED_PAIRS
+from .evidence import encode_evidence, redact
 from .notebook import _check_binding, finish_pair, pair_progress, prepare_attempt, transaction
 from .reconciliation import (
     _LEGS, _issue, _release_closed_sets, _update_leg,
     apply_confirmed_transactions, import_through, reconcile_snapshot,
 )
 from .signal_actions import exit_reasons
+from .strategy import select_strategy
 
 
 STAGE = "manage_open"
@@ -33,7 +31,7 @@ def _legs(db, set_id):
     return db.execute(_LEGS + " WHERE trade_legs.set_id = ? ORDER BY leg_no", (set_id,)).fetchall()
 
 
-def _observe(candles, role):
+def _observe(candles, role, strategy):
     try:
         return (strategy.observe_c1 if role == "c1" else strategy.observe_exit)(candles)
     except (ArithmeticError, LookupError, TypeError, ValueError):
@@ -228,7 +226,7 @@ def _reconciliation(db, broker, run_id):
     return live
 
 
-def _pair(db, broker, run_id, row, live):
+def _pair(db, broker, run_id, row, live, strategy):
     pair, set_id = row["pair"], row["set_id"]
     with transaction(db):
         db.execute("""
@@ -251,8 +249,8 @@ def _pair(db, broker, run_id, row, live):
         outcome, reason = "skipped", capture.metadata["reason"]
     else:
         # These two observations are independent; no ATR is needed for exits.
-        c1 = _observe(capture.candles, "c1")
-        exit_signal = _observe(capture.candles, "exit")
+        c1 = _observe(capture.candles, "c1", strategy)
+        exit_signal = _observe(capture.candles, "exit", strategy)
         triggers = exit_reasons(row["direction"], c1=c1.direction, exit_signal=exit_signal.direction)
         survivors = [{"leg_no": leg["leg_no"], "trade_id": leg["broker_trade_id"],
                       "state": leg["broker_state"], "units": leg["current_units"],
@@ -297,11 +295,7 @@ def manage_open(db, broker, *, run_id, elapsed=monotonic):
     _check_binding(db, broker.binding)
     if db.in_transaction:
         raise ValueError("Stage 1 requires an idle notebook connection")
-    packaged = json.loads(Path(strategy.__file__).with_name("manifest.json").read_text())
-    if (broker.binding.experiment.strategy_version != "t3_bandpass_v1" or
-            broker.binding.manifest.body != canonical_json(packaged) or
-            broker.binding.connection.lookback_candles != strategy.LOOKBACK_CANDLES):
-        raise ConfigurationError("Stage 1 requires the qualified t3_bandpass_v1 binding and exact window")
+    strategy = select_strategy(broker.binding)
     broker.require_controller_execution()
     start = elapsed()
     with transaction(db):
@@ -327,7 +321,7 @@ def manage_open(db, broker, *, run_id, elapsed=monotonic):
             db.execute("UPDATE stages SET expected_pair_count = ? WHERE run_id = ? AND stage = ?",
                        (len(pairs), run_id, STAGE))
         for row in pairs:
-            live = _pair(db, broker, run_id, row, live)
+            live = _pair(db, broker, run_id, row, live, strategy)
     except BrokerError as failure:
         with transaction(db):
             db.execute("""

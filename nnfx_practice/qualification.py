@@ -21,6 +21,7 @@ from .broker import PRACTICE_HOST, PracticeBroker, broker_id, money
 from .config import ConfigurationError, PERMITTED_PAIRS, load_binding
 from .evidence import canonical_json
 from .lifecycle import EXECUTION_REQUIREMENTS, initialize_qualification, validate_strategy
+from .strategy import manifest_for_hash
 
 
 PLAN_DIRECTORY = Path('/etc/nnfx-practice/qualification')
@@ -244,6 +245,7 @@ def automatic_authority(plan):
 def validate_evidence(plan, documents):
     """Check recorded observations, not just nonempty evidence references."""
     digest = plan['account_binding_sha256']
+    manifest = manifest_for_hash(plan['manifest_sha256'])
     for name, phase in (('account_preflight', 'account'), ('candle_preflight', 'candles')):
         doc = documents[name]
         if any(doc.get(key) != value for key, value in (
@@ -253,10 +255,10 @@ def validate_evidence(plan, documents):
             _fail('intended-account preflight is not a recorded pass: ' + name)
     candles = documents['candle_preflight']
     if (candles.get('manifest_sha256') != plan['manifest_sha256']
-            or candles.get('lookback_candles') != 386 or candles.get('valid_windows') != 28
+            or candles.get('lookback_candles') != manifest['qualified_total_candle_count']
+            or candles.get('valid_windows') != 28
             or not isinstance(candles.get('pairs'), dict) or set(candles['pairs']) != set(PERMITTED_PAIRS)):
         _fail('qualified 28-pair candle preflight differs')
-    manifest = _document((CODE_ROOT / 'strategies/t3_bandpass_v1/manifest.json').read_bytes())
     strategy_ref = plan['evidence']['strategy_qualification']
     if strategy_ref['sha256'] != manifest.get('qualification_report_sha256'):
         _fail('strategy qualification differs from the packaged manifest')
@@ -277,17 +279,18 @@ def validate_evidence(plan, documents):
             or private.get('viewer', {}).get('credential_readable') is not False):
         _fail('private binding and reader-denial evidence is missing')
     authority = documents['execution_authority']
-    if (authority.get('account_label') != 'Python 01' or authority.get('account_binding_sha256') != digest
+    if (not isinstance(authority.get('account_label'), str) or not authority['account_label'].strip()
+            or authority.get('account_binding_sha256') != digest
             or authority.get('controller_id') != plan['controller_id']
             or authority.get('notebook_id') != plan['notebook_id']
             or authority.get('practice_host') != PRACTICE_HOST
             or authority.get('manifest_sha256') != plan['manifest_sha256']
-            or authority.get('strategy_version') != 't3_bandpass_v1'
+            or authority.get('strategy_version') != manifest['strategy_version']
             or not authority.get('owner_statement')
             or any(authority.get(key) is not False for key in (
                 'ordinary_scheduled_trading_authorized', 'ordinary_activation_authorized',
                 'strategy_changes_authorized', 'trade_2_unit_reduction_authorized'))):
-        _fail('controlled Python 01 owner authority differs')
+        _fail('controlled practice-account owner authority differs')
     controls = documents['m09_controller_controls']
     results = controls.get('results', {})
     if not isinstance(results, dict):

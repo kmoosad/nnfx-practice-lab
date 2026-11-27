@@ -1,0 +1,76 @@
+{
+  "source": "offline_lab_reference",
+  "result_id": "a83ffe21-90eb-4674-99e3-7c80d6871a6c",
+  "status": "passed",
+  "exhaustive": true,
+  "pairs": [
+    {
+      "pair": "EUR/USD",
+      "count": 512,
+      "stride": 1,
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "windows": 1561,
+      "mismatches": {
+        "c1": [],
+        "exit": []
+      },
+      "partial_snapshots": 36,
+      "partial_mismatches": {
+        "c1": [],
+        "exit": []
+      }
+    },
+    {
+      "pair": "EUR/GBP",
+      "count": 512,
+      "stride": 1,
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "windows": 1561,
+      "mismatches": {
+        "c1": [],
+        "exit": []
+      },
+      "partial_snapshots": 36,
+      "partial_mismatches": {
+        "c1": [],
+        "exit": []
+      }
+    },
+    {
+      "pair": "AUD/NZD",
+      "count": 512,
+      "stride": 1,
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "windows": 1561,
+      "mismatches": {
+        "c1": [],
+        "exit": []
+      },
+      "partial_snapshots": 36,
+      "partial_mismatches": {
+        "c1": [],
+        "exit": []
+      }
+    },
+    {
+      "pair": "CHF/JPY",
+      "count": 512,
+      "stride": 1,
+      "archived_outputs": "exact",
+      "archived_atr": "exact",
+      "windows": 1561,
+      "mismatches": {
+        "c1": [],
+        "exit": []
+      },
+      "partial_snapshots": 36,
+      "partial_mismatches": {
+        "c1": [],
+        "exit": []
+      }
+    }
+  ]
+}
