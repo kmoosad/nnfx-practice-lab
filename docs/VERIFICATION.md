@@ -1,14 +1,11 @@
 # Retained verification references
 
-Historical evidence; [status](STATUS.md) owns operation and M10 removal;
-[acceptance](ACCEPTANCE.md) owns required scenarios. Dates below are Melbourne
-unless UTC is explicit. Evidence paths are local/private and may require USB or
-administrator access; their existence does not grant execution authority.
-
+Dated evidence; [status](STATUS.md) owns current operation and [acceptance](ACCEPTANCE.md)
+owns scenarios. Dates are Melbourne unless UTC is explicit. Local/private evidence
+may require USB or administrator access; it grants no execution authority.
 Raw reports, failed attempts, frozen releases and backups remain untouched.
-Earlier committed source digests and superseded chronological narration remain
-in Git at `a89e452:docs/STATUS.md`. Unique 28 November setup observations are retained in
-[status](STATUS.md#python-02-and-python-03-scheduled-setup-verification).
+Earlier committed digests and superseded narrative remain in Git at
+`a89e452:docs/STATUS.md`.
 
 ## Approved decisions and offline milestones
 
@@ -56,28 +53,9 @@ reference checks passed. [Selected comparison](../tests/check_m03_selected_refer
 requires the sibling lab environment/database at its expected relative path;
 [generic probes](../tests/check_m03_lab_reference.py) also need the lab on PYTHONPATH.
 
-Python 02: all archived outputs/ATR match; 512 candles passed 6,244 windows and 144
-modified partials. [Packaged summary](../strategies/drm_adaptive_bandpass_v1/qualification.json)
-and [comparison tool](../tests/check_python02_reference.py) own reproducible inputs;
-README entry 5 gives its command. [Setup](PYTHON_02.md) owns selection/binding.
-
-Python 03: rolling 512/1,024/1,536/1,792 checks failed. Archived 1,972 passed
-404 windows/12 partials but extended data found three EUR-GBP Exit mismatches.
-A sampled 5,000 passed 132 windows/12 partials; exhaustive testing missed one
-EUR-USD event (20–21 March 2023 current/prior comparison). These failures explain
-the owner's fixed-origin decision; do not treat sampled passes as qualification.
-[1,972 extended failure](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-1972-probe.json),
-[5,000 exhaustive failure](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-5000.json)
-and all shorter probes remain in the [evidence directory](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence).
-
-Fixed-origin weekday normalization reproduces all 8,288 research timestamp/OHLC
-rows exactly. The [final summary](../strategies/eye_age_supertrend_v1/qualification.json)
-passes 11,256 endpoints/156 partials. [check_python03_anchored](../tests/check_python03_anchored.py)
-takes `--lab`, `--inputs`, `--output`; default stride 1 is exhaustive. Inputs are
-four retained `<PAIR>-extended.json` files in the [USB reference directory](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/reference).
-Use the lab environment, practice checkout, USB temporary/output paths. The
-[28-pair availability check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-availability.json)
-passed, but daytime availability is not scheduled partial-candle qualification.
+The [Python 02](PYTHON_02.md#calculation-verification) and
+[Python 03](PYTHON_03.md#calculation-verification) records own their comparison
+results, failed alternatives and reproduction inputs.
 
 ## Python 01 account and host evidence
 
@@ -122,6 +100,36 @@ reported armed, 43 files matched, notebook/claims preserved, clean dual-timer ho
 fixtures and no broker request/A0: [deployment verification](../var/verification/m10-deployed-20261120/verification.json).
 Old dated trigger stopped; only qualification scheduling enabled. Historical
 [preparation/arming records](../var/verification/m10-arming) remain, not retry instructions.
+
+## Python 02 and Python 03 scheduled setup verification
+
+**Observed 28 November 09:38–09:39 Melbourne / 27 November 22:38–22:39 UTC.**
+Read-only live service properties and saved dashboard records confirmed both setup
+services succeeded: Result=success, ExecMainCode=1 (normal process exit),
+ExecMainStatus=0. Preserve these recorded observations:
+
+| Controller | Setup start → finish (28 Nov Melbourne) | Q0 AUD | Transaction |
+| --- | --- | ---: | --- |
+| Python 02 | 08:50:00 → 08:50:12 | 50,000.6603 | 773 |
+| Python 03 | 08:50:00 → 08:50:22 | 50,000.9696 | 1662 |
+
+Notebook Q0 records are `a71bc581a216485283d4b47bad7554ab` and
+`21dd5295531e47bd8aaa197ce2990f8d`, refreshed respectively at 27 November
+21:50:11.044964 and 21:50:21.302247 UTC. Port 8879 notebook GETs returned 200,
+showing those balances, no trade records, broker mutation requests or issues;
+ordinary activation remained unset. Successful services, Q0 and enabled timers
+confirm guarded initialization. Protected candle reports/setup receipts were
+**not reopened** during that check; system journal entries were unreadable to the
+login. No standalone export of this observation is cited in the original notes.
+
+Both qualification timers were enabled/active/waiting, next due **Tuesday
+1 December 08:50 Melbourne / 30 November 21:50 UTC**. Neither new trading service
+had a start timestamp or qualification timer a previous trigger. “No runs recorded”
+is expected: setup checks candles and initializes Q0 without invoking trading.
+All three qualification timers shared that next expiry; all three ordinary timers
+were disabled/inactive with no expiry. Verification did not rerun setup, trade,
+modify files/schedules or send broker requests. Actual Python 02/03 trading had
+not started in this observation. Do not rerun installers/bootstrap.
 
 ## GBP-CAD incident and recovery
 
@@ -168,7 +176,7 @@ permission repair addressed 98 public paths without private-file changes.
 and [native controls](../var/prepared/gbpcad-reconciliation-permissions-20261123/var/verification/gbpcad-continue-b21faed3edcb/controller-controls.json)
 confirm schema 3 through 2259, leg 1 closed, leg 2 not_opened/unsent, issue disposed,
 Q0/failure/claims preserved, clean fixtures and restored qualification schedule.
-[Independent completion](../var/verification/operator-reconcile-2251/completed-20261123T100526Z/verification.json)
+21:05 [independent completion](../var/verification/operator-reconcile-2251/completed-20261123T100526Z/verification.json)
 confirmed zero trades/orders/positions, AUD 50,000.0032, loss -43.8956, financing
 -6.2319, funding +50.03, net -0.0975 from Q0; commission/other/unrealised zero.
 A0 stayed unset. Both failure archives and original backup remain in protected

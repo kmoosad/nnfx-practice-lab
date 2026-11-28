@@ -35,50 +35,36 @@ Account-specific execution remains conditional, including equal-size protected
 trades, client extensions, precision and targeted closes. A one-unit-increment
 Trade 2 reduction remains only a review option if actual restrictions require it.
 
-The approved review fixes remain binding: only a wholly rejected set with neither
-leg opened and no issue qualifies for no-fill release; M01/M02/M07 own the tested
-Q0/A0 lifecycle. The design also retains exact windows, prior-attempt guards,
-maintenance exclusion through reads/writes and snapshot-aligned totals.
+The [state rules](DETAILED_DESIGN.md#state-rules) own no-fill release and attempt
+guards; the lifecycle below owns Q0/A0. Approved review fixes and their evidence
+remain in [verification](VERIFICATION.md#approved-decisions-and-offline-milestones).
 
 ## Operating checklist
 
-The owner removed M10 on 28 November under the
-[operating decision](../PROJECT_BRIEF.md#delivery-sequence). Its completion review
-and initial/final qualification work list are retired. The practice account has
-been running for about a week with trades resolved, as reported by the owner.
-Retain [dated evidence](VERIFICATION.md) and its limits; this decision does not
+The [operating decision](../PROJECT_BRIEF.md#delivery-sequence) retired M10's
+completion review and initial/final qualification work list. Retain
+[dated evidence](VERIFICATION.md) and its limits; removing the milestone does not
 mark unobserved acceptance scenarios as verified.
 
-Continue routine operation and bounded follow-up:
+Only two operating activities remain:
 
 1. Review the dashboard Tuesday–Saturday at 09:30 Melbourne and address errors
    promptly, as agreed on 20 November.
-2. Review new experiments' first trading runs against their own setup records;
+2. Review Python 02/03's first trading runs against their setup records;
    [status](STATUS.md) owns the dated Python 02/03 observations and next run.
 
 Use [acceptance scenarios](ACCEPTANCE.md) for focused verification of changes and
 investigation of operating issues. There is no further M10 sign-off to schedule.
 
+Apply the [account and execution evidence requirements](ACCEPTANCE.md#account-and-execution-evidence).
 Account incompatibilities, unsupported monetary shapes and unresolved outcomes
-return to review. `hedgingEnabled`, API documentation, simulated fills and pass
-flags cannot replace execution evidence. Reuse observations only while their
-code/configuration/strategy/account conditions apply; verify affected behaviour
-when those conditions change. Profitability is not an acceptance gate.
-
-## Optional work
-
-The owner's preference for continuous performance from Q0 remains recorded.
-Changing the Q0/A0 reporting or dispatch implementation would be separate work.
-The existing qualification schedule and notebook history continue; an ordinary-mode
-transition is not a remaining delivery step.
-
-Alerts/reminders are optional ideas. Collector and host-inspector enhancements
-are deferred until needed; their current limitations stay in [operations](OPERATIONS.md).
+return to review. Reuse observations only while their code/configuration/strategy/
+account conditions apply; verify affected behaviour when those conditions change.
 
 ## Qualification records and ordinary activation
 
-This section describes the installed lifecycle, including the optional ordinary
-transition. Removing M10 does not change its runtime checks or reporting labels.
+This section documents the installed lifecycle and its existing transition
+mechanism as reference material. No change of operating mode is planned.
 Use one immutable notebook and the same controller throughout. The owner's
 19 November Python 01 execution authority and 20 November recurring qualification
 instruction remain valid within their prerequisites. Python 02/03 have separate

@@ -56,18 +56,18 @@ provides commands. Follow cross-boundary links only as needed.
 | `docs/ACCEPTANCE.md` | A01–A16 scenarios, controlled variations and required evidence |
 | `docs/OPERATIONS.md` | Host procedures, deployment authority and ordinary-review packet |
 | `docs/VERIFICATION.md` | Dated evidence references, consequential findings and their limits |
-| `docs/PYTHON_02.md`, `docs/PYTHON_03.md` | Experiment selection, immutable bindings and integration constraints |
+| `docs/PYTHON_02.md`, `docs/PYTHON_03.md` | Experiment selection, comparison evidence, immutable bindings and integration constraints |
 
 When behaviour changes, update its authoritative document and replace the
 superseded statement. Link to that home instead of repeating its rules.
 
 ## Authority and proportionate work
 
-The architecture, design and implementation plan are approved; practice operation
-is running. The owner removed M10; follow the [operating checklist](docs/IMPLEMENTATION_PLAN.md#operating-checklist).
-Use existing user decisions and authority without requesting them again. M01–M09
-are delivery history. Routine work uses bounded feature/fix requests; milestone
-reviews apply only to new milestones explicitly requested by the owner.
+Follow the accepted [delivery decision](PROJECT_BRIEF.md#delivery-sequence) and
+[operating checklist](docs/IMPLEMENTATION_PLAN.md#operating-checklist).
+Use existing approvals and authority without requesting them again. Routine work
+uses bounded feature/fix requests; milestone-per-chat reviews apply only to new
+milestones explicitly requested by the owner.
 User instructions take precedence over project guidance.
 For routine fixes use brief planning and focused checks; deepen review when
 trading behaviour, persistence, broker interactions or component contracts change.
@@ -76,9 +76,8 @@ not change an accepted requirement or establish deployment or acceptance.
 
 Use the selected lab implementations and exact signal/ATR semantics. Inspect
 original rules and code when integration needs them; do not substitute a library
-ATR or treat persistent state as a fresh signal. The brief governs its explicit
-differences from the lab and owns the partial
-candle, balance, entry direction, margin and risk rules. The sibling
+ATR or treat persistent state as a fresh signal. The brief owns its differences
+from the lab: partial candle, balance, entry direction, margin and risk rules. The sibling
 `nnfx-indicator-lab` is a reference; changing it requires separate task scope.
 Runtime reuse is through the packaged strategy, never its checkout or database.
 

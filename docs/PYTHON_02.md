@@ -2,7 +2,7 @@
 
 Owner selected [research result a83ffe21-90eb-4674-99e3-7c80d6871a6c](http://192.168.51.10:8877/exit/results/a83ffe21-90eb-4674-99e3-7c80d6871a6c)
 on 27 November 2026 under unchanged [practice rules](../PROJECT_BRIEF.md).
-This document owns its selection, integration boundary and installation evidence;
+This document owns selection, integration boundaries, comparison and installation evidence;
 [status](STATUS.md#python-02) owns current operation.
 
 | Binding | Selection |
@@ -29,9 +29,14 @@ calculation input, not OANDA position evidence.
 
 Explicit packaged strategy selection is used by management, entry, lifecycle and
 qualification; no automatic/default selection or runtime lab import. The original
-Python 01 manifest/files are unchanged. [Comparisons](VERIFICATION.md#strategy-comparisons)
-record 6,244 windows/144 modified partials; [README](../README.md#development-and-verification)
-provides the offline reproduction command.
+Python 01 manifest/files are unchanged.
+
+## Calculation verification
+
+All archived outputs/ATR match; 512 candles passed 6,244 windows and 144 modified
+partials. The [packaged summary](../strategies/drm_adaptive_bandpass_v1/qualification.json)
+and [comparison tool](../tests/check_python02_reference.py) own reproducible inputs;
+[README command 5](../README.md#development-and-verification) gives the offline command.
 
 ## Installation and setup boundary
 
@@ -66,9 +71,8 @@ preliminary broader run is not an all-passing suite; its cross-account fixture
 rejection was corrected before the focused pass. Development notebook integrity
 was ok, Q0/A0 unset; those prepared records are not production initialization.
 
-Setup **completed 28 November at 08:50 Melbourne**; Q0 and the first scheduled
-qualification run on **1 December 08:50 Melbourne** were observed as recorded in
-[status](STATUS.md#python-02-and-python-03-scheduled-setup-verification). Actual
-trading execution remains pending. Installation/bootstrap are complete: do not
-rerun them. New evidence/private data belongs under the mounted USB task path;
-this experiment's retained root is `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/`.
+The [28 November observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
+confirmed completed setup, Q0 and a timer awaiting its first trading run; no trading
+execution had occurred. Status owns the recorded next expiry. Installation/bootstrap
+are complete: do not rerun them. New evidence/private data belongs under the mounted
+USB task path; the retained root is `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/`.

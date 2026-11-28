@@ -1,7 +1,7 @@
 # Host operations and authority
 
-This document owns maintained host procedures and protected-review fields formerly
-mixed into the README/design. [Status](STATUS.md) records dated observations;
+This document owns host procedures and protected-review fields.
+[Status](STATUS.md) records dated observations;
 [verification](VERIFICATION.md) links receipts. Procedures are not evidence that an
 action ran or new authorization to trade. Development commands are in the
 [README](../README.md#development-and-verification).
@@ -28,11 +28,10 @@ service. Their calendar is `Mon..Fri *-*-* 16:50:00 America/New_York`,
 a promise of exact Python start time. System services/timers use multi-user/timers
 targets without interactive login. A paused timer never replays missed launches.
 
-Qualification validates protected authority/account/strategy/code/configuration,
-clock and process identity, and claims the New York date durably before network
-activity. Ordinary requires separate activation/review. A same-kernel reboot can
-resume version-2 qualification; changed kernel/code/configuration needs relevant
-matching evidence. Keep earlier observations scoped to their actual versions.
+The [lifecycle contract](IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation)
+owns qualification checks and date claims. A same-kernel reboot can resume
+version-2 qualification; changed kernel/code/configuration needs relevant matching
+evidence. Keep earlier observations scoped to their actual versions.
 
 The Waitress dashboard uses port 8879 and `/opt/nnfx-dashboard/current`; preserve
 research listeners 8877/8878. Runtime has read-only files, no credentials,
@@ -79,9 +78,9 @@ all date claims, including claims without run rows; collection never grants acce
 Its CLI requires administrator access and accepts a new `--output` directory.
 Choose a unique path under the mounted USB task evidence directory, including its
 temporary copy; output is private and becomes checkout-owner-readable. **The CLI
-currently collects `practice-a` only**; it has no controller selector. Defer
-Python 02/03 CLI support until needed. Use current reviewed source,
-not the frozen migration bundle's older collector. Never reset Q0 or delete claims.
+currently collects `practice-a` only**; it has no controller selector. Use current
+reviewed source, not the frozen migration bundle's older collector. Never reset
+Q0 or delete claims.
 
 ## Host checks and unattended evidence
 
@@ -106,8 +105,8 @@ startup, unattended window or traded dashboard agreement.
 inspection, not a fixture or execution pass. It fixes its output to the source
 checkout's `var/verification/m10`; `--output` cannot redirect outside that directory.
 Run it from a reviewed USB checkout if needed. Do not repeat its old internal-
-storage command; defer broader output support until needed. The
-older user-systemd probe cannot replace actual system-manager verification.
+storage command. The older user-systemd probe cannot replace actual system-manager
+verification.
 
 The [observer](../tests/check_m09_observation.py) stages isolated boot/dispatch/
 heartbeat units; it does not reboot, change power policy or start trading. Inspect
@@ -203,9 +202,8 @@ or incomplete sets fail. Account exceptions return to review; no invented waiver
 After final review protect/archive the packet and ordinary plan, stop/disable
 qualification and leave both timers disabled. Under writer identity and full
 maintenance exclusion, `nnfx_practice.host`'s `ordinary-activate` verifies the
-packet and reconciles fresh A0, requiring no trades/orders/unresolved activity.
-A0/evidence/time commit together; repeats verify the same record. That command
-never enables a timer. Only after successful reviewed A0 and maintenance release
+packet and applies the plan's fresh-A0 preconditions and atomic commit contract.
+That command never enables a timer. Only after successful reviewed A0 and maintenance release
 may the authorized administrator enable the ordinary instance. Dispatch revalidates
 the plan, activation and shared date claim. Ordinary candles are not archived.
 

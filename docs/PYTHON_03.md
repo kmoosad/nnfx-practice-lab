@@ -2,7 +2,7 @@
 
 Owner selected [research result 18771091-9f76-4daf-bee9-a23f28634bae](http://192.168.51.10:8877/exit/results/18771091-9f76-4daf-bee9-a23f28634bae)
 on 27 November 2026 under the existing [practice rules](../PROJECT_BRIEF.md).
-This document owns selection, integration boundary and installation evidence;
+This document owns selection, integration boundaries, comparison and installation evidence;
 [status](STATUS.md#python-03) owns current operation.
 
 | Binding | Selection |
@@ -32,15 +32,34 @@ fixed-origin support while preserving selected calculations/trading rules. The
 manifest pins **1 January 2013 22:00 UTC**, the research first candle. Each 5,000-raw-
 candle capture initializes C1/Exit/ATR from that origin's weekday suffix, excluding
 completed Friday/Saturday-start bars; current partial validation stays strict.
-This reproduces all 2,072 archived dates/OHLC per pair. Record raw/retained/excluded
-counts and origin. [History contract](../PROJECT_BRIEF.md#strategy-selection) owns
-the rule; [comparison evidence](VERIFICATION.md#strategy-comparisons) retains failed
-alternatives and 11,256 passing endpoints/156 partials.
+Record raw/retained/excluded counts and origin. The
+[history contract](../PROJECT_BRIEF.md#strategy-selection) owns the rule;
+[verification below](#calculation-verification) retains results and failed alternatives.
 
 Origin must remain available inside the window; missing origin fails capture,
 never truncates/restarts. This is bounded headroom, not unlimited retention.
 Extending the bound needs a separately qualified immutable binding. No schema
 migration, candle database or mutable indicator checkpoint was introduced.
+
+## Calculation verification
+
+Rolling 512/1,024/1,536/1,792 checks failed. Archived 1,972 passed 404 windows/12
+partials but extended data found three EUR-GBP Exit mismatches. A sampled 5,000
+passed 132 windows/12 partials; exhaustive testing missed one EUR-USD event
+(20–21 March 2023 current/prior comparison). These failures explain the owner's
+fixed-origin decision; sampled passes do not establish qualification.
+[1,972 extended failure](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-1972-probe.json),
+[5,000 exhaustive failure](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-5000.json)
+and all shorter probes remain in the [evidence directory](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence).
+
+Fixed-origin weekday normalization reproduces all 8,288 research timestamp/OHLC
+rows exactly (2,072 per pair). The [final summary](../strategies/eye_age_supertrend_v1/qualification.json)
+passes 11,256 endpoints/156 partials. [check_python03_anchored](../tests/check_python03_anchored.py)
+takes `--lab`, `--inputs`, `--output`; default stride 1 is exhaustive. Inputs are
+four retained `<PAIR>-extended.json` files in the [USB reference directory](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/reference).
+Use the lab environment, practice checkout, USB temporary/output paths. The
+[28-pair availability check](/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/evidence/history-availability.json)
+passed, but daytime availability is not scheduled partial-candle qualification.
 
 ## Installation and setup boundary
 
@@ -83,8 +102,7 @@ Prepared development notebook integrity was ok with Q0/A0 unset; the earlier
 USB without dependency downloads. The retained root is
 `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/`.
 
-Setup **completed 28 November at 08:50 Melbourne**, with Q0 and qualification
-scheduled for **1 December 08:50 Melbourne**, per the preserved
-[observation](STATUS.md#python-02-and-python-03-scheduled-setup-verification).
-Actual trading remains pending and ordinary activation disabled. Installation
-and bootstrap are complete; do not rerun them.
+The [28 November observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
+confirmed completed setup, Q0 and a timer awaiting its first trading run; no trading
+execution had occurred and ordinary activation remained unset. Status owns the
+recorded next expiry. Installation/bootstrap are complete: do not rerun them.

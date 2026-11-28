@@ -156,7 +156,7 @@ above; short stops are above entry and targets below. Later ATR changes do not m
 2's agreed move to entry is the stop adjustment; no trailing-stop rule is added.
 
 Each eligible pair may have its own 2% trade set, subject to available margin. There is no combined account
-risk cap in this release. Such a cap may be added in a future version.
+risk cap in this release.
 
 Record actual broker fills, including differences from requested levels. The 2% figure describes planned
 initial stop risk, not a guaranteed realised-loss limit. A stop placed at entry does not imply that actual
@@ -234,7 +234,8 @@ software acceptance requirement.
 
 Maintain project guidance in an `AGENTS.md` of at most 300 lines and the necessary supporting documents.
 Architecture, design and planning approvals remain in force. M01–M09 are delivery history; routine work now
-uses bounded feature and fix requests. [Status](docs/STATUS.md) owns the current operating checklist.
+uses bounded feature and fix requests. The [plan](docs/IMPLEMENTATION_PLAN.md#operating-checklist) owns the two
+active operating activities; [status](docs/STATUS.md) owns their dated observations and handoff.
 
 On 28 November 2026 the owner removed M10 from the delivery plan because the practice account had run for
 about a week and trades had been resolved. Continue existing authorised practice operation without a further
