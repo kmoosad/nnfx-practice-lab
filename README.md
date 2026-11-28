@@ -4,9 +4,9 @@ Forward-test a manually selected NNFX C1/Exit combination on independent OANDA
 practice accounts. A Python controller records actual broker results in SQLite;
 the Flask/Jinja dashboard observes those records.
 
-[Current status](docs/STATUS.md) separates checkout implementation, dated deployment
-observations and routine follow-up. The practice application is running; the owner
-has removed M10 from the delivery plan.
+[Current status](docs/STATUS.md) records the verified installation and dated trading
+observations. Start there, then use the component map for the affected contract,
+code, tests and commands.
 
 ## Navigation
 
@@ -17,7 +17,7 @@ has removed M10 from the delivery plan.
 | [Architecture](docs/ARCHITECTURE.md) | Runtime/workflow, candles/signals and dashboard presentation |
 | [Detailed design](docs/DETAILED_DESIGN.md) | State, sizing, broker and accounting contracts |
 | [Acceptance](docs/ACCEPTANCE.md) | Required scenarios and relevant tests |
-| [Plan](docs/IMPLEMENTATION_PLAN.md) | Delivery history, operating checklist and reusable feature brief |
+| [Plan](docs/IMPLEMENTATION_PLAN.md) | Delivery dependencies/offline receipts, operating checklist and feature brief |
 | [Operations](docs/OPERATIONS.md) | Host maintenance, setup and protected upgrades |
 | [Verification references](docs/VERIFICATION.md) | Retained evidence outside routine reading |
 | [Python 02](docs/PYTHON_02.md) / [Python 03](docs/PYTHON_03.md) | Selected experiments and integration constraints |
@@ -38,7 +38,7 @@ coverage, not observed deployment or complete acceptance.
 | Master and disposition ★ | [State rules](docs/DETAILED_DESIGN.md#state-rules) | [master ★](nnfx_practice/master.py), [disposition](nnfx_practice/disposition.py) | [M07 ★](tests/test_m07.py) |
 | Practice lifecycle | [Lifecycle](docs/IMPLEMENTATION_PLAN.md#practice-lifecycle) | [guarded practice](nnfx_practice/qualification.py), [initialization](nnfx_practice/lifecycle.py) | [single mode](tests/test_practice_mode.py), [scheduled trading](tests/test_m10_automatic.py) |
 | Ledger and dashboard ★ | [Accounting](docs/DETAILED_DESIGN.md#monetary-records) / [presentation](docs/ARCHITECTURE.md#notebook-dashboard) | [ledger](nnfx_practice/ledger.py), [dashboard ★](nnfx_practice/dashboard.py) | [M08 ★](tests/test_m08.py), [M02](tests/test_m02.py) |
-| Host and releases | [Operations](docs/OPERATIONS.md) | [host](nnfx_practice/host.py), [practice upgrade](deploy/single_practice_mode.py), [dashboard deployer](deploy/dashboard_deploy.py) | [M09](tests/test_m09.py), [upgrade](tests/test_single_practice_deployment.py), [deployer](tests/test_dashboard_deploy.py) |
+| Host and releases | [Operations](docs/OPERATIONS.md) | [host](nnfx_practice/host.py), [practice upgrade](deploy/single_practice_mode.py) | [M09](tests/test_m09.py), [upgrade](tests/test_single_practice_deployment.py) |
 | Independent experiments | [Python 02](docs/PYTHON_02.md) / [Python 03](docs/PYTHON_03.md) | [Python 02 installer](deploy/add_python02.py), [Python 03 installer](deploy/add_python03.py) | [Python 02](tests/test_python02.py), [Python 03](tests/test_python03.py) |
 
 ## Development and verification
@@ -46,29 +46,29 @@ coverage, not observed deployment or complete acceptance.
 Use Python 3.12+, SQLite 3.37+, New York tzdata and the dependencies in
 [pyproject.toml](pyproject.toml). Native shared-WAL operation also needs
 `SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE`. Commands below are established from existing
-scripts/configuration, not rerun for this documentation change. New USB paths
-are source-checked but unexecuted. Use a unique task directory, never overwrite
-evidence. Commands 2–6 use the checkout as working directory; 7–8 use the isolated
-configuration root. No command below deploys or trades.
+scripts/configuration; these examples are source-checked, not execution evidence.
+Use a unique USB task directory and never overwrite evidence. Commands 2–6 use the
+checkout as working directory; 7–8 use the isolated configuration root.
+No command below deploys or trades.
 
-1. **Workspace/environment (setup; package access required).** Stop if the mount
-   check fails. Reuse the installed checkout environment where suitable; for a
-   new environment install the declared dependencies in a USB venv.
+1. **Workspace/environment (setup).** Stop if the USB mount is unavailable or
+   read-only. Reuse a suitable checkout environment; creating one needs `uv`
+   and package access.
 
    ```sh
    cd /home/codexdev/projects/nnfx-practice-lab
    mountpoint -q /mnt/nnfx-usb || exit 1
    export NNFX_TASK_DATA=/mnt/nnfx-usb/development/data/nnfx-practice-lab/your-task
    umask 077
-   mkdir -p "$NNFX_TASK_DATA"/tmp "$NNFX_TASK_DATA"/evidence "$NNFX_TASK_DATA"/root
+   mkdir -p "$NNFX_TASK_DATA"/tmp "$NNFX_TASK_DATA"/evidence "$NNFX_TASK_DATA"/root || exit 1
    export TMPDIR="$NNFX_TASK_DATA/tmp" PYTHONDONTWRITEBYTECODE=1
    export UV_CACHE_DIR="$NNFX_TASK_DATA/cache/uv" PYTHONPATH="$PWD"
    export NNFX_PYTHON="$PWD/.venv/bin/python"
-   # Only if a new environment is needed (requires uv):
-   python3 -m venv --without-pip "$NNFX_TASK_DATA/venv"
-   uv pip install --python "$NNFX_TASK_DATA/venv/bin/python" \
-     'Flask>=3.1,<4' 'waitress>=3,<4'
-   export NNFX_PYTHON="$NNFX_TASK_DATA/venv/bin/python"
+   # Run this block only when the checkout environment is unsuitable:
+   # python3 -m venv --without-pip "$NNFX_TASK_DATA/venv"
+   # uv pip install --python "$NNFX_TASK_DATA/venv/bin/python" \
+   #   'Flask>=3.1,<4' 'waitress>=3,<4'
+   # export NNFX_PYTHON="$NNFX_TASK_DATA/venv/bin/python"
    ```
 
 2. **Offline suite.** Temporary notebooks use `TMPDIR`; success ends with `OK`.

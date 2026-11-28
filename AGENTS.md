@@ -52,10 +52,10 @@ provides commands. Follow cross-boundary links only as needed.
 | `docs/STATUS.md` | Current delivery state, blockers and one current handoff |
 | `docs/ARCHITECTURE.md` | Runtime/workflow, candle/signal contracts and dashboard presentation |
 | `docs/DETAILED_DESIGN.md` | Persistence, sizing, broker, reconciliation and accounting contracts |
-| `docs/IMPLEMENTATION_PLAN.md` | Delivery history, installed lifecycle, operational follow-up and feature template |
+| `docs/IMPLEMENTATION_PLAN.md` | Delivery dependencies/offline receipts, lifecycle, operating checklist and feature template |
 | `docs/ACCEPTANCE.md` | A01–A16 scenarios, controlled variations and required evidence |
 | `docs/OPERATIONS.md` | Host procedures, deployment authority and practice upgrades |
-| `docs/VERIFICATION.md` | Dated evidence references, consequential findings and their limits |
+| `docs/VERIFICATION.md` | Evidence index, dated host/account findings and their limits |
 | `docs/PYTHON_02.md`, `docs/PYTHON_03.md` | Experiment selection, comparison evidence, immutable bindings and integration constraints |
 
 When behaviour changes, update its authoritative document and replace the

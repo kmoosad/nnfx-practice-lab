@@ -130,7 +130,9 @@ migrations; preserve historical A0 and reject ordinary invocations. Other pairs 
 reliable account state/writes, otherwise visibly fail or remain unfinished.
 Tests: [M02](../tests/test_m02.py), [M05](../tests/test_m05.py),
 [M06](../tests/test_m06.py), [M07](../tests/test_m07.py),
-[transaction variants](../tests/test_transaction_import.py), [host](../tests/test_m09.py).
+[transaction variants](../tests/test_transaction_import.py), [host](../tests/test_m09.py),
+[single-mode guards](../tests/test_practice_mode.py),
+[upgrade preservation](../tests/test_single_practice_deployment.py).
 
 ### A13 unavailable markets and missed launches
 

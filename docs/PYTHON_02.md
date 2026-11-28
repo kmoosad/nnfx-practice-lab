@@ -71,8 +71,8 @@ preliminary broader run is not an all-passing suite; its cross-account fixture
 rejection was corrected before the focused pass. Development notebook integrity
 was ok, Q0/A0 unset; those prepared records are not production initialization.
 
-The [28 November observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
-confirmed completed setup, Q0 and a timer awaiting its first trading run; no trading
-execution had occurred. Status owns the recorded next expiry. Installation/bootstrap
-are complete: do not rerun them. New evidence/private data belongs under the mounted
-USB task path; the retained root is `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/`.
+Installation/bootstrap are complete; do not rerun them. The
+[28 November setup observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
+records Q0 and the first-run evidence limit; status owns the next expiry.
+Retained data: `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-02/`.
+New evidence/private data follows the mounted USB task rule in working guidance.

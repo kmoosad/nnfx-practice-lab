@@ -1,61 +1,47 @@
 # Retained verification references
 
-Dated evidence; [status](STATUS.md) owns current operation and [acceptance](ACCEPTANCE.md)
-owns scenarios. Dates are Melbourne unless UTC is explicit. Local/private evidence
-may require USB or administrator access; it grants no execution authority.
-Raw reports, failed attempts, frozen releases and backups remain untouched.
-Earlier committed digests and superseded narrative remain in Git at
-`a89e452:docs/STATUS.md`.
+Dated evidence; [status](STATUS.md) owns operation, [acceptance](ACCEPTANCE.md) scenarios.
+Dates are Melbourne unless marked UTC. Local/private evidence may need USB/admin
+access and grants no execution authority. Preserve raw reports, failed attempts,
+frozen releases and backups; [completed procedures](OPERATIONS.md#completed-procedures-are-not-retries)
+are not retries. Earlier digests/narrative remain at `a89e452:docs/STATUS.md`.
 
 ## Approved decisions and offline milestones
 
-Brief finalised 10 November, architecture refinements 15 November, detailed design
-and plan approved 16 November. Design fixes retained exact windows, failed-attempt
-guards, maintenance exclusion and snapshot-aligned totals. Plan fixes retained
-the wholly-no-fill exception, Q0/A0 atomic lifecycle and former initial/final M10 split.
-M09 deployment approval is in the [19 November record](../var/verification/m09-approval/approval.json);
+Brief finalised 10 November; architecture refined 15 November; design/plan approved
+16 November. Design fixes retained exact windows, failed-attempt guards, maintenance
+exclusion and snapshot-aligned totals; plan fixes retained the wholly-no-fill
+exception, Q0/A0 atomic lifecycle and former initial/final M10 split.
+M09 deployment approval: [19 November record](../var/verification/m09-approval/approval.json).
 [Python 01 execution authority](../var/verification/m10-authority/authorization.json)
 is conditional on prerequisites and does not authorize ordinary activation.
-The 20 November recurring-qualification instruction superseded daily arming.
+20 November recurring-qualification instruction superseded daily arming.
 
-| Work / date | Retained result and source |
-| --- | --- |
-| M01, 16 Nov | 16 offline checks: immutable/independent bindings, pair reservation, durable intent, readonly WAL and redaction. Original digest/results are in the Git record; [fixtures](../tests/support.py). |
-| M02, 17 Nov | 37 combined checks: sparse history, atomic cursor/fills/ledger, missing-leg evidence, snapshot cutoff, Q0/A0 and account isolation; [suite](../tests/test_m02.py). |
-| M03 plumbing, 17 Nov | 48 checks plus 8 original-lab probes; DST/rollover, exact counts, events and ATR ties/history. Lab probe source at `cd64da9`; [reference probes](../tests/check_m03_lab_reference.py). |
-| M05, 18 Nov | 102 suite/40 management checks; ordered exits, TP stops, per-leg guards and failed commits; [evidence/traces](../var/verification/m05/evidence.json), [log](../var/verification/m05/discovery.log). |
-| M06, 18 Nov | 171 suite/69 entry checks; decimal sizing, establishment timing, whole rejection versus partial fill; [evidence](../var/verification/m06/evidence.json), [log](../var/verification/m06/discovery.log). |
-| M07, 18 Nov | 264 suite; full workflow, reversals, Q0/A0, disposition and exclusion; [evidence/row exports](../var/verification/m07/evidence.json), [package](../var/verification/m07/package-check.json). |
-| M08, 19 Nov | 294 suite/30 dashboard checks; monetary cutoff, WAL, permissions and views; [manifest/pages](../var/m08/verification.json), [visual review](../var/m08/visual-checks.json). |
-| M09, 19 Nov | 319 offline tests; [manifest](../var/verification/m09/verification.json). User-manager controller probes passed but dashboard failed 218/CAPABILITIES; [report](../var/verification/m09/nnfx-m09-probe-2194936/host-results.json). Later system checks preserved security restrictions. |
-| M10 integration, 19–20 Nov | Prerequisite, guarded service, initialization and arming fixtures progressed through 327/347/383/392/406 checks; [integration record](../var/verification/m10-integration/verification-final.json), [arming suite](../var/verification/m10-arming/final-suite.log). No simulated fill qualifies execution. |
-| Automatic qualification, 20 Nov | 427 baseline and 460 isolated tests, 43-file wheel; [frozen verification](../var/prepared/m10-automatic/var/verification/m10-automatic/verification.json). Owner required isolation from concurrent dashboard work; frozen source remains intact. |
-
-These counts refer to their recorded revisions, not a fresh all-checkout suite.
-M01–M08 were reported ready for review; implementation/deployment does not imply
-individual acceptance of every scenario. Test sources carry the controlled cases.
+Historical offline counts, original dependencies and report links are consolidated
+in the [delivery history](IMPLEMENTATION_PLAN.md#delivery-history). Those results
+apply to their recorded revisions and do not establish account execution.
 
 ## Strategy comparisons
 
 Python 01 selected 18 November: result `a3d408b1-b645-4b38-b3cd-a423e5c8d4a9`, lab
 commit `40e27cfabb4130702716ec1e41db7fbbf6e0f404`, STD-Adaptive T3 C1 (`goLong/goShort`)
 and L2 Ehlers Bandpass Exit (`longEntry` closes shorts, `shortEntry` closes longs).
-[Manifest](../strategies/t3_bandpass_v1/manifest.json) owns exact settings; its hash
-is `22a7aa2e743885ff70304f7a540324c5fe547398b91efa39ce83d71ad881f032`.
-All outputs/ATR matched 8,288 archived bars. The shortest tested qualifying window,
-386, matched 6,748 endpoints and 144 modified partials; every count 15–385 failed
-an event check. Saved conversion keeps confirmOnClose=true and evaluates barOK=true
-on supplied partial input; capture still records it as partial.
+[Manifest](../strategies/t3_bandpass_v1/manifest.json) owns exact settings; its canonical
+hash is retained in the account/candle reports below.
+All outputs/ATR matched 8,288 archived bars. Shortest tested qualifying window: 386
+(6,748 endpoints, 144 modified partials matched); every count 15–385 failed an event
+check. Saved conversion keeps confirmOnClose=true and evaluates barOK=true on supplied
+partial input; capture records it as partial.
 [Summary](../strategies/t3_bandpass_v1/qualification.json),
 [exhaustive sweep](../var/m03/qualified-sweep.json), [reference log](../var/m03/reference.log)
-and [wheel log](../var/m03/wheel.log) retain evidence. 62 standard and 12 explicit
-reference checks passed. [Selected comparison](../tests/check_m03_selected_reference.py)
-requires the sibling lab environment/database at its expected relative path;
-[generic probes](../tests/check_m03_lab_reference.py) also need the lab on PYTHONPATH.
+and [wheel log](../var/m03/wheel.log): 62 standard/12 explicit reference checks passed.
+[Selected comparison](../tests/check_m03_selected_reference.py) needs the sibling lab's
+environment/database at the expected relative path; [generic probes](../tests/check_m03_lab_reference.py)
+also need the lab on PYTHONPATH.
 
-The [Python 02](PYTHON_02.md#calculation-verification) and
-[Python 03](PYTHON_03.md#calculation-verification) records own their comparison
-results, failed alternatives and reproduction inputs.
+[Python 02](PYTHON_02.md#calculation-verification) and
+[Python 03](PYTHON_03.md#calculation-verification) own comparison results,
+failed alternatives and reproduction inputs.
 
 ## Python 01 account and host evidence
 
@@ -63,73 +49,70 @@ results, failed alternatives and reproduction inputs.
 OANDA Australia, clear account, AUD 50,000.1007, all 28 instruments/prices and
 required accountLoss factors (AUD exactly 1; matching quotes GBP-AUD/EUR-AUD).
 Portal said v20 netting; API hedgingEnabled=false and guaranteed-stop mode ALLOWED.
-[Account pass](../var/preflight/account-2026-11-18-python-01-division.json) is separate
-from [scheduled candle pass](../var/preflight/candles-2026-11-18-python-01.json):
+[Account pass](../var/preflight/account-2026-11-18-python-01-division.json);
+separate [scheduled candle pass](../var/preflight/candles-2026-11-18-python-01.json):
 19 November 08:50 Melbourne, all 28 exact 386 windows before rollover, 0.303–1.226 s
-latencies. Its later status-update guard failed on concurrent prose edits; the
-saved report itself passed and was independently verified (hash `ec82389c7b4a0c92127459b1c81b879a55969a6750477133ab3af053739aace1`).
+latencies. The report independently passed; only its later status-update guard
+failed on concurrent prose edits.
 
-System fixture failures and repairs remain in [system reports](../var/verification/m09-system)
+System fixture failures/repairs: [system reports](../var/verification/m09-system)
 and [path correction](../var/verification/m09-dashboard-path-fix/verification.json).
-The corrected 19 November report `nnfx-m09-system-a21870b78c7d.json` passed real
-controller/maintenance/dashboard sandbox/WAL checks with clean cleanup.
+Corrected 19 November report `nnfx-m09-system-a21870b78c7d.json` passed native
+controller/maintenance/dashboard sandbox/WAL checks and cleanup.
 [Private binding check](../var/verification/m09-private/private-5185eb0637bf.json)
 confirmed writer ownership/0600, correct binding and viewer denial without broker
-access. These checks did not prove startup or unattended operation.
+access. Startup/unattended operation remained unproven.
 
-Q0 was initialized 20 November 00:43:43: [report](../var/verification/m10-initialization/m10-q0-3a24c7c4771c.json),
+Q0 initialized 20 November 00:43:43: [report](../var/verification/m10-initialization/m10-q0-3a24c7c4771c.json),
 one GET/no mutations, snapshot `c245f517b15448cabb2edbb5336a53aa`, boundary 2249.
 The [first observed qualification](../var/verification/m10-review-20261120/collected-verification.json)
-at 08:50 lasted 14.112094281 s, processed 28 fresh valid captures/no C1 event,
-31 successful GETs, zero mutations/sets/fills/issues. Stage 1 had no surviving pair,
-so there was no Stage 1 candle or execution-path evidence.
+at 08:50 took 14.112094281 s: 28 fresh valid captures/no C1 event,
+31 successful GETs, zero mutations/sets/fills/issues. No Stage 1 survivor meant
+no Stage 1 candle or execution-path evidence.
 [Replay](../var/verification/m10-review-20261120/pair-replay.json) matched saved C1/ATR;
 [protected collection](../var/verification/m10-review-20261120/protected-review-d9980f9a89ee.json)
-retains the actual records. Q0/balance/cursor were unchanged; A0 unset.
+retains records: Q0/balance/cursor unchanged, A0 unset.
 
-The old kernel -42 dispatch/wakefulness window passed (101 samples, max gap
-15.014205 s) but four user sessions and the owner's “Unsure” leave unattended
-context unconfirmed. On 20 November 13:30:25, kernel **7.0.0-43** startup at uptime
+Old kernel -42 dispatch/wakefulness passed (101 samples, max gap 15.014205 s);
+four user sessions and owner's “Unsure” leave unattended context unconfirmed.
+On 20 November 13:30:25, kernel **7.0.0-43** startup at uptime
 15.023 s had zero user sessions: [startup verification](../var/verification/m10-post-restart/verification.json).
-No repeat boot is required for that proof. Refreshed [system controls](../var/verification/m09-system/nnfx-m09-system-daed36cb06d3.json)
+No repeat boot needed for that proof. Refreshed [system controls](../var/verification/m09-system/nnfx-m09-system-daed36cb06d3.json)
 and [flat dashboard/LAN comparison](../var/verification/m10-dashboard-20261120/display-comparison.json)
 passed; they do not establish a current-kernel unattended/traded review.
 
-20 November automatic qualification deployment receipt `m10-automatic-ebcd02e60445`
-reported armed, 43 files matched, notebook/claims preserved, clean dual-timer host
-fixtures and no broker request/A0: [deployment verification](../var/verification/m10-deployed-20261120/verification.json).
-Old dated trigger stopped; only qualification scheduling enabled. Historical
-[preparation/arming records](../var/verification/m10-arming) remain, not retry instructions.
+20 November receipt `m10-automatic-ebcd02e60445`: automatic qualification armed,
+43 files matched, notebook/claims preserved, clean dual-timer host fixtures,
+no broker request/A0: [deployment verification](../var/verification/m10-deployed-20261120/verification.json).
+Only qualification scheduling remained enabled; the dated trigger stopped.
+Retain [preparation/arming records](../var/verification/m10-arming).
 
 ## Python 02 and Python 03 scheduled setup verification
 
 **Observed 28 November 09:38–09:39 Melbourne / 27 November 22:38–22:39 UTC.**
-Read-only live service properties and saved dashboard records confirmed both setup
-services succeeded: Result=success, ExecMainCode=1 (normal process exit),
-ExecMainStatus=0. Preserve these recorded observations:
+Read-only live service properties/saved dashboard: both setup services had
+Result=success, ExecMainCode=1 (normal exit), ExecMainStatus=0.
 
 | Controller | Setup start → finish (28 Nov Melbourne) | Q0 AUD | Transaction |
 | --- | --- | ---: | --- |
 | Python 02 | 08:50:00 → 08:50:12 | 50,000.6603 | 773 |
 | Python 03 | 08:50:00 → 08:50:22 | 50,000.9696 | 1662 |
 
-Notebook Q0 records are `a71bc581a216485283d4b47bad7554ab` and
+Notebook Q0 records: `a71bc581a216485283d4b47bad7554ab` and
 `21dd5295531e47bd8aaa197ce2990f8d`, refreshed respectively at 27 November
-21:50:11.044964 and 21:50:21.302247 UTC. Port 8879 notebook GETs returned 200,
-showing those balances, no trade records, broker mutation requests or issues;
-ordinary activation remained unset. Successful services, Q0 and enabled timers
-confirm guarded initialization. Protected candle reports/setup receipts were
-**not reopened** during that check; system journal entries were unreadable to the
-login. No standalone export of this observation is cited in the original notes.
+21:50:11.044964 and 21:50:21.302247 UTC. Port 8879 notebook GETs: 200, those balances,
+no trade records/mutation requests/issues, ordinary activation unset. Services/Q0/enabled
+timers confirmed guarded initialization.
+Protected candle reports/setup receipts were **not reopened**; journal unreadable
+to this login. Original notes cite no standalone observation export.
 
-Both qualification timers were enabled/active/waiting, next due **Tuesday
-1 December 08:50 Melbourne / 30 November 21:50 UTC**. Neither new trading service
-had a start timestamp or qualification timer a previous trigger. “No runs recorded”
-is expected: setup checks candles and initializes Q0 without invoking trading.
-All three qualification timers shared that next expiry; all three ordinary timers
-were disabled/inactive with no expiry. Verification did not rerun setup, trade,
-modify files/schedules or send broker requests. Actual Python 02/03 trading had
-not started in this observation. Do not rerun installers/bootstrap.
+Python 02/03 qualification timers were enabled/active/waiting; all three shared the
+next expiry: **Tuesday 1 December 08:50 Melbourne / 30 November 21:50 UTC**.
+All three ordinary timers were disabled/inactive without expiry. Python 02/03 had
+no trading-service start or previous qualification-timer trigger. Setup checks
+candles/initializes Q0 without trading, explaining “No runs recorded”. This check
+reran no setup, triggered no trading, changed no files/schedules and sent no broker
+requests.
 
 ## GBP-CAD incident and recovery
 
@@ -140,32 +123,32 @@ fields, triggering strict comparison and rolling import back to 2249. The
 [original export](../var/verification/m10-automatic-collections/collection-c100b2e47ec0/progress.json)
 and [broader exact replay](../var/verification/transaction-import-broader-20261121/replay-result.json)
 retain facts. Owner agreed field-aware comparison; 520-test broader fix merged
-as `5664c32`, with 49-file package verification in the [same directory](../var/verification/transaction-import-broader-20261121).
-The [505-test precursor](../var/verification/transaction-import-20261121) remains.
+as `5664c32`; 49-file package verification in the [same directory](../var/verification/transaction-import-broader-20261121).
+Retain the [505-test precursor](../var/verification/transaction-import-20261121).
 
-Collector initially failed an all-file hash check without per-file diagnostics;
-its exact difference is unknown. A copied DB/WAL read avoids possible SHM read-mark
-changes. Four focused checks passed; the corrected actual collection preserved
-all three source files. Frozen migration artifacts were not rewritten.
+Collector's initial hash failure lacked per-file diagnostics; the difference remains
+unknown. Reading copied DB/WAL avoids changing original SHM read marks. Four focused
+checks passed; corrected collection preserved all three source files and left
+frozen migration artifacts unchanged.
 
-Later account reads returned HTTP 520, then public unauthenticated 401 while an
-actual authenticated 21 November read returned 503 “System under maintenance”.
-Maintenance is confirmed for that read, not a proven cause of all prior 520s.
+Later account reads returned HTTP 520, then public unauthenticated 401; authenticated
+21 November read returned 503 “System under maintenance”. This confirms maintenance
+for that read, without proving the cause of all prior 520s.
 [Investigation](../var/verification/oanda-520-investigation-20261121),
 [22 November recovered read](../var/verification/oanda-maintenance-recheck-20261122/probe-084931.json)
-and [close-helper attempts](../var/verification/operator-close-2251) preserve failures,
+and [close-helper attempts](../var/verification/operator-close-2251) retain failures,
 identity repair, 24 offline helper checks and market-closed skips without mutations.
 The combined publication suite passed 544; publication was not runtime deployment.
 
 23 November 11:04:13 administrator close sent one durably claimed request: order
 2256/fill 2257/cancellation 2258. Post-close trade GET returned 404; matching fill
-and fresh account independently established closure, not 404 alone. The
-[close verification](../var/verification/operator-close-2251/postclose-20261123T000525Z/verification.json)
-confirms all 42,665 units at 1.87819, -9.7 pips, AUD -43.8956; financing remained
-separate. Retain the claim to prevent another close.
+and fresh account independently proved closure, not 404 alone.
+[Close verification](../var/verification/operator-close-2251/postclose-20261123T000525Z/verification.json)
+confirms all 42,665 units at 1.87819, -9.7 pips, AUD -43.8956; financing separate.
+Preserve the claim.
 
 Owner funding 2259 was +50.03 cash, not trading profit. Closing fill's matching
--0.42844810179192 P/L conversion disclosures were already included in posted P/L;
+-0.42844810179192 P/L conversion disclosures were included in posted P/L;
 `49993.8688 - 43.8956 = 49949.9732` independently reconciled. Only this qualified
 single-close nonzero shape was accepted; other shapes remain blocked.
 [Rehearsal and 555-test evidence](../var/verification/operator-reconcile-2251) preserve
@@ -179,8 +162,8 @@ Q0/failure/claims preserved, clean fixtures and restored qualification schedule.
 21:05 [independent completion](../var/verification/operator-reconcile-2251/completed-20261123T100526Z/verification.json)
 confirmed zero trades/orders/positions, AUD 50,000.0032, loss -43.8956, financing
 -6.2319, funding +50.03, net -0.0975 from Q0; commission/other/unrealised zero.
-A0 stayed unset. Both failure archives and original backup remain in protected
-recovery records; do not replay incident helpers or roll schema 3 back to old writers.
+A0 unset. Protected records retain both failure archives and original backup;
+never roll schema 3 back to old writers.
 
 ## Dashboard releases and access
 
@@ -191,8 +174,8 @@ Scoped deployment/wording: 68 focused offline and 12 live browser checks;
 [installed permission/release verification](../var/verification/dashboard-delegation-deployed-20261120/verification.json)
 confirmed only the no-argument helper grant and successful unchanged-content use.
 [Tailscale completion](../var/verification/tailscale-dashboards-20261120/completion.json)
-retains HTTPS 443/8443 and owner-reported access; local verification used an explicit
-DNS-to-tailnet-IP mapping with normal TLS after MagicDNS failure.
+retains HTTPS 443/8443 and owner-reported access; after MagicDNS failure, local checks
+used explicit DNS-to-tailnet-IP mapping with normal TLS.
 
 26 November 23:11 Melbourne / 12:11 UTC: journal `52fe994`; 74 focused/3 targeted
 checks, 12 saved rows/amounts/fills matched; live 320/390/716/1280 px checks.
@@ -203,10 +186,39 @@ preserving controls/restrictions without broker/notebook writes.
 [Cleanup record](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/cleanup-record.json)
 verified 191 artifacts before archiving/removing the worktree. Row count is dated.
 
-Earlier installation evidence: [Python 02](PYTHON_02.md#recorded-installation-evidence)
+Experiment installation evidence: [Python 02](PYTHON_02.md#recorded-installation-evidence)
 and [Python 03](PYTHON_03.md#recorded-installation-evidence).
 
-28 November 21:50 Melbourne: single practice mode installed.
-[Verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/final-verification.json)
-matched 71 files across source/package/dashboard, original schedules and displayed
-history. Administrator fingerprints preserved notebooks/claims; no trading run.
+## Host cleanup
+
+28 November 16:40 [completion verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/host-cleanup-20261128-ft4lhowm/completion-verification.json)
+confirmed preview/obsolete M09/M10 units removed, port 8880 closed and 139 generated
+build/packaging/bytecode files removed. Live identities, schedules and unit files
+matched original snapshots; no reload pending; all five dashboard pages returned 200.
+Administrator fingerprints preserved runtime data and all evidence, including the
+collection unreadable to this login. Preview source/captures, retired unit copies
+and the original failed receipt remain preserved.
+
+## Single practice mode installation
+
+28 November 21:50: installed for all three experiments.
+[Independent verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/final-verification.json)
+matched 71 files across installed source/package/dashboard and 44 unchanged schema,
+strategy, sizing, order, reconciliation and active schedule files. Native fixtures
+passed with clean removal; five dashboard pages returned 200; restrictions and
+narrow deployer permissions were unchanged. No broker requests or controller runs.
+
+The administrator receipt preserved notebook/sidecar/claim/raw-capture fingerprints,
+credentials and registry; protected originals remain at
+`/etc/nnfx-practice/upgrades/single-mode-d82d9d8e1279`, unreadable to this login.
+Independent saved-page comparisons matched all three Q0s, opening balances, account
+totals and trade/ledger/request records. Dashboard restarted; reload cleared
+Python 01's inactive invocation cache, preserving run history. All three timers
+remained enabled/active/waiting with original calendars and next triggers
+(1 December 08:50 Melbourne / 30 November 21:50 UTC).
+
+[Offline validation](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/validation.json)
+retains 164 focused cases with corrected fixture reruns, upgrade guards and 40
+preflight/deployment checks. Interrupted broader runs are not full-suite passes.
+Failed preflight screenshot/source/partial backup remain preserved; the corrected
+[procedure](OPERATIONS.md#single-practice-mode-upgrade) retains its review constraints.

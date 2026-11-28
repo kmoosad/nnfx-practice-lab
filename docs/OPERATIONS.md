@@ -37,12 +37,11 @@ The Waitress dashboard uses port 8879 and `/opt/nnfx-dashboard/current`; preserv
 research listeners 8877/8878. Runtime has read-only files, no credentials,
 systemctl/sudo/system-bus access or outbound connect calls, and no trading routes.
 It sees committed WAL records. Trusted-LAN/firewall and tailnet restrictions remain;
-[README access](../README.md#dashboard-access) owns client addresses. The old local
-preview service is stopped/disabled and port 8880 is closed; its source and captures
-remain retained evidence. The proposed production snapshot/HTTPS 8444 was never
-installed. Obsolete M09 observation units and dated M10 timers are also removed;
-[status](STATUS.md#cleanup) links completed cleanup verification. Their evidence
-and unit copies remain preserved. New development data requires USB.
+[README access](../README.md#dashboard-access) owns client addresses.
+[Completed cleanup](VERIFICATION.md#host-cleanup) records the retired preview/M09/M10
+units and closed port 8880. Preserve their source, captures and unit copies.
+The proposed production snapshot/HTTPS 8444 was never installed. New development
+data requires USB.
 
 ## Maintenance and evidence collection
 
@@ -131,7 +130,8 @@ a protected release; only restricted `nnfx-view` executes submitted dashboard co
 Its fixed allowlist is `nnfx_practice/dashboard.py` plus the nine HTML/CSS names in
 [dashboard_deploy.py](../deploy/dashboard_deploy.py). Strategy, broker/controller,
 startup and dependency files cannot pass this interface. Root never imports/tests
-submitted application code.
+submitted application code. [Deployer checks](../tests/test_dashboard_deploy.py)
+cover this interface offline.
 
 Releases are root-owned and immutable to login/service users. An atomic `current`
 link switch and restart affect only `nnfx-practice-dashboard.service`, without
@@ -160,16 +160,17 @@ on 28 November. Keep the installed helper and its permissions unchanged.
 
 ## Single practice mode upgrade
 
-The owner authorized removal of ordinary mode on 28 November. This changes no
-strategy, account binding, trading rule or schedule and grants no manual trade.
-The [lifecycle](IMPLEMENTATION_PLAN.md#practice-lifecycle) uses the existing Q0;
-there is no new activation or notebook migration. Historical A0 remains evidence.
+This completed 28 November upgrade implements the accepted
+[lifecycle](IMPLEMENTATION_PLAN.md#practice-lifecycle). It changes no strategy,
+account binding, trading rule or schedule and grants no manual trade.
+Retain this procedure for review of future upgrades; do not replay it.
 
 Use the reviewed [upgrade script](../deploy/single_practice_mode.py) from its frozen USB release,
 with its passing offline suite, matching wheel and source hashes. Administrator
 execution is required because this changes shared trading code and protected plans;
 the narrow dashboard helper cannot perform it. Do not rerun the original installer
-or account bootstrap. [Status](STATUS.md) owns preparation/installation evidence.
+or account bootstrap. [Verification](VERIFICATION.md#single-practice-mode-installation)
+retains preparation, installation and failed-attempt evidence.
 
 Outside the dispatch window, require all three controllers idle with no pending
 jobs. Preserve their enabled/active timer states, exclude launches and hold every

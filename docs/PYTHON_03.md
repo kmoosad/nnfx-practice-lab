@@ -27,14 +27,12 @@ ATR(14); internal indicator ATR is separate. Use confluence events, not C1's pla
 BUY/SELL rule. Retain saved confirmation flags on the practice partial candle;
 regime/trend statistics are calculation state, not broker positions.
 
-Rolling windows, including exhaustive 5,000, missed Exit events. Owner authorized
-fixed-origin support while preserving selected calculations/trading rules. The
-manifest pins **1 January 2013 22:00 UTC**, the research first candle. Each 5,000-raw-
-candle capture initializes C1/Exit/ATR from that origin's weekday suffix, excluding
-completed Friday/Saturday-start bars; current partial validation stays strict.
-Record raw/retained/excluded counts and origin. The
-[history contract](../PROJECT_BRIEF.md#strategy-selection) owns the rule;
-[verification below](#calculation-verification) retains results and failed alternatives.
+Rolling windows missed Exit events, including exhaustive 5,000; the owner authorized
+fixed-origin support under the [history contract](../PROJECT_BRIEF.md#strategy-selection).
+The manifest pins **1 January 2013 22:00 UTC**, the research first candle, within
+5,000 raw candles. Apply the [anchored calculation contract](ARCHITECTURE.md#candle-and-signal-inputs)
+for weekday filtering, strict partial validation and raw/retained/excluded counts.
+[Verification below](#calculation-verification) retains the failed alternatives.
 
 Origin must remain available inside the window; missing origin fails capture,
 never truncates/restarts. This is bounded headroom, not unlimited retention.
@@ -102,7 +100,6 @@ Prepared development notebook integrity was ok with Q0/A0 unset; the earlier
 USB without dependency downloads. The retained root is
 `/mnt/nnfx-usb/development/data/nnfx-practice-lab/python-03/`.
 
-The [28 November observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
-confirmed completed setup, Q0 and a timer awaiting its first trading run; no trading
-execution had occurred and ordinary activation remained unset. Status owns the
-recorded next expiry. Installation/bootstrap are complete: do not rerun them.
+Installation/bootstrap are complete; do not rerun them. The
+[28 November setup observation](VERIFICATION.md#python-02-and-python-03-scheduled-setup-verification)
+records Q0, unset activation and the first-run evidence limit; status owns the next expiry.

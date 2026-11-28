@@ -8,32 +8,35 @@ guidance for bounded feature/fix requests.
 
 ## Delivery history
 
-Architecture → detailed design → planning reviews are complete. M01–M09 below
-record the original delivery sequence and dependencies, with dated results in
-[verification](VERIFICATION.md). They are not an outstanding review queue. Use the
-bounded brief below for routine work. Do not repeat earlier approvals or treat
-them as account evidence. No automatic strategy selection,
-repair service, signal forcing or unreviewed Trade 2 size change is permitted.
+Architecture → detailed design → planning reviews are complete. M01–M09 retain
+these dependencies and offline receipts, not a review queue. The
+[README map](../README.md#code-and-test-map) locates components/tests;
+[verification](VERIFICATION.md) indexes host/account observations. Existing approvals
+do not establish account support.
 
-| Former milestone | Original dependency | Delivered scope and verification coverage |
-| --- | --- | --- |
-| M01 configuration/storage | Approved plan | Immutable bindings, schema, durable intent and scripted test foundation; A12/A15/A16. |
-| M02 broker/reconciliation/ledger | M01 | Account-pinned reads, complete atomic imports and reporting boundaries; A11/A12/A14/A16. |
-| M03 candles/strategy | M01–M02 and manual selection | Exact calculations, events, count/history qualification; A01–A03. |
-| M04 intended-account preflight | M02/account; M03 for candle pass | Account/profile, 28 instruments/conversions and scheduled partial-candle coverage; A01/A03/A05/A13/A16. |
-| M05 open-trade management | M01–M03 contracts | Registered IDs, due stops, ordered independent exits and guarded outcomes; A03/A07/A10–A12. |
-| M06 sizing/two-leg entry | M01–M03; account findings | Decimal risk/margin, conditional protected entry and incomplete-set cases; A03/A05/A06/A12. |
-| M07 master/lifecycle/disposition | M01–M06 | Full sequence, independent entry signal, exclusions, Q0/A0 atomicity; A02–A16 as applicable. |
-| M08 dashboard | M01–M02 records and M07 outcomes | Read-only views, snapshot-consistent totals and visible failures; A14–A16. |
-| M09 host controls | M07; M08 for dashboard | Timing, exclusion, permissions, restart/replay protection and deployed display; A01/A12/A13/A15/A16. |
+| Delivery / date — original dependency | Recorded result and source |
+| --- | --- |
+| M01, 16 Nov — Approved plan | 16 offline checks; original digest/results in Git; [fixtures](../tests/support.py). |
+| M02, 17 Nov — M01 | 37 combined checks; [suite](../tests/test_m02.py). |
+| M03 plumbing, 17 Nov — M01–M02; manual selection | 48 checks + 8 original-lab probes; source `cd64da9`; [reference probes](../tests/check_m03_lab_reference.py). |
+| M04 preflight — M02/account; M03 for candles | [Intended-account and scheduled-candle evidence](VERIFICATION.md#python-01-account-and-host-evidence). |
+| M05, 18 Nov — M01–M03 | 102 suite/40 management checks; [evidence/traces](../var/verification/m05/evidence.json), [log](../var/verification/m05/discovery.log). |
+| M06, 18 Nov — M01–M03; account findings | 171 suite/69 entry checks; [evidence](../var/verification/m06/evidence.json), [log](../var/verification/m06/discovery.log). |
+| M07, 18 Nov — M01–M06 | 264 suite checks; [evidence/row exports](../var/verification/m07/evidence.json), [package](../var/verification/m07/package-check.json). |
+| M08, 19 Nov — M01–M02 records; M07 outcomes | 294 suite/30 dashboard checks; [manifest/pages](../var/m08/verification.json), [visual review](../var/m08/visual-checks.json). |
+| M09, 19 Nov — M07; M08 for dashboard | 319 offline tests; [manifest](../var/verification/m09/verification.json). User-manager controller passed; dashboard failed 218/CAPABILITIES: [report](../var/verification/m09/nnfx-m09-probe-2194936/host-results.json). Later system checks preserved security restrictions. |
+| M10 integration, 19–20 Nov | Prerequisite/service/initialization/arming fixtures: 327/347/383/392/406 checks; [integration record](../var/verification/m10-integration/verification-final.json), [arming suite](../var/verification/m10-arming/final-suite.log). Simulated fills cannot qualify execution. |
+| Automatic qualification, 20 Nov | 427 baseline/460 isolated tests, 43-file wheel; [frozen verification](../var/prepared/m10-automatic/var/verification/m10-automatic/verification.json). Owner required isolation from concurrent dashboard work. |
 
-For new experiments, offline work can proceed while account checks are pending;
-fixtures do not establish broker support. Each notebook/strategy needs its own
-selection, calculation and account qualification.
-Strategy/count bindings now exist for Python 01–03; they are not pending selections.
-Account-specific execution remains conditional, including equal-size protected
-trades, client extensions, precision and targeted closes. A one-unit-increment
-Trade 2 reduction remains only a review option if actual restrictions require it.
+Counts apply to recorded revisions. M01–M08 were reported ready for review, without
+claiming a fresh full suite or acceptance of every scenario. [Acceptance](ACCEPTANCE.md#controlled-verification)
+links controlled cases; implementation/deployment alone does not establish acceptance.
+
+New experiments may proceed offline while account checks are pending. Each needs
+its own selection, calculation and [account qualification](ACCEPTANCE.md#account-and-execution-evidence);
+Python 01–03 already have strategy/count bindings. Automatic selection, repair
+services and signal forcing remain excluded. A one-unit-increment Trade 2 reduction
+is only a review option if observed account restrictions require it, never a fallback.
 
 The [state rules](DETAILED_DESIGN.md#state-rules) own no-fill release and attempt
 guards; the lifecycle below owns Q0/A0. Approved review fixes and their evidence
@@ -53,13 +56,10 @@ Only two operating activities remain:
 2. Review Python 02/03's first trading runs against their setup records;
    [status](STATUS.md) owns the dated Python 02/03 observations and next run.
 
-Use [acceptance scenarios](ACCEPTANCE.md) for focused verification of changes and
-investigation of operating issues. There is no further M10 sign-off to schedule.
-
-Apply the [account and execution evidence requirements](ACCEPTANCE.md#account-and-execution-evidence).
+Use [acceptance scenarios](ACCEPTANCE.md) to verify changes and investigate issues.
 Account incompatibilities, unsupported monetary shapes and unresolved outcomes
-return to review. Reuse observations only while their code/configuration/strategy/
-account conditions apply; verify affected behaviour when those conditions change.
+return to review. Reuse evidence only while its code, configuration, strategy and
+account conditions apply; recheck affected behaviour after changes.
 
 ## Practice lifecycle
 
@@ -113,14 +113,13 @@ Unresolved decisions: <material questions, or none>
 
 ## Handover and evidence discipline
 
-For a requested milestone handover, name the work, prerequisites, applicable
-checks and stopping point; carry unfinished work and existing authority forward.
-Stop for its agreed review before another explicitly requested milestone.
-For routine work, update existing status/guidance only with consequential
-decisions and findings.
+Follow [working guidance](../AGENTS.md#authority-and-proportionate-work) for routine
+work. A requested milestone handover names work, prerequisites, checks and stopping
+point, carrying unfinished work and authority forward to its agreed review.
+Stop for that review before starting another explicitly requested milestone.
 
-Keep one current status handoff. Record scenario/variation, evidence class, date,
-code/configuration/strategy identities, input location, run/set IDs, expected and
-actual result and pass/fail/blocked reason with the retained evidence. Preserve
-non-secret broker IDs and failures. A scenario closes only when its controlled
-checks and applicable host/account observations exist; unknown remains pending.
+Keep one current status handoff. Retained evidence records scenario/variation,
+class, date, code/configuration/strategy identities, input location, run/set IDs,
+expected/actual result and pass/fail/blocked reason. Preserve non-secret broker IDs
+and failures. [Acceptance](ACCEPTANCE.md#account-and-execution-evidence) determines
+when a scenario is verified; unknown remains pending.

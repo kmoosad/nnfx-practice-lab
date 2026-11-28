@@ -1,9 +1,9 @@
 # Architecture and presentation
 
-The owner-approved architecture implements the [brief](../PROJECT_BRIEF.md).
-Design and plan reviews completed on 16 November 2026. This document owns runtime
-boundaries, workflow numbering, candle/signal contracts and dashboard presentation; it does not establish
-account support or observed deployment. See [status](STATUS.md) for those facts.
+The owner-approved architecture implements the [brief](../PROJECT_BRIEF.md);
+design and plan reviews completed 16 November 2026. This document owns runtime,
+workflow numbering, calculations and presentation. [Status](STATUS.md) records
+deployment and account observations; architecture alone proves neither.
 
 ## Runtime and deployment
 
@@ -21,11 +21,10 @@ The timer owns the brief's New York schedule, DST and missed-launch behaviour;
 permissions, maintenance and deployment procedures. Clock, dispatch and wakefulness
 need observations, not assumptions from unit files.
 
-A small HTTPS client pins the practice host/account, reuses connections and applies
-bounded timeouts. Account-wide reliable reads and durable notebook writes are
-required to continue mutations. Coordinate read traffic against the broker limits
-when qualifying a deployment; measured run duration informs any later schedule
-review, not an implicit timing change.
+Use a small HTTPS client with connection reuse and bounded timeouts. The
+[design](DETAILED_DESIGN.md#configuration-and-records) owns account pinning and durable
+records. Qualify read traffic against broker limits; measured duration informs
+schedule review without implicitly changing timing.
 
 ## Numbered workflow
 
@@ -45,31 +44,20 @@ flowchart TD
     B -->|failed| F
 ```
 
-| Step | Component responsibility |
-| --- | --- |
-| 2 | `master` validates binding and records the run and both stages before account work. |
-| 3.1 | `manage_open` loads registered sets, both expected legs and unresolved evidence; reconciles actual activity and due stop-to-entry actions. |
-| 3.2–3.6 | For each surviving pair in brief order: capture, calculate independent Exit/C1 events, record triggers, close eligible legs and commit outcomes before advancing. |
-| 4.1 | `master` obtains the immutable sizing balance after a finished Stage 1, including isolated unresolved closes. Fatal Stage 1 failure prevents entry. |
-| 4.2–4.5 | `manage_new` visits all 28 pairs in order; blocked pairs skip before pair requests. Eligible pairs use a new capture, fresh C1/ATR and candidate entry, finishing each outcome before the next. |
-| 5 | `master` imports through the final account boundary, records reporting refresh and finishes the run; failed refresh retains the last successful snapshot. |
-
-The [design](DETAILED_DESIGN.md#run-and-commit-contracts) owns commit and failure
-semantics. The diagram abbreviates invalid-input/no-event skips; it does not
-require an entry for every capture or final broker work after a fatal failure.
+`master` owns steps 2, 4.1 and 5; `manage_open` owns 3.1–3.6; `manage_new` owns
+4.2–4.5. Step 3.1 loads registered sets with both expected legs and unresolved
+evidence. Follow the [brief's sequence](../PROJECT_BRIEF.md#trading-sequence) and
+[design commit/failure rules](DETAILED_DESIGN.md#run-and-commit-contracts).
+The diagram abbreviates invalid-input/no-event skips; it requires neither an
+entry for every capture nor final broker work after a fatal failure.
 
 ## Configuration and reuse boundaries
 
-The public registry binds stable controller/notebook IDs, display name, strategy
-version and private connection key. Private fields and immutable validation are
-specified in [design](DETAILED_DESIGN.md#configuration-and-records). One account has
-one entry controller; new strategies use new accounts and notebooks. A token may
-access multiple subaccounts, so each request still pins the configured account.
-
-SQLite WAL and short transactions let the separate reader see committed progress
-without trading privileges. UTC and broker precision are retained at rest;
-New York dates/offsets govern display and sessions. Decimal arithmetic surrounds
-the lab's unchanged numerical calculations. Candle windows use no persistent indicator-state store.
+The [design](DETAILED_DESIGN.md#configuration-and-records) owns registry fields,
+private configuration, immutable bindings and SQLite storage. New strategies follow
+the [separate-account rule](../PROJECT_BRIEF.md#strategy-selection), even when a token
+accesses several subaccounts. Use New York dates/offsets for display and sessions;
+Decimal arithmetic surrounds the lab's unchanged numerical calculations.
 
 Package only the manually selected lab conversions, pure helpers and exact
 transitive dependencies with manifests/provenance. Runtime never imports the
@@ -93,8 +81,8 @@ continues to supply that stage's actions even if execution later crosses rollove
 
 Record request/response times, received count, signal start, intended session and
 validation result. Calculations stay in memory; retained practice candles
-are separate evidence. Stage 2 receives neither Stage 1's event nor former direction:
-its own fresh C1 determines entry once flat/clear. A broker closure not yet reconciled
+are separate evidence. Each stage calculates independently under the
+[entry rule](../PROJECT_BRIEF.md#manage-new-trades). A broker closure not yet reconciled
 can leave the pair conservatively skipped for this run.
 
 Results distinguish `long`, `short`, `no_event`, `unavailable` and errors. Save
@@ -121,11 +109,10 @@ selected manifests pin the exact versions used at runtime.
 
 ## Notebook dashboard
 
-This is the authoritative presentation contract, moved from detailed design.
-The brief owns required [journal fields and pip rules](../PROJECT_BRIEF.md#notebook-and-observational-dashboard);
-[design accounting](DETAILED_DESIGN.md#monetary-records) owns totals and cutoffs.
-The reference is the existing [indicator lab dashboard](http://192.168.51.10:8877/).
-Use simple server-rendered navigation, labels, tables and native disclosures.
+The brief owns [journal fields and pip rules](../PROJECT_BRIEF.md#notebook-and-observational-dashboard);
+[design accounting](DETAILED_DESIGN.md#monetary-records) owns totals, Q0 and cutoffs.
+Follow the [indicator lab dashboard](http://192.168.51.10:8877/) presentation reference
+with server-rendered navigation, labels, tables and native disclosures.
 
 | GET view | Contract |
 | --- | --- |
@@ -171,11 +158,9 @@ Plain labels accompany exact issue codes and operator responses.
 
 Use account-first order: name/journal link, freshness/warnings/open-issue count,
 then balance and separate realised profit/loss at the common reporting snapshot.
-Show practice results from the original Q0 through the reporting snapshot.
-Historical activation records remain available in notebook details; they neither
-reset nor cap practice totals. Latest saved-run status
-and controller link follow. Keep strategy version, count and indicator names
-visible, with full rules/parameters and exact snapshot identities/times in details.
+Latest saved-run status and controller link follow. Keep strategy version, count
+and indicator names visible; put full rules/parameters, snapshot identities/times
+and historical activation records in details. Apply the accounting contract above.
 
 Balance is neutral, without a profit-style plus sign. Signed result text uses
 green/red for positive/negative, neutral zero and thousands separators without
@@ -195,8 +180,7 @@ all records. Invalid choices/ranges show an error, not unfiltered output. Filter
 never recalculate account summaries. Search understands displayed exit labels
 and original broker codes. Stored and searched text is escaped.
 
-Table columns show prices, units, protection, outcomes, charges and IDs. Allow
-horizontal scrolling on all screen sizes, pin pair/leg identity horizontally and
+Allow horizontal scrolling on all screen sizes; pin pair/leg identity horizontally and
 headers vertically. Closed protection is inactive; it must not be labelled as a
 missing active stop or an unconfirmed planned target. Open/unconfirmed protection
 and failed/unknown stop-to-entry outcomes retain warnings.
@@ -217,17 +201,16 @@ element, tooltip and expanded record. Browser timezone never alters trading date
 Activity and request outcomes follow trades in disclosures. Show a top warning
 for activity newer than the account snapshot and expand that activity by default;
 uncertain/unsuccessful requests also expand. Posted amounts stay separate from
-informational allocations. Strategy, original starting balance and any historical activation records follow. Presentation
-never changes accounting or trading eligibility.
+informational allocations. Strategy, original starting balance and historical
+activation records follow. Presentation never changes accounting or eligibility.
 
 ### Freshness, isolation and accessibility of records
 
-All summary amounts share the last successful reconciled snapshot and refresh
-time. Newer confirmed journal activity stays visible and explicitly labelled,
-without entering summary totals until covered. Missing snapshots show unavailable
-figures. Display refresh age, latest run and failed/unfinished refresh. A scheduled
-weekday launch passed without a later snapshot makes the view stale; this causes
-no catch-up run or broker polling.
+Display the accounting contract's common snapshot/time, with newer confirmed
+activity visible and labelled separately. Missing snapshots show unavailable
+figures. Show refresh age, latest run and failed/unfinished refresh. A scheduled
+weekday launch without a later snapshot makes the view stale, without catch-up
+or broker polling.
 
 Use short consistent read transactions, read-only SQLite with committed WAL
 visibility, registry-allowlisted notebook IDs and a trusted-LAN listener. GETs
@@ -240,10 +223,7 @@ remains restricted to the reviewed dashboard allowlist.
 
 ## Integration evidence boundary
 
-OANDA's documented requests support a candidate path, not proof for an account.
-The design owns [sizing/order contracts](DETAILED_DESIGN.md#sizing-and-two-leg-entry);
-[acceptance](ACCEPTANCE.md#account-and-execution-evidence) owns profile, conversion,
-restrictions and actual execution checks. Native v20 client extensions, netting,
-protected-size/FIFO rules and historical fill-relative protection need intended-account
-evidence. Read-only preflight and strategy selection have dated results in
-[verification](VERIFICATION.md); [status](STATUS.md) records operation and M10 removal.
+Use the [design's sizing/order contracts](DETAILED_DESIGN.md#sizing-and-two-leg-entry)
+and [account/execution evidence requirements](ACCEPTANCE.md#account-and-execution-evidence).
+Documented requests alone do not prove account support. [Verification](VERIFICATION.md)
+retains dated preflight/strategy results; [status](STATUS.md) owns operation.
