@@ -1,8 +1,8 @@
 # Project status
 
-Updated 28 November 2026 (Melbourne). Latest operational observations below are
-from 09:38–09:39 Melbourne that day; this documentation update made no new live
-service, account or deployment check.
+Updated 28 November 2026 (Melbourne). Latest trading/service observations below
+are from 09:38–09:39 Melbourne that day. No new broker or service checks were
+performed for this documentation cleanup.
 
 ## Current position
 
@@ -10,14 +10,15 @@ The checkout is on `main` with Python 01–03 implementation, schema-3 transacti
 comparison, the single-table journal and guarded qualification/ordinary adapters.
 All three experiments are installed. Automatic **qualification** is enabled under
 its existing authority; **ordinary activation is unset and ordinary scheduling
-is disabled** in the latest recorded observations. M10/final acceptance remain open.
+is disabled** in the latest recorded observations. These are the installed mode
+labels; the existing schedule continues. **M10 was removed by the owner on
+28 November**, following about a week of practice operation with trades resolved;
+see the [accepted operating decision](../PROJECT_BRIEF.md#delivery-sequence).
 
 | Delivery | State and evidence boundary |
 | --- | --- |
 | Brief / architecture / design / plan | Brief final 10 November; architecture decisions 15 November; design and plan approved 16 November. No repeated stage approval is needed. |
-| M01–M08 | Implemented with controlled checks; earlier milestones reported ready for review. [Dated suites](VERIFICATION.md#approved-decisions-and-offline-milestones) do not themselves close full acceptance. |
-| M09 | Essential system/maintenance/dashboard-WAL checks and -43 startup-without-login passed; current-kernel unattended-window/final review remains open. |
-| M10 | Natural qualification runs and broker records exist, including a resolved incomplete entry. Comprehensive execution evidence and final ordinary authority are incomplete. |
+| M01–M09 delivery history | Implementation and host-control results are retained in [dated verification](VERIFICATION.md#approved-decisions-and-offline-milestones), with their evidence limits. No milestone review is queued. |
 | Dashboard | Single-table journal, filters, labels and two-line dates deployed; dated [saved-data/browser verification](VERIFICATION.md#dashboard-releases-and-access) preserved. |
 
 The last shared-code installation check (27 November 23:21 Melbourne) matched
@@ -73,7 +74,7 @@ Scheduled setup is complete; actual Python 03 trading execution remains pending.
 **Observed 28 November 09:38–09:39 Melbourne / 27 November 22:38–22:39 UTC.**
 Read-only live service properties and saved dashboard records confirmed both setup
 services succeeded: Result=success, ExecMainCode=1 (normal process exit),
-ExecMainStatus=0. Preserve these previously uncommitted observations:
+ExecMainStatus=0. Preserve these recorded observations:
 
 | Controller | Setup start → finish (28 Nov Melbourne) | Q0 AUD | Transaction |
 | --- | --- | ---: | --- |
@@ -95,36 +96,27 @@ had a start timestamp or qualification timer a previous trigger. “No runs reco
 is expected: setup checks candles and initializes Q0 without invoking trading.
 All three qualification timers shared that next expiry; all three ordinary timers
 were disabled/inactive with no expiry. Verification did not rerun setup, trade,
-modify files/schedules or send broker requests. Actual Python 02/03 trading and
-M10 execution qualification remain pending. Do not rerun installers/bootstrap.
+modify files/schedules or send broker requests. Actual Python 02/03 trading had
+not started in this observation. Do not rerun installers/bootstrap.
 
-## Material unresolved work
+## Operational follow-up
 
-The [plan's remaining work](IMPLEMENTATION_PLAN.md#remaining-work) owns full execution,
-current-kernel unattended-window, traded dashboard/A01–A16 review and ordinary
-transition dependencies. Startup on -43 already passed; old -42 wakefulness passed
-but the owner could not confirm unattended context. Do not silently promote it.
+The [operating checklist](IMPLEMENTATION_PLAN.md#operating-checklist) covers routine
+dashboard monitoring, new experiments' first runs and focused fixes. M01–M09 are
+delivery history; the M10 completion review and work list are retired.
 
-The owner prefers continuous Q0 performance with qualification as a milestone;
-that lifecycle simplification is discussed but not implemented or substituted for
-the accepted Q0/A0 transition. The planned 27 November performance/M10 review has
-no recorded completion. Existing manual Tuesday–Saturday 09:30 Melbourne dashboard
-checks continue; automatic alerting and a reminder were not scheduled.
+The owner prefers continuous Q0 performance. Reporting and dispatch still use the
+installed Q0/A0 lifecycle; changing that implementation is optional future work.
+Manual Tuesday–Saturday 09:30 Melbourne dashboard checks continue.
 
-Documentation inspection found follow-up tooling limits in
-[operations](OPERATIONS.md): collector CLI targets only Python 01, the dashboard
-helper's control guard names only Python 01, and a host inspector fixes output
-under its checkout. None was changed here. Multi-controller exclusion must be
-reviewed before relying on that deployer for the added controllers.
+Collector and host-inspector limitations remain in [operations](OPERATIONS.md)
+for use when needed; they are outside the active checklist.
 
 ## Current handoff
 
-Work: three installed experiments continue authorized qualification; M10 is open.
-Blockers: complete/review actual execution and current-kernel unattended evidence;
-resolve the Q0 lifecycle proposal before any ordinary transition.
+Work: continue existing practice schedules; the owner has removed M10.
 Verification: retained offline, host, account and execution evidence is linked
 above; 28 November setup passed, but Python 02/03 have no recorded trading run yet.
-Next: (1) review their first runs after 1 December 08:50 Melbourne;
-(2) collect/review missing M10 evidence under existing authority and tool limits;
-(3) review the final packet/transition before A0 or ordinary scheduling.
+Next: review Python 02/03 after 1 December 08:50 Melbourne; continue dashboard
+checks and address errors.
 Preserve Q0, claims, failures and current schedules; no daily arming or setup replay.

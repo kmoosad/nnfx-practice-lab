@@ -1,6 +1,6 @@
 # Retained verification references
 
-Retained results for investigation, outside routine feature reading. [Status](STATUS.md) owns current state;
+Historical evidence; [status](STATUS.md) owns operation and M10 removal;
 [acceptance](ACCEPTANCE.md) owns required scenarios. Dates below are Melbourne
 unless UTC is explicit. Evidence paths are local/private and may require USB or
 administrator access; their existence does not grant execution authority.
@@ -15,7 +15,7 @@ in Git at `a89e452:docs/STATUS.md`. Unique 28 November setup observations are re
 Brief finalised 10 November, architecture refinements 15 November, detailed design
 and plan approved 16 November. Design fixes retained exact windows, failed-attempt
 guards, maintenance exclusion and snapshot-aligned totals. Plan fixes retained
-the wholly-no-fill exception, Q0/A0 atomic lifecycle and initial/final M10 split.
+the wholly-no-fill exception, Q0/A0 atomic lifecycle and former initial/final M10 split.
 M09 deployment approval is in the [19 November record](../var/verification/m09-approval/approval.json);
 [Python 01 execution authority](../var/verification/m10-authority/authorization.json)
 is conditional on prerequisites and does not authorize ordinary activation.
@@ -115,7 +115,7 @@ context unconfirmed. On 20 November 13:30:25, kernel **7.0.0-43** startup at upt
 15.023 s had zero user sessions: [startup verification](../var/verification/m10-post-restart/verification.json).
 No repeat boot is required for that proof. Refreshed [system controls](../var/verification/m09-system/nnfx-m09-system-daed36cb06d3.json)
 and [flat dashboard/LAN comparison](../var/verification/m10-dashboard-20261120/display-comparison.json)
-passed; they do not replace the remaining current-kernel unattended/traded review.
+passed; they do not establish a current-kernel unattended/traded review.
 
 20 November automatic qualification deployment receipt `m10-automatic-ebcd02e60445`
 reported armed, 43 files matched, notebook/claims preserved, clean dual-timer host

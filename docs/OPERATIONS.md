@@ -79,8 +79,8 @@ all date claims, including claims without run rows; collection never grants acce
 Its CLI requires administrator access and accepts a new `--output` directory.
 Choose a unique path under the mounted USB task evidence directory, including its
 temporary copy; output is private and becomes checkout-owner-readable. **The CLI
-currently collects `practice-a` only**; it has no controller selector. Supporting
-Python 02/03 collection needs separate tooling work. Use current reviewed source,
+currently collects `practice-a` only**; it has no controller selector. Defer
+Python 02/03 CLI support until needed. Use current reviewed source,
 not the frozen migration bundle's older collector. Never reset Q0 or delete claims.
 
 ## Host checks and unattended evidence
@@ -106,7 +106,7 @@ startup, unattended window or traded dashboard agreement.
 inspection, not a fixture or execution pass. It fixes its output to the source
 checkout's `var/verification/m10`; `--output` cannot redirect outside that directory.
 Run it from a reviewed USB checkout if needed. Do not repeat its old internal-
-storage command; broader output support is a separate tooling follow-up. The
+storage command; defer broader output support until needed. The
 older user-systemd probe cannot replace actual system-manager verification.
 
 The [observer](../tests/check_m09_observation.py) stages isolated boot/dispatch/
@@ -142,7 +142,7 @@ link switch and restart affect only `nnfx-practice-dashboard.service`, without
 unit changes or manager reload. Preserve credential/control/network/LAN restrictions
 and pinned qualified trading files. Reject stale releases, unknown/duplicate fields,
 oversized input, unsafe ownership/modes/links/paths, non-allowlisted changes,
-concurrent deployment, active runs/pending jobs and weekdays 16:35–17:10 New York.
+concurrent deployment, `practice-a` runs/pending jobs and weekdays 16:35–17:10 New York.
 The helper never pauses/enables/disables trading schedules.
 
 Bounded fixed localhost GETs permit no proxy/redirect. Failed restart/page or
@@ -158,16 +158,15 @@ Setup and optional update are separate outcomes. Revoking its exact sudoers file
 removes access without changing either service. New dependencies/service bindings,
 qualified trading upgrades or allowlist expansion require separate administrator review.
 
-**Coverage limit found during documentation inspection:** the source helper's
-`CONTROLS` names only `practice-a`. Its documented active-run/pending-job guard has
-not been generalized to the added controllers. Review multi-controller release
-exclusion before relying on it for Python 02/03; no code change was made here.
+The installed helper's activity/job checks cover `practice-a` only. This is a
+conservative dashboard-deployment policy; its expansion was dropped by the owner
+on 28 November. Keep the installed helper and its permissions unchanged.
 
 ## Ordinary review and activation
 
-The ordinary adapter and [final verifier](../nnfx_practice/qualification_review.py)
-exist. Actual final evidence/authority remain incomplete; do not activate or
-enable ordinary scheduling on that basis.
+This section describes the installed ordinary adapter and
+[final verifier](../nnfx_practice/qualification_review.py) if a mode transition is
+requested. Current practice runs continue through the existing qualification schedule.
 [The plan](IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation)
 owns lifecycle and reporting. This section owns the protected packet/procedure.
 

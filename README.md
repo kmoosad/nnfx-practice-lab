@@ -5,7 +5,8 @@ practice accounts. A Python controller records actual broker results in SQLite;
 the Flask/Jinja dashboard observes those records.
 
 [Current status](docs/STATUS.md) separates checkout implementation, dated deployment
-observations and remaining qualification. Ordinary activation is still gated.
+observations and routine follow-up. The practice application is running; the owner
+has removed M10 from the delivery plan.
 
 ## Navigation
 
@@ -16,7 +17,7 @@ observations and remaining qualification. Ordinary activation is still gated.
 | [Architecture](docs/ARCHITECTURE.md) | Runtime/workflow, candles/signals and dashboard presentation |
 | [Detailed design](docs/DETAILED_DESIGN.md) | State, sizing, broker and accounting contracts |
 | [Acceptance](docs/ACCEPTANCE.md) | Required scenarios and relevant tests |
-| [Plan](docs/IMPLEMENTATION_PLAN.md) | Dependencies, remaining work and reusable feature brief |
+| [Plan](docs/IMPLEMENTATION_PLAN.md) | Delivery history, operating checklist and reusable feature brief |
 | [Operations](docs/OPERATIONS.md) | Host maintenance, deployment and activation gates |
 | [Verification references](docs/VERIFICATION.md) | Retained evidence outside routine reading |
 | [Python 02](docs/PYTHON_02.md) / [Python 03](docs/PYTHON_03.md) | Selected experiments and integration constraints |

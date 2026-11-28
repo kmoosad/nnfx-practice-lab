@@ -1,9 +1,9 @@
 # Acceptance checklist
 
 Required scenarios derive from the [accepted brief](../PROJECT_BRIEF.md#acceptance-criteria).
-Controlled checks and some host/account observations exist; final acceptance and
-M10 remain incomplete. This document owns scenario variations and evidence needed,
-not current pass counts. Use [verification references](VERIFICATION.md) for dated
+These scenarios guide ongoing verification and future changes. The owner removed
+M10 under the [operating decision](../PROJECT_BRIEF.md#delivery-sequence); this is
+no longer an outstanding milestone checklist. Use [verification references](VERIFICATION.md) for dated
 results and [README commands](../README.md#development-and-verification) to reproduce
 focused checks. A linked test is coverage, not proof of live execution.
 
@@ -194,20 +194,20 @@ specific not-applicable reason; this alone does not block activation. Controlled
 matching-quote remains mandatory. Missing required factors/non-1 applicable home
 factor block preflight. Compare actual broker margin during execution.
 
-[Remaining M10 work](IMPLEMENTATION_PLAN.md#remaining-work) owns the initial/final
-sequence. Actual long/short/cross-currency IDs/units/fills, fill-relative protection,
-TP/scheduled stop-to-entry, targeted closes, restrictions, daily financing and
-closure-charge reconciliation are required. Final both-stage 16:50 captures, ordered
-28-pair progress/duration and traded dashboard agreement supplement controlled
-variations; do not claim every synthetic reversal occurred live.
+When assessing an account's execution path, retain actual long/short/cross-currency
+IDs/units/fills, fill-relative protection, TP/scheduled stop-to-entry, targeted
+closes, restrictions, daily financing and closure-charge reconciliation. Both-stage
+16:50 captures, ordered 28-pair progress/duration and traded dashboard agreement
+supplement controlled variations; do not claim every synthetic reversal occurred
+live. [The operating checklist](IMPLEMENTATION_PLAN.md#operating-checklist) owns follow-up.
 
 Host proof must include actual dispatch, no restart/replay/overlap, system-user
 permissions and maintenance success/failure with both prior timer states. Calendar
 or user-manager checks do not substitute for installed system-manager evidence.
-Final startup/unattended-window scope and the ordinary packet follow
+Startup/unattended-window evidence and the installed ordinary-mode packet follow
 [operations](OPERATIONS.md#ordinary-review-and-activation).
 
-Close a scenario only with its required controlled checks and applicable observed
-evidence. Keep unknown/unobserved outcomes pending. Profitability is an experiment
-outcome, not software acceptance. Current missing evidence is in [status](STATUS.md);
-no test or broker operation was performed for this documentation reorganisation.
+Record a scenario as verified only with its controlled checks and applicable
+observed evidence; otherwise retain its evidence limits. Profitability is an
+experiment outcome, not software acceptance. [Status](STATUS.md) records current
+operation, follow-up and the scope of retained observations.

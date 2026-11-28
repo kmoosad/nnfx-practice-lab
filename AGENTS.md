@@ -52,7 +52,7 @@ provides commands. Follow cross-boundary links only as needed.
 | `docs/STATUS.md` | Current delivery state, blockers and one current handoff |
 | `docs/ARCHITECTURE.md` | Runtime/workflow, candle/signal contracts and dashboard presentation |
 | `docs/DETAILED_DESIGN.md` | Persistence, sizing, broker, reconciliation and accounting contracts |
-| `docs/IMPLEMENTATION_PLAN.md` | Milestone dependencies, qualification lifecycle, remaining work and feature template |
+| `docs/IMPLEMENTATION_PLAN.md` | Delivery history, installed lifecycle, operational follow-up and feature template |
 | `docs/ACCEPTANCE.md` | A01–A16 scenarios, controlled variations and required evidence |
 | `docs/OPERATIONS.md` | Host procedures, deployment authority and ordinary-review packet |
 | `docs/VERIFICATION.md` | Dated evidence references, consequential findings and their limits |
@@ -63,10 +63,11 @@ superseded statement. Link to that home instead of repeating its rules.
 
 ## Authority and proportionate work
 
-The architecture, design and implementation plan are approved; implementation
-exists. Preserve the [remaining milestone and activation gates](docs/IMPLEMENTATION_PLAN.md#remaining-work).
-Use existing user decisions and authority without requesting them again. The
-owner's milestone-per-chat review boundary remains applicable to milestone work.
+The architecture, design and implementation plan are approved; practice operation
+is running. The owner removed M10; follow the [operating checklist](docs/IMPLEMENTATION_PLAN.md#operating-checklist).
+Use existing user decisions and authority without requesting them again. M01–M09
+are delivery history. Routine work uses bounded feature/fix requests; milestone
+reviews apply only to new milestones explicitly requested by the owner.
 User instructions take precedence over project guidance.
 For routine fixes use brief planning and focused checks; deepen review when
 trading behaviour, persistence, broker interactions or component contracts change.

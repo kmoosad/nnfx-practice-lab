@@ -232,10 +232,14 @@ software acceptance requirement.
 
 ## Delivery sequence
 
-Maintain project guidance in an `AGENTS.md` of at most 300 lines and the necessary supporting documents. The
-delivery sequence is architecture and OANDA integration, detailed design, implementation planning, then
-implementation, with review before progressing between stages. Completed stage approvals remain in force;
-[status](docs/STATUS.md) records them and the remaining gates.
+Maintain project guidance in an `AGENTS.md` of at most 300 lines and the necessary supporting documents.
+Architecture, design and planning approvals remain in force. M01–M09 are delivery history; routine work now
+uses bounded feature and fix requests. [Status](docs/STATUS.md) owns the current operating checklist.
+
+On 28 November 2026 the owner removed M10 from the delivery plan because the practice account had run for
+about a week and trades had been resolved. Continue existing authorised practice operation without a further
+M10 completion review. Preserve the recorded trading history and address subsequent issues through routine
+maintenance and focused verification.
 
 Deployment and account-provisioning decisions belong to their reviewed stage; current procedures are in
 [operations](docs/OPERATIONS.md). The strategy combination is selected manually before the practice experiment

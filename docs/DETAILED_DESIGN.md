@@ -2,8 +2,8 @@
 
 Approved 16 November 2026; later comparison/history decisions incorporated.
 [Brief](../PROJECT_BRIEF.md) owns trading rules; [architecture](ARCHITECTURE.md) owns
-workflow/presentation. Account-path qualification remains conditional; see
-[status](STATUS.md) for delivery and evidence.
+workflow/presentation. [Status](STATUS.md) records operation and the evidence
+limits for each account.
 
 ## Configuration and records
 

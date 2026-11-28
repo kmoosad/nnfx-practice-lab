@@ -246,4 +246,4 @@ The design owns [sizing/order contracts](DETAILED_DESIGN.md#sizing-and-two-leg-e
 restrictions and actual execution checks. Native v20 client extensions, netting,
 protected-size/FIFO rules and historical fill-relative protection need intended-account
 evidence. Read-only preflight and strategy selection have dated results in
-[verification](VERIFICATION.md); comprehensive M10 execution remains open.
+[verification](VERIFICATION.md); [status](STATUS.md) records operation and M10 removal.
