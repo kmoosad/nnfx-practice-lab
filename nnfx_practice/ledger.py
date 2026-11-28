@@ -136,13 +136,17 @@ class AccountReport:
     net_posted: Decimal
 
 
-def account_report(db, period):
-    """Read qualification (Q0 to at most A0) or ordinary results (after A0)."""
-    if period not in ("qualification", "ordinary"):
-        raise ValueError("Expected qualification or ordinary reporting")
+def account_report(db, period='practice'):
+    """Practice totals from the original Q0; old intervals remain read-only queries.
+
+    Historical A0 and mode fields are never reset, relabelled or migrated.
+    Explicit legacy periods support retained exports, not executable modes.
+    """
+    if period not in ("practice", "qualification", "ordinary"):
+        raise ValueError("Expected practice reporting or a historical interval")
     with _read_transaction(db), localcontext(prec=80):
         binding = db.execute("SELECT * FROM notebook").fetchone()
-        baseline_id = binding["qualification_snapshot_id" if period == "qualification" else "activation_snapshot_id"]
+        baseline_id = binding["activation_snapshot_id" if period == "ordinary" else "qualification_snapshot_id"]
         if baseline_id is None:
             return None
         baseline = db.execute("SELECT rowid, * FROM account_snapshots WHERE snapshot_id = ?", (baseline_id,)).fetchone()

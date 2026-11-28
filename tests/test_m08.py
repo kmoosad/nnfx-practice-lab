@@ -258,8 +258,8 @@ class DashboardChecks(NotebookCase):
         self.db.execute("INSERT INTO run_invocations VALUES ('run-a','qualification','{}')")
         self.snapshot(account(101, '1100', trades=[open_trade(41)]), order_fill(101, 40, pl='100'), name='qual')
         html = self.get('/notebooks/notebook-a')
-        self.assertIn('Ordinary trading has not been activated.', html)
-        self.assertIsNone(self.model()['reports']['ordinary'])
+        self.assertIn("Results since this notebook's original practice starting balance.", html)
+        self.assertEqual(set(self.model()['reports']), {'practice'})
         self.snapshot(account(102, '1100'), order_fill(102, 41), cursor=101, name='a0')
         self.db.execute('''UPDATE notebook SET activation_snapshot_id = 'a0', activation_transaction_id = '102',
             activation_evidence_json = '["offline-a0"]', activated_at = ?''', (utc_text(self.clock.now()),))
@@ -270,24 +270,24 @@ class DashboardChecks(NotebookCase):
         ordinary['time'] = '2026-11-17T21:50:00Z'
         self.snapshot(account(103, '1120'), ordinary, cursor=102, name='ordinary')
         model = self.model()
-        qual, live = model['reports']['qualification'], model['reports']['ordinary']
-        self.assertEqual((qual.opening_snapshot_id, qual.snapshot_id, qual.realised_profit), ('q0', 'a0', Decimal(100)))
-        self.assertEqual((live.opening_balance, live.realised_profit, live.balance), (Decimal(1100), Decimal(20), Decimal(1120)))
-        self.assertEqual({r['period'] for r in model['activity'] if r['transaction_id'] == '103'}, {'Ordinary'})
-        self.assertEqual({r['period'] for r in model['journal'] if r['set_id'] == 'ordinary-set'}, {'Ordinary'})
-        self.assertEqual({r['period'] for r in model['journal'] if r['set_id'] == 'set-a'}, {'Qualification'})
-        html = self.get('/notebooks/notebook-a')
-        self.assertIn('Qualification results before activation', html)
-        self.assertIn('Qualification starting record (Q0)</dt><dd>Account record q0 · Transaction 0100', html)
-        self.assertIn('Ordinary trading starting record (A0)</dt><dd>Account record a0 · Transaction 102', html)
-        self.assertIn('class="win">+20', html)
-        overview = self.get('/notebooks')
-        ordinary = overview.split('aria-label="Ordinary results"', 1)[1].split('</section>', 1)[0]
-        qualification = overview.split('class="notebook-details qualification-history"', 1)[1].split('</details>', 1)[0]
-        self.assertIn('<span class="win">+20</span>', ordinary)
-        self.assertNotIn('<span class="win">+100</span>', ordinary)
-        self.assertIn('<span class="win">+100</span>', qualification)
-        self.assertNotIn('<span class="win">+20</span>', qualification)
+        before = '\n'.join(self.db.iterdump())
+        report = model['report']
+        self.assertEqual((report.period, report.opening_snapshot_id, report.snapshot_id), ('practice', 'q0', 'ordinary'))
+        self.assertEqual((report.opening_balance, report.realised_profit, report.balance), (Decimal(1000), Decimal(120), Decimal(1120)))
+        self.assertEqual({r['period'] for r in model['activity'] if r['transaction_id'] == '103'}, {'Practice'})
+        self.assertEqual({r['period'] for r in model['journal']}, {'Practice'})
+        # Historical interval queries still reproduce the old results without writes.
+        self.assertEqual(account_report(self.db, 'qualification').realised_profit, Decimal(100))
+        self.assertEqual(account_report(self.db, 'ordinary').realised_profit, Decimal(20))
+        html = self.get('/notebooks/notebook-a?record_set=ordinary-set&record_leg=1')
+        self.assertIn('Practice starting record</dt><dd>Account record q0 · Transaction 0100', html)
+        self.assertIn('Historical activation record (A0)</dt><dd>Account record a0 · Transaction 102', html)
+        self.assertIn('Original invocation label</dt><dd>ordinary', html)
+        for page in (html, self.get('/notebooks')):
+            self.assertIn('class="win">+120', page)
+            self.assertNotIn('Ordinary trading has not been activated', page)
+            self.assertNotIn('Qualification results before activation', page)
+        self.assertEqual('\n'.join(self.db.iterdump()), before)
 
     def test_notebook_overview_keeps_exact_neutral_balance_and_qualification_context(self):
         self.snapshot(account(101, '50000.1007'), event(101, 'TRANSFER_FUNDS', amount='49000.1007'))
@@ -296,12 +296,12 @@ class DashboardChecks(NotebookCase):
         self.assertIn('<span>50,000.1007</span>', html)
         self.assertNotIn('+50,000.1007', html)
         self.assertNotIn('50,000.10<', html)
-        self.assertIn('Ordinary trading has not been activated.', html)
-        self.assertIn('These are qualification results.', html)
+        self.assertIn("Results since this notebook's original practice starting balance.", html)
+        self.assertNotIn('Ordinary trading', html)
         self.assertIn('1 open issue', html)
-        self.assertLess(html.index('1 open issue'), html.index('Qualification results'))
+        self.assertLess(html.index('1 open issue'), html.index('Practice results'))
         self.assertEqual(self.model()['report'].balance, Decimal('50000.1007'))
-        self.assertIsNone(self.model()['reports']['ordinary'])
+        self.assertEqual(set(self.model()['reports']), {'practice'})
         self.assertIn('Open trading journal', html)
         self.assertNotIn('<table', html)
 
@@ -354,7 +354,7 @@ class DashboardChecks(NotebookCase):
             with self.subTest(status=status):
                 self.assertEqual(TradeRows(self.filtered(status=status)).rows, expected)
         self.assertEqual(TradeRows(self.filtered(direction='short')).rows, [('pending-set', 1), ('pending-set', 2)])
-        self.assertEqual(TradeRows(self.filtered(period='Ordinary')).rows, [('finished-set', 1), ('finished-set', 2)])
+        self.assertEqual(len(TradeRows(self.filtered(period='Ordinary')).rows), 6)
 
     def test_journal_entry_dates_use_new_york_days_and_validate_ranges(self):
         self.filter_fixture()
@@ -741,7 +741,7 @@ class DashboardChecks(NotebookCase):
         original = dashboard.account_report
         changed = False
 
-        def interleave(reader, period):
+        def interleave(reader, period='practice'):
             nonlocal changed
             result = original(reader, period)
             if not changed:

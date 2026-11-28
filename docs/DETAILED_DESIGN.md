@@ -14,7 +14,7 @@ the bound account, even with shared tokens. Exclude credentials/headers from evi
 
 Manifest freezes research/source, conversion/dependency hashes, parameters, output/
 rule identities, numeric semantics, qualified count/history and evidence references.
-Startup/activation validates unique bindings, safe paths, notebook identity,
+Startup validates unique bindings, safe paths, notebook identity,
 manifest/count and broker account/currency before trading. Log mismatches only in
 a safely bound notebook or redacted service log. Token/name changes preserve
 binding; strategy/rule/parameter/count/origin changes need a new one. No defaults.
@@ -27,7 +27,7 @@ No network inside a write transaction.
 
 | Record | Durable meaning |
 | --- | --- |
-| `notebook` singleton | Schema, immutable controller/notebook/account/currency/manifest, Q0/A0 snapshots/evidence/time, imported-through cursor. |
+| `notebook` singleton | Schema, immutable controller/notebook/account/currency/manifest, Q0 and historical A0/evidence/time, imported-through cursor. |
 | `runs`, `stages`, `run_invocations` | Run/config/code/strategy, count, UTC/session/duration, fixed sizing balance/time/boundary, snapshot/error, stage progress, mode/prerequisites. |
 | `pair_decisions` | Run/stage/pair/order, capture and current/prior operands/rule IDs, ATR validity, triggers, sizing, action/outcome/reason and related set/issues. |
 | `trade_sets`, `trade_legs` | Expected two legs, direction, frozen ATR/distance, run/balance reference, establishment/terminal time; unique broker IDs, planned/initial/current units, confirmed fills/state/boundary, original/current protection/order IDs, stop-to-entry and final exit. Unknown stays null. |
@@ -218,7 +218,7 @@ amounts once; allocations/cumulative trade totals only explain/cross-check them.
 Keep unallocated account amounts.
 Spread is in fills; unknown money or unexplained differences remain errors.
 
-Use [Q0/A0 intervals](IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation).
+Use [practice totals from Q0](IMPLEMENTATION_PLAN.md#practice-lifecycle); preserve legacy intervals read-only.
 Summaries end at reconciled snapshot S: balance, unrealised result, currency/time,
 net posted result, positive/negative trading postings and distinct financing/charges/cash.
 A +100 close after S stays visible in activity but outside summary profit until a

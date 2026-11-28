@@ -56,7 +56,8 @@
     <dt>Pair</dt><dd>{{ leg.pair }}</dd>
     <dt>Direction</dt><dd>{{ leg.direction|journal_label }}</dd>
     <dt>Trade status</dt><dd>{{ leg.broker_state|journal_label if leg.broker_state else 'Unconfirmed' }}</dd>
-    <dt>Trading phase</dt><dd>{{ leg.period|journal_label }}</dd>
+    <dt>Reporting period</dt><dd>{{ leg.period|journal_label }}</dd>
+    {% if leg.mode %}<dt>Original invocation label</dt><dd>{{ leg.mode }}</dd>{% endif %}
     <dt>Set entry status</dt><dd>{{ leg.establishment_status|journal_label }}</dd>
     <dt>Compared with account update</dt><dd>{{ snapshot_label(leg.after_snapshot, has_report) }}</dd>
     <dt>Units: entry / current</dt><dd>{{ leg.initial_units|number(missing='Not recorded') }} / {{ leg.current_units|number(missing='Not recorded') }}</dd>
@@ -102,7 +103,7 @@
   <table class="trade-table">
     <caption class="sr-only">Trade records for {{ notebook_id }}. Dates and times are in New York time.</caption>
     <thead><tr>
-      {% for label in ['Pair / trade', 'Trade status', 'Entry date/time', 'Entry price', 'Stop-loss price', 'Take-profit price', 'Units: entry / current', 'Result (pips)', 'Profit / loss (' ~ currency ~ ')', 'Exit price', 'Exit date/time', 'Exit reason', 'Original stop-loss', 'Move stop to entry', 'Financing (' ~ currency ~ ')', 'Commission (' ~ currency ~ ')', 'Other charges (' ~ currency ~ ')', 'Direction', 'Trading phase', 'Set entry status', 'Broker trade ID', 'Trade set ID'] %}<th scope="col">{{ label }}</th>{% endfor %}
+      {% for label in ['Pair / trade', 'Trade status', 'Entry date/time', 'Entry price', 'Stop-loss price', 'Take-profit price', 'Units: entry / current', 'Result (pips)', 'Profit / loss (' ~ currency ~ ')', 'Exit price', 'Exit date/time', 'Exit reason', 'Original stop-loss', 'Move stop to entry', 'Financing (' ~ currency ~ ')', 'Commission (' ~ currency ~ ')', 'Other charges (' ~ currency ~ ')', 'Direction', 'Reporting period', 'Set entry status', 'Broker trade ID', 'Trade set ID'] %}<th scope="col">{{ label }}</th>{% endfor %}
     </tr></thead>
     <tbody>
     {% for leg in trades.rows %}

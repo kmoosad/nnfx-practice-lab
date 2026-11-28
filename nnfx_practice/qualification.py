@@ -1,7 +1,7 @@
-"""Protected M10 permits: legacy dated sessions and automatic weekday qualification.
+"""Protected practice permits, retaining legacy plan, timer and claim identities.
 
-Both use the same controller and durable date claims. Ordinary activation has a
-separate evidence gate. Installation never provisions execution authority.
+Legacy dated sessions and automatic weekdays share one execution path. Existing
+qualification spellings and authority records remain compatible; no ordinary mode.
 """
 
 from dataclasses import dataclass, field
@@ -65,14 +65,16 @@ def qualification_timer(controller):
     return 'nnfx-practice-qualification@' + controller + '.timer'
 
 
-def schedule_controls(controller, *, ordinary=False, running=True):
+def schedule_controls(controller, *, running=True):
     """Exactly one reviewed recurring trigger, targeting the existing service."""
     stem = 'nnfx-practice@' + controller
-    selected = stem + '.timer' if ordinary else qualification_timer(controller)
-    other = qualification_timer(controller) if ordinary else stem + '.timer'
+    selected = qualification_timer(controller)
+    other = stem + '.timer'
     for unit in (selected, other):
         state = _command('systemctl', 'show', unit,
                          '--property=LoadState,ActiveState,UnitFileState,Job,DropInPaths,Unit,Persistent,AccuracyUSec,RandomizedDelayUSec,TimersCalendar')
+        if unit == other and _retired_timer_absent(state):
+            continue
         if (state.get('LoadState') != 'loaded' or state.get('Job') not in ('', '0')
                 or state.get('DropInPaths') != ''):
             _fail('recurring timer is unavailable, modified or has a pending job')
@@ -96,7 +98,13 @@ def schedule_controls(controller, *, ordinary=False, running=True):
 
 
 def _fail(reason):
-    raise ConfigurationError('M10 qualification blocked: ' + reason)
+    raise ConfigurationError('Practice trading blocked: ' + reason)
+
+
+def _retired_timer_absent(state):
+    return (state.get('LoadState') == 'not-found' and state.get('ActiveState') == 'inactive'
+            and state.get('UnitFileState') in ('', None) and state.get('Job') in ('', '0')
+            and state.get('DropInPaths') == '')
 
 
 def sealed_bytes(path):
@@ -157,8 +165,10 @@ def host_identity():
 
 
 def deployed_unit_hashes():
-    return {name: sha256(Path('/etc/systemd/system', name).read_bytes()).hexdigest()
-            for name in ('nnfx-practice@.service', 'nnfx-practice@.timer')}
+    names = ['nnfx-practice@.service', 'nnfx-practice-qualification@.timer']
+    if Path('/etc/systemd/system/nnfx-practice@.timer').exists():
+        names.append('nnfx-practice@.timer')
+    return {name: sha256(Path('/etc/systemd/system', name).read_bytes()).hexdigest() for name in names}
 
 
 def account_identity(binding):
@@ -184,10 +194,10 @@ def host_controls(controller, operation):
     stem = 'nnfx-practice@' + controller
     timer = _command('systemctl', 'show', stem + '.timer',
                      '--property=LoadState,ActiveState,UnitFileState,Job,DropInPaths')
-    if (timer.get('LoadState') != 'loaded' or timer.get('ActiveState') != 'inactive'
+    if not _retired_timer_absent(timer) and (timer.get('LoadState') != 'loaded' or timer.get('ActiveState') != 'inactive'
             or timer.get('UnitFileState') != 'disabled' or timer.get('Job') not in ('', '0')
             or timer.get('DropInPaths') != ''):
-        _fail('ordinary timer must be loaded, disabled, inactive and without a job')
+        _fail('legacy timer must be absent or disabled, inactive and without a job')
     host_service(controller, operation, clock_checked=True)
 
 
@@ -430,7 +440,7 @@ def load_permit(root, controller, operation, *, now=None):
     if (type(plan.get('version')) is not int or plan['version'] not in (1, 2)
             or type(plan.get('enabled')) is not bool
             or (operation != 'inspect' and plan['enabled'] is not True)
-            or plan.get('controller_id') != controller or plan.get('mode', 'qualification') != 'qualification'):
+            or plan.get('controller_id') != controller or plan.get('mode', 'qualification') not in ('practice', 'qualification')):
         _fail('qualification plan is missing, disabled or mismatched')
     for name in ('account_binding_sha256', 'manifest_sha256', 'code_sha256', 'config_sha256'):
         if not isinstance(plan.get(name), str) or not _SHA.fullmatch(plan[name]):
@@ -471,7 +481,7 @@ def load_permit(root, controller, operation, *, now=None):
 
 
 class RetainedBroker(PracticeBroker):
-    """Qualification-only raw captures/responses, separate from notebook storage."""
+    """Retain practice captures/responses with the existing evidence and fsync rules."""
 
     def __init__(self, permit, destination):
         self.destination = destination
@@ -502,15 +512,15 @@ class RetainedBroker(PracticeBroker):
 
 def execute(root, controller, operation):
     permit = load_permit(root, controller, operation)
-    from .host import SystemdService
+    from .host import controller_service
     from .master import run_master
     if operation == 'initialize':
         # Read-only transport: a Q0 operation cannot place or change an order.
         with PracticeBroker(permit.binding, qualification=permit) as broker:
-            return initialize_qualification(root, controller, broker, service=SystemdService(controller),
+            return initialize_qualification(root, controller, broker, service=controller_service(controller),
                                             evidence=permit.references)
     directory = permit.claim(root)
     with RetainedBroker(permit, directory / (permit.run_id + '.jsonl')) as broker:
-        return run_master(root, controller, broker, mode='qualification', evidence=permit.references,
+        return run_master(root, controller, broker, mode='practice', evidence=permit.references,
                           code_hash=permit.plan['code_sha256'], config_hash=permit.plan['config_sha256'],
                           run_id=permit.run_id)

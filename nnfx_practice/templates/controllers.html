@@ -6,7 +6,7 @@
 <section class="panel controller-card" id="{{ v.experiment.controller_id }}">
   <header class="controller-heading">
     <h2><a href="{{ url_for('notebook_detail', notebook_id=v.experiment.notebook_id) }}">{{ v.experiment.notebook_name }}</a></h2>
-    {% if not v.error and v.latest_run %}<span class="badge">{{ v.latest_run.mode|title if v.latest_run.mode else 'Run type unavailable' }}</span>{% endif %}
+    {% if not v.error and v.latest_run %}<span class="badge">{{ v.latest_run.mode|journal_label if v.latest_run.mode else 'Run type unavailable' }}</span>{% endif %}
     <p class="muted">Controller: {{ v.experiment.controller_id }} · Read-only view</p>
   </header>
   {% if v.error %}<p class="controller-alert error">{{ v.error }}</p>
@@ -25,7 +25,7 @@
           {% for run in earlier %}
             <li>
               <a href="{{ url_for('controller_run', controller_id=v.experiment.controller_id, run_id=run.run_id) }}" target="_blank" rel="noopener noreferrer">{{ run.started_at|ny_short }}<span class="sr-only"> · Open run details in a new window or tab</span></a>
-              <p class="{{ 'warning' if run.needs_attention else 'muted' }}">{{ run.status|replace('_', ' ')|capitalize }}{% if not run.ended_at %} · Unfinished{% endif %}{% if run.duration_seconds is not none %} · {{ run.duration_seconds|duration }}{% endif %} · {{ run.mode|title if run.mode else 'Run type unavailable' }}{% if run.refresh_failed %} · Refresh failed{% elif run.needs_attention and run.status == 'completed' %} · Errors or unfinished records{% endif %}</p>
+              <p class="{{ 'warning' if run.needs_attention else 'muted' }}">{{ run.status|replace('_', ' ')|capitalize }}{% if not run.ended_at %} · Unfinished{% endif %}{% if run.duration_seconds is not none %} · {{ run.duration_seconds|duration }}{% endif %} · {{ run.mode|journal_label if run.mode else 'Run type unavailable' }}{% if run.refresh_failed %} · Refresh failed{% elif run.needs_attention and run.status == 'completed' %} · Errors or unfinished records{% endif %}</p>
             </li>
           {% endfor %}
           </ul>

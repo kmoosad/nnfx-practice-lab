@@ -1,4 +1,4 @@
-"""Explicit master invocations. Scheduler timing belongs to M09, execution to M10."""
+"""Guarded practice invocations using the existing scheduler and trading sequence."""
 
 from datetime import datetime
 import logging
@@ -51,7 +51,7 @@ def sizing_refresh(db, broker, run_id):
         raise
 
 
-def run_master(root, controller_id, broker, *, mode='ordinary', evidence=None,
+def run_master(root, controller_id, broker, *, mode='practice', evidence=None,
                config_hash, code_hash, run_id=None, elapsed=monotonic):
     """Create one new run; never resume it, replay an entry, or enable a timer."""
     binding = bound_broker(root, controller_id, broker)
@@ -62,7 +62,9 @@ def run_master(root, controller_id, broker, *, mode='ordinary', evidence=None,
                 identifier = run_id or uuid4().hex
                 start = elapsed()
                 start_run(db, run_id=identifier, started_at=datetime.fromisoformat(broker.now()),
-                          config_hash=config_hash, code_hash=code_hash, mode=mode, evidence=refs)
+                          # Preserve schema and historical labels; both accepted
+                          # call spellings use the same practice execution path.
+                          config_hash=config_hash, code_hash=code_hash, mode='qualification', evidence=refs)
                 try:
                     manage_open(db, broker, run_id=identifier, elapsed=elapsed)
                     sizing_refresh(db, broker, identifier)

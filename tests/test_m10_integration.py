@@ -15,7 +15,7 @@ from nnfx_practice import host
 from nnfx_practice import qualification as q
 from nnfx_practice.broker import PracticeBroker
 from nnfx_practice.config import ConfigurationError, PERMITTED_PAIRS
-from nnfx_practice.lifecycle import activate_ordinary, initialize_qualification, require_invocation
+from nnfx_practice.lifecycle import initialize_qualification, require_invocation
 from nnfx_practice.master import run_master
 from strategies import t3_bandpass_v1 as selected
 from .m07_support import EVIDENCE, M07Case
@@ -232,8 +232,6 @@ class PermitChecks(PermitCase):
             self.assertEqual(q0, again)
             with self.assertRaisesRegex(ConfigurationError, 'cannot send mutations'):
                 broker.enter_trade('EUR-USD', units='10', distance='0.00150', client_id='offline')
-            with self.assertRaisesRegex(ValueError, 'not enabled'):
-                activate_ordinary(self.root, 'controller-a', broker, service=self.service, evidence=EVIDENCE)
         self.assertTrue(all(call.args[0] == 'GET' for call in connection.request.call_args_list))
         self.assertEqual(self.service.events, ['pause', 'restore:True'] * 2)
 
@@ -300,16 +298,18 @@ class PermitChecks(PermitCase):
         self.assertEqual(connection.request.call_count, 1)
         connection.close.assert_called_once()
 
-    def test_qualification_permit_cannot_run_ordinary_or_qualify_after_activation(self):
+    def test_practice_permit_rejects_ordinary_and_preserves_historical_activation(self):
         self.initialize()
-        activate_ordinary(self.root, 'controller-a', self.broker, service=self.service, evidence=EVIDENCE)
+        from .m07_support import record_legacy_activation
+        record_legacy_activation(self)
+        before = '\n'.join(self.db.iterdump())
         permit = self.permit()
         connection = self.native(permit)
         broker = PracticeBroker(self.bound, qualification=permit)
-        with self.assertRaisesRegex(ValueError, 'not enabled'):
+        with self.assertRaisesRegex(ConfigurationError, 'Only practice'):
             require_invocation(self.db, broker, 'ordinary', None)
-        with self.assertRaisesRegex(ConfigurationError, 'unactivated'):
-            require_invocation(self.db, broker, 'qualification', permit.references)
+        require_invocation(self.db, broker, 'practice', permit.references)
+        self.assertEqual('\n'.join(self.db.iterdump()), before)
         connection.request.assert_not_called()
 
     def test_elapsed_dispatch_minute_cannot_create_a_session_claim(self):

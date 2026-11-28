@@ -13,12 +13,12 @@ from nnfx_practice.config import ConfigurationError, PERMITTED_PAIRS
 from nnfx_practice.control import MaintenanceDeferred, controller_exclusion, maintenance
 from nnfx_practice.disposition import DispositionRequired, record_disposition
 from nnfx_practice.ledger import account_report
-from nnfx_practice.lifecycle import activate_ordinary, initialize_qualification
+from nnfx_practice.lifecycle import initialize_qualification
 from nnfx_practice.master import run_master
 from nnfx_practice.notebook import open_notebook, pair_is_available, pair_progress, transaction
 from nnfx_practice.reconciliation import _issue, reconcile_snapshot
 from strategies import t3_bandpass_v1 as selected
-from .m07_support import EVIDENCE, M07Case, Service, World
+from .m07_support import EVIDENCE, M07Case, Service, World, record_legacy_activation
 from .support import Interrupted, ScriptedTransport, interrupt_commit
 from . import test_m02 as m02
 from .test_m02 import account, event, order_fill, reply
@@ -307,7 +307,7 @@ class MasterChecks(M07Case):
 
 class LifecycleChecks(M07Case):
     def activate(self, evidence=EVIDENCE):
-        return activate_ordinary(self.root, 'controller-a', self.broker, service=self.service, evidence=evidence)
+        return record_legacy_activation(self)
 
     def test_a12_repeated_initialization_keeps_q0_and_imports_forward(self):
         q0 = self.initialize()
@@ -351,51 +351,9 @@ class LifecycleChecks(M07Case):
             self.initialize()
         self.assertTrue(self.service.timer)
 
-    def test_a12_a16_activation_atomic_interruption_before_commit(self):
-        self.initialize()
-        before = dict(self.db.execute('SELECT * FROM notebook').fetchone())
-        import nnfx_practice.lifecycle as lifecycle
-        original = lifecycle.require_clear
-        def crash(db, snapshot):
-            original(db, snapshot)
-            raise Interrupted()
-        with patch.object(lifecycle, 'require_clear', crash), self.assertRaises(Interrupted):
-            self.activate()
-        self.assertEqual(dict(self.db.execute('SELECT * FROM notebook').fetchone()), before)
-        self.assertEqual(self.db.execute("SELECT count(*) FROM account_snapshots WHERE purpose='activation'").fetchone()[0], 0)
-        self.activate()
 
-    def test_a12_activation_after_commit_interruption_and_repeat(self):
-        self.initialize()
-        original = self.service.restore_timer
-        def crash(prior):
-            original(prior)
-            raise Interrupted()
-        with patch.object(self.service, 'restore_timer', crash), self.assertRaises(Interrupted):
-            self.activate()
-        before = dict(self.db.execute('SELECT * FROM notebook').fetchone())
-        calls = len(self.world.calls)
-        self.assertEqual(self.activate(), before['activation_snapshot_id'])
-        self.assertEqual(dict(self.db.execute('SELECT * FROM notebook').fetchone()), before)
-        self.assertEqual(len(self.world.calls), calls)
 
-    def test_a12_activation_unresolved_issue_stays_unactivated(self):
-        self.initialize()
-        with transaction(self.db):
-            _issue(self.db, 'fixture', '1', self.broker.now(), {}, pair='EUR-USD')
-        with self.assertRaises(ConfigurationError):
-            self.activate()
-        self.assertIsNone(self.db.execute('SELECT activated_at FROM notebook').fetchone()[0])
-        self.assertEqual(self.db.execute("SELECT status FROM issues").fetchone()[0], 'open')
 
-    def test_a12_activation_requires_every_acceptance_reference(self):
-        self.initialize()
-        for key in EVIDENCE:
-            refs = dict(EVIDENCE)
-            del refs[key]
-            with self.subTest(missing=key), self.assertRaises(ConfigurationError):
-                self.activate(refs)
-        self.assertEqual(len(self.world.calls), 1)
 
     def test_a14_qualification_100_ordinary_20_exactly_once(self):
         self.initialize()
@@ -450,17 +408,6 @@ class LifecycleChecks(M07Case):
             with self.assertRaises(sqlite3.IntegrityError):
                 self.db.execute(sql, params)
 
-    def test_a16_post_activation_qualification_rejected_ordinary_allowed(self):
-        self.initialize()
-        self.activate()
-        with self.assertRaises(ConfigurationError):
-            run_master(self.root, 'controller-a', self.broker, mode='qualification', evidence=EVIDENCE,
-                       config_hash='c'*64, code_hash='d'*64)
-        # Real selected calculation on flat 386-candle windows.
-        run_master(self.root, 'controller-a', self.broker, mode='ordinary', run_id=self.run_id,
-                   config_hash='c'*64, code_hash='d'*64)
-        self.assertEqual(self.db.execute('SELECT mode FROM run_invocations').fetchone()[0], 'ordinary')
-        self.assertTrue(self.service.timer)  # Prior state restored, never newly enabled.
 
 
 class ExclusionChecks(M07Case):
@@ -757,10 +704,10 @@ class MasterEdgeChecks(M07Case):
         self.assertFalse(any(c.method == 'POST' for c in self.world.calls))
         self.assertEqual(self.new_decision()['atr_valid'], 0)
 
-    def test_a12_lifecycle_activation_rejects_unresolved_qualification_set(self):
+    def test_a12_removed_ordinary_invocation_cannot_bypass_unresolved_set(self):
         self.register(status='pending', trade_ids=(None, None))
         with self.assertRaises(ConfigurationError):
-            activate_ordinary(self.root, 'controller-a', self.broker, service=self.service, evidence=EVIDENCE)
+            self.run_master(mode='ordinary')
         self.assertIsNone(self.db.execute('SELECT activated_at FROM notebook').fetchone()[0])
         self.assertEqual(self.db.execute('SELECT count(*) FROM trade_legs').fetchone()[0], 2)
 
@@ -852,24 +799,6 @@ class LifecycleCommitChecks(M07Case):
         self.initialize()
         self.assertEqual(self.db.execute('SELECT count(*) FROM account_snapshots').fetchone()[0], 1)
 
-    def test_a12_a0_sqlite_commit_denied_rolls_back_snapshot_cursor_and_activation(self):
-        self.initialize()
-        self.world.add('TRANSFER_FUNDS', amount='100')
-        self.world.balance = '1100'
-        import nnfx_practice.reconciliation as reconciliation
-        original = reconciliation.transaction
-        @contextmanager
-        def denied(db):
-            with interrupt_commit(db), original(db):
-                yield
-        with patch.object(reconciliation, 'transaction', denied), self.assertRaises(sqlite3.DatabaseError):
-            self.activate()
-        row = self.db.execute('SELECT * FROM notebook').fetchone()
-        self.assertIsNone(row['activated_at'])
-        self.assertEqual(row['imported_through_transaction_id'], '100')
-        self.assertEqual(self.db.execute('SELECT count(*) FROM broker_transactions').fetchone()[0], 0)
-        self.activate()
-        self.assertEqual(account_report(self.db, 'ordinary').opening_balance, Decimal('1100'))
 
     def test_a12_uninitialized_explicit_qualification_invocation_rejected(self):
         with open_notebook(self.root, self.bound, create=True):

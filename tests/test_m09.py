@@ -315,5 +315,5 @@ class PermissionChecks(NotebookCase):
                 patch('sys.stderr', new_callable=io.StringIO) as stderr, self.assertRaises(SystemExit) as error:
             main()
         self.assertEqual(error.exception.code, 2)
-        self.assertIn('disabled', stderr.getvalue())
+        self.assertIn("invalid choice: 'ordinary'", stderr.getvalue())
         self.assertFalse(self.bound.experiment.notebook_path(self.root).exists())

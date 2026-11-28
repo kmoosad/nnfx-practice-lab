@@ -68,7 +68,7 @@
     <span class="badge {{ 'run-success' if not run.needs_attention else 'run-attention' }}">{{ run.status|replace('_', ' ')|capitalize }}{% if not run.ended_at %} · Unfinished{% endif %}{% if run.duration_seconds is not none %} · {{ run.duration_seconds|duration }}{% endif %}</span>
   </div>
   {% if run.no_new_entries %}<p class="run-outcome">No new entries</p>{% endif %}
-  <p class="muted run-meta">{{ run.mode|title if run.mode else 'Run type unavailable' }} · Started {{ run.started_at|ny_short }}</p>
+  <p class="muted run-meta">{{ run.mode|journal_label if run.mode else 'Run type unavailable' }} · Started {{ run.started_at|ny_short }}</p>
   {% if not run.ended_at %}<p class="muted">Last recorded progress {{ run.last_progress_at|ny_short }} · Whether this run is still active is unconfirmed.</p>{% endif %}
   {% if run.refresh_error %}<p class="error">Refresh failure: {{ run.refresh_error }}</p>{% endif %}
   <ol class="run-stages" aria-label="Run stages">

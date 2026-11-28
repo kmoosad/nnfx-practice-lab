@@ -18,7 +18,7 @@ has removed M10 from the delivery plan.
 | [Detailed design](docs/DETAILED_DESIGN.md) | State, sizing, broker and accounting contracts |
 | [Acceptance](docs/ACCEPTANCE.md) | Required scenarios and relevant tests |
 | [Plan](docs/IMPLEMENTATION_PLAN.md) | Delivery history, operating checklist and reusable feature brief |
-| [Operations](docs/OPERATIONS.md) | Host maintenance, deployment and activation gates |
+| [Operations](docs/OPERATIONS.md) | Host maintenance, setup and protected upgrades |
 | [Verification references](docs/VERIFICATION.md) | Retained evidence outside routine reading |
 | [Python 02](docs/PYTHON_02.md) / [Python 03](docs/PYTHON_03.md) | Selected experiments and integration constraints |
 
@@ -36,9 +36,9 @@ coverage, not observed deployment or complete acceptance.
 | Open-trade management | [Management rules](PROJECT_BRIEF.md#manage-open-trades) | [manage_open](nnfx_practice/manage_open.py) | [M05](tests/test_m05.py) |
 | Sizing and entry | [Sizing/protection](docs/DETAILED_DESIGN.md#sizing-and-two-leg-entry) | [sizing](nnfx_practice/sizing.py), [entry](nnfx_practice/entry.py) | [M06](tests/test_m06.py) |
 | Master and disposition ★ | [State rules](docs/DETAILED_DESIGN.md#state-rules) | [master ★](nnfx_practice/master.py), [disposition](nnfx_practice/disposition.py) | [M07 ★](tests/test_m07.py) |
-| Qualification and activation | [Lifecycle](docs/IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation) | [qualification](nnfx_practice/qualification.py), [ordinary](nnfx_practice/ordinary.py) | [automatic qualification](tests/test_m10_automatic.py), [lifecycle](tests/test_m07.py) |
+| Practice lifecycle | [Lifecycle](docs/IMPLEMENTATION_PLAN.md#practice-lifecycle) | [guarded practice](nnfx_practice/qualification.py), [initialization](nnfx_practice/lifecycle.py) | [single mode](tests/test_practice_mode.py), [scheduled trading](tests/test_m10_automatic.py) |
 | Ledger and dashboard ★ | [Accounting](docs/DETAILED_DESIGN.md#monetary-records) / [presentation](docs/ARCHITECTURE.md#notebook-dashboard) | [ledger](nnfx_practice/ledger.py), [dashboard ★](nnfx_practice/dashboard.py) | [M08 ★](tests/test_m08.py), [M02](tests/test_m02.py) |
-| Host and releases | [Operations](docs/OPERATIONS.md) | [host](nnfx_practice/host.py), [dashboard deployer](deploy/dashboard_deploy.py) | [M09](tests/test_m09.py), [deployer](tests/test_dashboard_deploy.py) |
+| Host and releases | [Operations](docs/OPERATIONS.md) | [host](nnfx_practice/host.py), [practice upgrade](deploy/single_practice_mode.py), [dashboard deployer](deploy/dashboard_deploy.py) | [M09](tests/test_m09.py), [upgrade](tests/test_single_practice_deployment.py), [deployer](tests/test_dashboard_deploy.py) |
 | Independent experiments | [Python 02](docs/PYTHON_02.md) / [Python 03](docs/PYTHON_03.md) | [Python 02 installer](deploy/add_python02.py), [Python 03 installer](deploy/add_python03.py) | [Python 02](tests/test_python02.py), [Python 03](tests/test_python03.py) |
 
 ## Development and verification

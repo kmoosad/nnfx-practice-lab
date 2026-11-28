@@ -12,11 +12,10 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from nnfx_practice.lifecycle import activate_ordinary
 from nnfx_practice.notebook import start_run
 from nnfx_practice.qualification import account_identity
 from . import arm_m10_qualification as arm
-from .m07_support import EVIDENCE, M07Case
+from .m07_support import EVIDENCE, M07Case, record_legacy_activation
 
 
 SLOT = datetime(2030, 1, 7, 21, 50, tzinfo=UTC)
@@ -128,7 +127,7 @@ class NotebookAuditChecks(M07Case):
         self.assertEqual(self.world.calls, [])
 
     def test_current_activation_supersedes_old_unactivated_report(self):
-        activate_ordinary(self.root, 'controller-a', self.broker, service=self.service, evidence=EVIDENCE)
+        record_legacy_activation(self)
         before = '\n'.join(self.db.iterdump())
         with self.assertRaises(ValueError):
             arm.audit_notebook(self.plan, self.report, self.resolution)

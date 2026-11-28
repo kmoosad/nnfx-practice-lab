@@ -54,7 +54,7 @@ provides commands. Follow cross-boundary links only as needed.
 | `docs/DETAILED_DESIGN.md` | Persistence, sizing, broker, reconciliation and accounting contracts |
 | `docs/IMPLEMENTATION_PLAN.md` | Delivery history, installed lifecycle, operational follow-up and feature template |
 | `docs/ACCEPTANCE.md` | A01–A16 scenarios, controlled variations and required evidence |
-| `docs/OPERATIONS.md` | Host procedures, deployment authority and ordinary-review packet |
+| `docs/OPERATIONS.md` | Host procedures, deployment authority and practice upgrades |
 | `docs/VERIFICATION.md` | Dated evidence references, consequential findings and their limits |
 | `docs/PYTHON_02.md`, `docs/PYTHON_03.md` | Experiment selection, comparison evidence, immutable bindings and integration constraints |
 

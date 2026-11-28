@@ -1,8 +1,7 @@
 # NNFX Practice Lab project brief
 
-Status: Final, version 1. Accepted on 10 November 2026 and updated with the owner's architecture review
-decisions on 15 November 2026. The owner clarified the single-table journal and filter requirement on 25
-November 2026 (UTC).
+Accepted 10 November 2026; architecture decisions incorporated 15 November, journal/filters 25 November,
+and the owner's single practice mode decision 28 November 2026.
 
 ## Purpose and principles
 
@@ -15,6 +14,11 @@ notebook configuration so additional independent practice experiments can be add
 application. The approved [architecture](docs/ARCHITECTURE.md) defines concurrency and runtime boundaries.
 
 This project uses practice accounts. A future real-money system is outside this release.
+
+Use one practice trading mode, with no ordinary activation or new accounting boundary. Keep the existing
+trading rules, schedules and original notebook opening balances (Q0). Preserve all historical records,
+including legacy activation fields, claims and failures. Practice totals run from Q0 through the latest
+reconciled snapshot; legacy identifiers remain compatible without creating a second execution mode.
 
 ## Strategy selection
 
@@ -35,8 +39,8 @@ historical candles starting Friday or Saturday at 17:00 New York, matching the r
 series. Record the excluded count. The current partial candle retains the existing strict session validation,
 and C1, Exit and sizing ATR use the resulting weekday series. If it is missing, report unavailable input
 rather than reset or truncate the indicator history. This preserves the selected indicator rules and
-parameters; changing the origin requires a new immutable strategy binding. Ordinary candle windows remain in
-memory, without a new persistent indicator-state store.
+parameters; changing the origin requires a new immutable strategy binding. Calculations use no new
+persistent indicator-state store; keep the existing raw practice captures.
 
 ## Accounts and permitted pairs
 
@@ -206,7 +210,7 @@ separate notebook storage boundaries.
 
 Provide a private `.env` for account connection information, credentials, home currency and one candle
 lookback per controller, maintaining the one-to-one controller/account mapping. Keep credentials out of
-committed files, notebooks and displayed logs. Strategy selection and ordinary configuration remain explicit
+committed files, notebooks and displayed logs. Strategy selection and account configuration remain explicit
 and understandable.
 
 ## Acceptance criteria
@@ -237,14 +241,9 @@ Architecture, design and planning approvals remain in force. M01–M09 are deliv
 uses bounded feature and fix requests. The [plan](docs/IMPLEMENTATION_PLAN.md#operating-checklist) owns the two
 active operating activities; [status](docs/STATUS.md) owns their dated observations and handoff.
 
-On 28 November 2026 the owner removed M10 from the delivery plan because the practice account had run for
-about a week and trades had been resolved. Continue existing authorised practice operation without a further
-M10 completion review. Preserve the recorded trading history and address subsequent issues through routine
-maintenance and focused verification.
+On 28 November the owner retired M10's completion review and requested one practice mode. Continue existing
+authorised operation and preserve trading history; address issues through routine maintenance and focused checks.
 
 Deployment and account-provisioning decisions belong to their reviewed stage; current procedures are in
 [operations](docs/OPERATIONS.md). The strategy combination is selected manually before the practice experiment
-starts.
-
-The [project overview](README.md) links to the supporting documents. [Project status](docs/STATUS.md) records
-delivery progress separately from these accepted requirements.
+starts. The [overview](README.md) links supporting documents; [status](docs/STATUS.md) records delivery progress.

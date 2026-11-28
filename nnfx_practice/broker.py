@@ -145,22 +145,16 @@ class Read:
 
 
 class PracticeBroker:
-    """Account reads by default; explicit qualification permits are separate."""
+    """Account reads by default; native practice mutations need a verified permit."""
 
     def __init__(self, binding, *, transport=None, now=None, connect_timeout=5, read_timeout=15,
-                 qualification=None, ordinary=None):
+                 qualification=None):
         if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]*", binding.connection.account_id):
             raise ValueError("Invalid broker account binding")
         if not all(isfinite(timeout) and timeout > 0 for timeout in (connect_timeout, read_timeout)):
             raise ValueError("Broker timeouts must be positive and finite")
         self._binding = binding
         self._qualification = qualification
-        self._ordinary = ordinary
-        if ordinary is not None:
-            from .ordinary import OrdinaryPermit
-            if type(ordinary) is not OrdinaryPermit or qualification is not None or transport is not None:
-                raise ConfigurationError('Expected a verified ordinary permit and native practice transport')
-            ordinary.check(binding)
         if qualification is not None:
             from .qualification import QualificationPermit
             if type(qualification) is not QualificationPermit or transport is not None:
@@ -170,7 +164,7 @@ class PracticeBroker:
         self._owns_transport = transport is None
         self._transport = (
             _PracticeTransport(binding.connection, connect_timeout, read_timeout,
-                               mutation_guard=(qualification or ordinary).guard if (qualification or ordinary) else None)
+                               mutation_guard=qualification.guard if qualification is not None else None)
             if transport is None else transport
         )
 
@@ -180,8 +174,8 @@ class PracticeBroker:
 
     @property
     def evidence_source(self):
-        if self._qualification is not None or self._ordinary is not None:
-            return 'practice_execution' if (self._qualification or self._ordinary).operation == 'run' else 'practice_get'
+        if self._qualification is not None:
+            return 'practice_execution' if self._qualification.operation == 'run' else 'practice_get'
         return "practice_get" if self._owns_transport else "fixture"
 
     @property
@@ -273,19 +267,8 @@ class PracticeBroker:
         else:
             self.require_scripted_execution()
 
-    def require_ordinary_execution(self, operation='run'):
-        if self._ordinary is not None:
-            self._ordinary.check(self.binding)
-            if self._ordinary.operation != operation:
-                raise ConfigurationError('Ordinary permit operation differs')
-        else:
-            self.require_scripted_execution()
-
     def require_controller_execution(self):
-        if self._ordinary is not None:
-            self.require_ordinary_execution()
-        else:
-            self.require_qualification_execution()
+        self.require_qualification_execution()
 
     def change_trade(self, trade_id, *, stop_price=None):
         """Send once. The caller commits intent and interprets broker evidence."""

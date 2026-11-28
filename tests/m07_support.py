@@ -12,7 +12,7 @@ from nnfx_practice.broker import PracticeBroker
 from nnfx_practice.config import PERMITTED_PAIRS
 from nnfx_practice.control import MaintenanceDeferred, controller_exclusion
 from nnfx_practice.evidence import redact
-from nnfx_practice.lifecycle import ACTIVATION_REQUIREMENTS, initialize_qualification
+from nnfx_practice.lifecycle import EXECUTION_REQUIREMENTS, initialize_qualification
 from nnfx_practice.notebook import open_notebook
 from strategies import t3_bandpass_v1 as selected
 from .support import ACCOUNT, TOKEN, Call, NotebookCase
@@ -21,7 +21,20 @@ from .test_m03 import daily_body
 from .test_m04 import instruments_body, pricing_body
 
 
-EVIDENCE = {key: 'offline-fixture:' + key for key in ACTIVATION_REQUIREMENTS}
+EVIDENCE = {key: 'offline-fixture:' + key for key in EXECUTION_REQUIREMENTS}
+
+
+def record_legacy_activation(case):
+    """Build an archived A0 fixture; the application no longer creates these."""
+    from nnfx_practice.notebook import transaction
+    from nnfx_practice.reconciliation import reconcile_snapshot
+    with controller_exclusion(case.root, case.bound):
+        identifier = reconcile_snapshot(case.db, case.broker, purpose='activation')
+        snapshot = case.db.execute('SELECT * FROM account_snapshots WHERE snapshot_id=?', (identifier,)).fetchone()
+        with transaction(case.db):
+            case.db.execute('UPDATE notebook SET activation_snapshot_id=?, activation_transaction_id=?, activation_evidence_json=?, activated_at=?',
+                            (identifier, snapshot['last_transaction_id'], '{"source":"fixture","references":{}}', case.broker.now()))
+    return identifier
 
 
 class Service:

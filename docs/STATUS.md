@@ -1,19 +1,49 @@
 # Project status
 
-Updated 28 November 2026 (Melbourne). Latest trading/service observations below
-are from 09:38–09:39 Melbourne that day. No new broker or service checks were
-performed for this documentation cleanup.
+Updated 28 November 2026 (Melbourne). Trading observations below are from
+09:38–09:39; cleanup checks are from 16:40. Single practice mode was installed
+at 21:50 and independently verified afterward, without broker requests or test trades.
 
 Feature work: [requirements, code and checks](../README.md#code-and-test-map).
 
+## Cleanup
+
+Cleanup is complete. The old preview and obsolete M09/M10 units are removed,
+port 8880 is closed, and 139 generated build, packaging and bytecode files are gone.
+[Final verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/host-cleanup-20261128-ft4lhowm/completion-verification.json)
+confirmed live service identities, schedules and unit files match the original
+snapshots, no manager reload is pending, and all five dashboard pages return 200.
+The administrator receipt verified retained evidence and runtime data unchanged,
+including the collection unavailable to this login. Preview source/captures,
+retired unit copies and the original failed cleanup receipt remain preserved.
+
 ## Current position
 
-The checkout is on `main` with Python 01–03 implementation, schema-3 transaction
-comparison, the single-table journal and guarded qualification/ordinary adapters.
-All three experiments are installed. Automatic **qualification** is enabled under
-its existing authority; **ordinary activation is unset and ordinary scheduling
-is disabled** in the latest recorded observations. These are the installed mode
-labels; the existing schedule continues. The [accepted operating decision](../PROJECT_BRIEF.md#delivery-sequence)
+Single practice mode is installed for all three experiments. Ordinary execution,
+activation and unused timers are removed; reports continue from the original Q0.
+[Independent verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/final-verification.json)
+matched all 71 runtime files in the installed source, package and dashboard.
+The 44 schema, strategy, sizing, order, reconciliation and active schedule files
+match the original baseline. Native host fixtures passed with clean removal;
+all five dashboard pages return 200 and restrictions/deployer permissions are unchanged.
+
+The administrator receipt verified notebook/sidecar/claim/raw-capture fingerprints,
+credentials and registry unchanged. Protected originals remain in
+`/etc/nnfx-practice/upgrades/single-mode-d82d9d8e1279`. This login cannot read those
+private files directly; independent saved-page comparisons matched all three Q0s,
+opening balances, account totals and displayed trade/ledger/request records.
+No trading controller was started. Reload cleared Python 01's inactive systemd
+invocation cache; saved run history remains intact. The dashboard was restarted.
+
+All three existing qualification-named practice timers remain enabled/active/waiting,
+with unchanged calendars and next triggers: **1 December 08:50 Melbourne / 30 November
+21:50 UTC**. Their names remain compatibility identifiers, not separate modes.
+[Offline validation](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/validation.json)
+retains 164 focused cases with corrected fixture reruns, upgrade guards and 40
+preflight/deployment checks. Interrupted broader runs are not full-suite passes.
+The failed preflight's screenshot, source and protected partial backup are preserved;
+the corrected procedure is in [operations](OPERATIONS.md#single-practice-mode-upgrade). The
+[accepted operating decision](../PROJECT_BRIEF.md#delivery-sequence)
 removed M10; M01–M09 are delivery history, with no milestone review queued.
 
 | Delivery | State and evidence boundary |
@@ -21,11 +51,8 @@ removed M10; M01–M09 are delivery history, with no milestone review queued.
 | Approvals and M01–M09 | Approved stages and implementation/host-control results remain in [dated verification](VERIFICATION.md#approved-decisions-and-offline-milestones), with their evidence limits. No repeated stage approval is needed. |
 | Dashboard | Single-table journal, filters, labels and two-line dates deployed; dated [saved-data/browser verification](VERIFICATION.md#dashboard-releases-and-access) preserved. |
 
-The last shared-code installation check (27 November 23:21 Melbourne) matched
-installed source/package files, with clean host fixtures and five dashboard pages
-returning 200; [Python 03's installation record](PYTHON_03.md#recorded-installation-evidence)
-owns the details. Retained suite results have their own revision scopes; this is
-not a fresh checkout-wide test run.
+Earlier installation results remain in
+[Python 03's record](PYTHON_03.md#recorded-installation-evidence), scoped to that release.
 
 ## Python 01
 
@@ -71,8 +98,7 @@ retains service results, Q0 identities/amounts and the inspection's evidence lim
 ## Current handoff
 
 Work: the [two operating activities](IMPLEMENTATION_PLAN.md#operating-checklist).
-Blockers: none recorded; Python 02/03 await their first scheduled trading run.
-Verification: 28 November setup passed; dated evidence and limits are linked above.
-Next: review Python 02/03 after 1 December 08:50 Melbourne; continue the agreed
-dashboard checks and address errors.
-Preserve Q0, claims, failures and current schedules; no daily arming or setup replay.
+Blockers: none recorded; single-mode installation and verification are complete.
+Next: review Python 02/03 after their first scheduled run on 1 December 08:50 Melbourne.
+Preserve Q0, claims, failures and evidence; do not replay the completed upgrade,
+bootstrap accounts or trigger a manual run to verify scheduling.

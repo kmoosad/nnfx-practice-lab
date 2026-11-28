@@ -61,54 +61,40 @@ Account incompatibilities, unsupported monetary shapes and unresolved outcomes
 return to review. Reuse observations only while their code/configuration/strategy/
 account conditions apply; verify affected behaviour when those conditions change.
 
-## Qualification records and ordinary activation
+## Practice lifecycle
 
-This section documents the installed lifecycle and its existing transition
-mechanism as reference material. No change of operating mode is planned.
-Use one immutable notebook and the same controller throughout. The owner's
-19 November Python 01 execution authority and 20 November recurring qualification
-instruction remain valid within their prerequisites. Python 02/03 have separate
-protected setup/qualification bindings; none grants ordinary authority.
+On 28 November the owner requested one practice trading mode, removing ordinary
+activation while preserving trading behaviour, schedules and all history.
+[Status](STATUS.md) distinguishes implementation from installed operation.
 
-The native [broker](../nnfx_practice/broker.py) defaults to GET-only. Native
-mutations require a verified qualification or ordinary execution permit.
-[Initialization](../nnfx_practice/lifecycle.py) rejects an unpermitted transport
-before loading private configuration, touching services or creating Q0; native
-initialization requires its verified read-only permit. Scripted transports are
-for offline checks. Nonempty prerequisite references alone establish no live
-qualification or authority.
+1. **Initialize once.** Under maintenance, validate the immutable binding,
+   strategy/count and account-specific prerequisites. Commit a reconciled opening
+   snapshot and import boundary together before orders. The existing Q0 is that
+   starting balance. Reopening reconciles forward and never replaces it.
+2. **Run the existing controller.** Retain the weekday 16:50 New York trigger,
+   partial-candle calculations, sizing, management, broker guards and raw captures.
+   Verify the protected account/code/configuration/strategy/host authority and
+   claim the New York date durably before network activity. No catch-up, daily
+   arming, forced signals, duplicate claims or automatic failure retries.
+3. **Report one history.** Practice totals cover postings after Q0 through the
+   last reconciled snapshot. There is no new balance boundary or activation step.
+   Deposits, financing and charges remain distinct from trading results.
 
-1. **Initialize Q0 under maintenance.** Validate manifest/count, registry and
-   account/currency; finish account preflight and resolve existing/unexplained
-   activity. Commit a consistent qualification snapshot Q0, its evidence and
-   initial imported-through boundary together before orders. Leave A0/time unset.
-   Reopening preserves Q0 and history and reconciles forward, never resets them.
-2. **Run qualification.** Require an initialized, unactivated notebook and
-   evidence of the completed prerequisites above. A protected weekday plan targets
-   the same service at 16:50 New York while ordinary scheduling is disabled. Each dispatch
-   checks authority, code/configuration/account/strategy, host evidence, clock and
-   process identity, then fsyncs an exclusive New York date claim before network
-   activity. Claims survive failures, dated-plan replacement and ordinary
-   transition. No catch-up, daily arming or forced signals. Use the same master,
-   attempt guards and operator disposition; retain every run and failure.
-3. **Report qualification.** Post-Q0 entries through a successful snapshot are
-   labelled qualification; ordinary totals are unavailable before A0. At A0 cap
-   qualification reporting there permanently. Do not count its results again.
-4. **If an ordinary transition is requested.** The installed verifier requires
-   the protected A01–A16 review and authority in [operations](OPERATIONS.md#ordinary-review-and-activation).
-   Under maintenance require no trades/orders/unresolved sets, attempts or
-   issues, then reconcile a fresh A0. Commit A0, history/cursor, evidence and time
-   atomically. Failure leaves activation unset; repetition verifies the same A0.
-   Preserve binding, manifest, Q0 and history; never rewind the cursor.
-5. **Start ordinary operation separately.** A0 is its opening balance. Include
-   only later postings through the displayed snapshot. After maintenance releases,
-   separately enable the authorized ordinary timer. Qualification rejects an
-   activated notebook; ordinary dispatch requires activation and protected review.
+Existing `qualification` plan, timer, directory and invocation names remain
+compatibility identifiers for this single path. Keep all old claims, exports,
+failures and Q0/A0 fields unchanged; the schema and immutable triggers remain.
+Read-only legacy interval queries can reproduce archived qualification/ordinary
+results. They cannot authorize execution or create another A0. An existing
+historical A0 does not truncate the unified practice report.
 
-Controlled transitions must cover interrupts before/after both commits, repeated
-calls, unresolved qualification sets and changed bindings. The +100 before A0 /
-+20 after A0 example retains qualification +100, includes it in ordinary opening
-balance, and reports ordinary profit +20 exactly once; see A12/A14/A16.
+Native broker mutations still require the verified practice permit; the default
+transport is GET-only. Initialization requires its read-only permit before private
+configuration, service operations or notebook writes. Offline fixtures do not
+establish account authority. An ordinary plan or invocation is rejected.
+
+The [upgrade procedure](OPERATIONS.md#single-practice-mode-upgrade) refreshes
+protected code/control identities for all installed accounts while preserving
+notebooks, bindings, claims, evidence and each schedule's original state.
 
 ## Feature brief template
 

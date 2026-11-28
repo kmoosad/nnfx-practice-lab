@@ -8,7 +8,7 @@ import subprocess
 from unittest.mock import Mock, patch
 
 from nnfx_practice.broker import PracticeBroker
-from nnfx_practice.lifecycle import activate_ordinary, initialize_qualification
+from nnfx_practice.lifecycle import initialize_qualification
 from .check_m10_prerequisites import collect, observe_command, observe_path, save_report
 from .m07_support import EVIDENCE, M07Case
 from .support import NotebookCase, TOKEN
@@ -30,11 +30,11 @@ class LiveBoundaryChecks(M07Case):
         connection.connect.assert_not_called()
         connection.request.assert_not_called()
 
-    def test_live_reopen_and_activation_cannot_change_q0_cursor_or_history(self):
+    def test_live_reopen_cannot_change_q0_cursor_or_history(self):
         self.initialize()
         before = '\n'.join(self.db.iterdump())
         broker, connection = self.live()
-        for action in (initialize_qualification, activate_ordinary):
+        for action in (initialize_qualification,):
             with self.subTest(action=action.__name__), self.assertRaisesRegex(ValueError, 'not enabled'):
                 action(self.root, 'controller-a', broker, service=self.service, evidence=EVIDENCE)
             self.assertEqual('\n'.join(self.db.iterdump()), before)

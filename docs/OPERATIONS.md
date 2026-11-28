@@ -22,29 +22,32 @@ permissions; local notebooks remain private without it. Shared writers retain
 WAL/SHM on close with NO_CKPT_ON_CLOSE; normal WAL autocheckpointing continues.
 
 Each `nnfx-practice@<controller>.service` is oneshot, `Restart=no`, with no startup
-timeout. Ordinary and qualification timer templates both target that single
-service. Their calendar is `Mon..Fri *-*-* 16:50:00 America/New_York`,
+timeout. The existing `nnfx-practice-qualification@` timer targets that single
+service; its name is retained for compatibility. Their calendar is `Mon..Fri *-*-* 16:50:00 America/New_York`,
 `AccuracySec=1s`, `RandomizedDelaySec=0`, `Persistent=false`. Timer accuracy is not
 a promise of exact Python start time. System services/timers use multi-user/timers
 targets without interactive login. A paused timer never replays missed launches.
 
-The [lifecycle contract](IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation)
-owns qualification checks and date claims. A same-kernel reboot can resume
-version-2 qualification; changed kernel/code/configuration needs relevant matching
+The [lifecycle contract](IMPLEMENTATION_PLAN.md#practice-lifecycle)
+owns account checks and date claims. A same-kernel reboot can resume
+version-2 practice schedules; changed kernel/code/configuration needs relevant matching
 evidence. Keep earlier observations scoped to their actual versions.
 
 The Waitress dashboard uses port 8879 and `/opt/nnfx-dashboard/current`; preserve
 research listeners 8877/8878. Runtime has read-only files, no credentials,
 systemctl/sudo/system-bus access or outbound connect calls, and no trading routes.
 It sees committed WAL records. Trusted-LAN/firewall and tailnet restrictions remain;
-[README access](../README.md#dashboard-access) owns client addresses. Old local
-preview port 8880 never received the proposed production snapshot/HTTPS 8444;
-its internal-storage snapshot setup is retired. New development data requires USB.
+[README access](../README.md#dashboard-access) owns client addresses. The old local
+preview service is stopped/disabled and port 8880 is closed; its source and captures
+remain retained evidence. The proposed production snapshot/HTTPS 8444 was never
+installed. Obsolete M09 observation units and dated M10 timers are also removed;
+[status](STATUS.md#cleanup) links completed cleanup verification. Their evidence
+and unit copies remain preserved. New development data requires USB.
 
 ## Maintenance and evidence collection
 
-Use the same notebook exclusion lock as the master. For initialization,
-disposition or activation, pause both qualification and ordinary timers, preserving
+Use the same notebook exclusion lock as the master. For initialization or
+disposition, pause the practice timer and any remaining legacy timer, preserving
 their prior states independently; runtime-mask the exact controller service and
 require inactive/failed state with no pending launch before any broker read or
 notebook write. Busy lock, unstable timer, mask failure, active service or pending
@@ -73,7 +76,7 @@ Even SQLite mode=ro can update writable original SHM read marks. The collector
 records before/after hashes, distinguishes SHM from DB/WAL changes and preserves
 an inspectable failure export. It reads no original notebook with SQLite and sends
 no broker/control action. It exports records, source variants, raw captures and
-all date claims, including claims without run rows; collection never grants acceptance.
+all date claims, including claims without run rows; collection never grants execution authority.
 
 Its CLI requires administrator access and accepts a new `--output` directory.
 Choose a unique path under the mounted USB task evidence directory, including its
@@ -108,16 +111,10 @@ Run it from a reviewed USB checkout if needed. Do not repeat its old internal-
 storage command. The older user-systemd probe cannot replace actual system-manager
 verification.
 
-The [observer](../tests/check_m09_observation.py) stages isolated boot/dispatch/
-heartbeat units; it does not reboot, change power policy or start trading. Inspect
-existing metadata, units and rows before preparing another window. Its report
-requires known zero-user-session boot evidence for startup, and continuous samples
-10 minutes before through 15 after a scheduled run for wakefulness. Gaps above
-45 seconds, clock uncertainty above 10 ms, a reboot or suspend-offset movement
-above 250 ms prevent a pass. Logged-in/unknown context requires explicit owner
-confirmation about manual wake/start/keep-awake intervention; a wakefulness pass
-alone is not unattended proof. Coordinate any restart with other workloads.
-Retained -43 startup passed; the -42 window's unattended context remains unknown.
+The retired [observer](../tests/check_m09_observation.py) and unarmed M10 deployment
+probe describe earlier host layouts. Preserve their source and
+[dated evidence](VERIFICATION.md#python-01-account-and-host-evidence), including its unattended
+limits; do not replay them against the populated single-mode deployment.
 
 ## Dashboard deployment authority
 
@@ -161,51 +158,39 @@ The installed helper's activity/job checks cover `practice-a` only. This is a
 conservative dashboard-deployment policy; its expansion was dropped by the owner
 on 28 November. Keep the installed helper and its permissions unchanged.
 
-## Ordinary review and activation
+## Single practice mode upgrade
 
-This section describes the installed ordinary adapter and
-[final verifier](../nnfx_practice/qualification_review.py) if a mode transition is
-requested. Current practice runs continue through the existing qualification schedule.
-[The plan](IMPLEMENTATION_PLAN.md#qualification-records-and-ordinary-activation)
-owns lifecycle and reporting. This section owns the protected packet/procedure.
+The owner authorized removal of ordinary mode on 28 November. This changes no
+strategy, account binding, trading rule or schedule and grants no manual trade.
+The [lifecycle](IMPLEMENTATION_PLAN.md#practice-lifecycle) uses the existing Q0;
+there is no new activation or notebook migration. Historical A0 remains evidence.
 
-A version-2 ordinary plan has `mode: ordinary`, `enabled: true`, matching identities,
-approved schedule, a run-ID prefix of at most 54 characters, `qualification_plan`
-and `activation_review` as `{path, sha256}` references with protected root-owned
-ancestors. The archived qualification plan must match the reviewed binding/code/
-configuration and essential host observations. The review contains:
+Use the reviewed [upgrade script](../deploy/single_practice_mode.py) from its frozen USB release,
+with its passing offline suite, matching wheel and source hashes. Administrator
+execution is required because this changes shared trading code and protected plans;
+the narrow dashboard helper cannot perform it. Do not rerun the original installer
+or account bootstrap. [Status](STATUS.md) owns preparation/installation evidence.
 
-- Controller/notebook/account, manifest/code/configuration/kernel identities,
-  collected `record_sha256` and `final_run_id`.
-- `owner_authorization`: `reviewer`, `at`, `statement`, `reviewed_record_sha256`,
-  and explicit `ordinary_activation` and `ordinary_scheduling` authority.
-- Hashed full verbose passing `offline_suite`; each A01–A16 under `acceptance`
-  with an accepted `conclusion`, `explanation`, named passed `offline_tests`
-  and observations with artifact reference, JSON-key/index `pointer` and exact
-  `observed` value. A flag/reference alone is insufficient.
-- `runs` mapping actual execution/management run IDs to protected claim and raw
-  JSONL capture references, matching committed mutation responses.
-- `startup` raw rows with the retained current-kernel boot marker and
-  `scheduled_window` continuous raw rows around the final run. Logged-in windows
-  need explicit `operator_intervention: none` and owner statement; unknown is pending.
-- `dashboard_comparison`: exact collected account_report, final run ID, GET/status
-  evidence, owner_lan_confirmation and hashed HTML containing actual run/balance/
-  trade identities.
+Outside the dispatch window, require all three controllers idle with no pending
+jobs. Preserve their enabled/active timer states, exclude launches and hold every
+notebook lock. Archive the old code, plans, unit and dashboard configuration before
+replacement. Never stop a running controller or open original notebooks with SQLite.
 
-The verifier checks actual complete long/short/cross-currency sets, distinct IDs/
-units, historical fill-relative protection, sizing/margin, scheduled TP/stop change,
-targeted closes, daily financing, both-stage final run, claims and raw responses.
-Closed trades need historical protection proof, not currently active orders.
-Stale/different records, simulated fills, missing observations, unresolved issues
-or incomplete sets fail. Account exceptions return to review; no invented waiver.
+Preflight uses the frozen installed-code baseline matched to all protected plans;
+older dashboard-only trading pins may predate that shared release. Pin the current
+dashboard configuration and active release separately. Tighten only the two known
+root:root package directories from 0775 to 0755 before the unchanged strict host
+check, recording their prior modes. Other owners, modes or symlinks are rejected.
+Preflight receipts identify the archive even when no service change has begun.
 
-After final review protect/archive the packet and ordinary plan, stop/disable
-qualification and leave both timers disabled. Under writer identity and full
-maintenance exclusion, `nnfx_practice.host`'s `ordinary-activate` verifies the
-packet and applies the plan's fresh-A0 preconditions and atomic commit contract.
-That command never enables a timer. Only after successful reviewed A0 and maintenance release
-may the authorized administrator enable the ordinary instance. Dispatch revalidates
-the plan, activation and shared date claim. Ordinary candles are not archived.
+Install the verified package, retire the unused ordinary timer template and update
+the dashboard release without widening its runtime permissions or deployer allowlist.
+Run isolated native host controls and refresh only the code/control references in
+all three protected practice plans; retain their authority, binding, start date,
+schedule, run prefix and claim namespace. Verify notebook/sidecar/claim hashes,
+credentials/configuration, ledger/history and next scheduled times remain unchanged.
+Restore original timer states only after all checks pass. Preserve failed attempts;
+a failure leaves trading safely excluded for administrator investigation.
 
 Protocol references: [account endpoints](https://developer.oanda.com/rest-live-v20/account-ep/),
 [orders](https://developer.oanda.com/rest-live-v20/order-df/) and
@@ -216,7 +201,7 @@ They do not replace intended-account evidence.
 
 Do not rerun the full installer, original M10 migration/dated armer/no-entry
 continuation, GBP-CAD incident helpers, dashboard permission setup or Python 02/03
-installers/bootstrap. Their receipts and failure archives remain discoverable via
+installers/bootstrap, or the completed single-mode upgrade. Receipts and failure archives remain available via
 [verification](VERIFICATION.md). Existing Q0, claims, history and bindings must not
 be deleted to make old guards pass. Python 03's installer specifically assumes
 Python 02 has not attempted setup; that assumption no longer holds.

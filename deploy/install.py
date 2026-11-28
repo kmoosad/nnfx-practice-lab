@@ -81,7 +81,7 @@ def main():
     run('install', '-o', 'root', '-g', 'nnfx-read', '-m', '0640', str(args.registry), str(target))
     shutil.copytree(source / 'strategies', data / 'strategies', dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-    for filename in ('nnfx-practice@.service', 'nnfx-practice@.timer', 'nnfx-practice-dashboard.service',
+    for filename in ('nnfx-practice@.service', 'nnfx-practice-dashboard.service',
                      'nnfx-practice-qualification@.timer'):
         run('install', '-o', 'root', '-g', 'root', '-m', '0644', str(source / 'deploy' / filename),
             '/etc/systemd/system/' + filename)
@@ -90,7 +90,6 @@ def main():
     for identifier in registry:
         stem = f'nnfx-practice@{identifier}'
         for operation in ('start', 'stop'):
-            commands.append(f'/usr/bin/systemctl --no-ask-password {operation} {stem}.timer')
             commands.append(f'/usr/bin/systemctl --no-ask-password {operation} nnfx-practice-qualification@{identifier}.timer')
         for operation in ('mask', 'unmask'):
             commands.append(f'/usr/bin/systemctl --no-ask-password {operation} --runtime {stem}.service')
@@ -101,7 +100,7 @@ def main():
     run('install', '-o', 'root', '-g', 'root', '-m', '0440', str(policy), '/etc/sudoers.d/nnfx-practice')
     policy.unlink()
     run('systemctl', 'daemon-reload')
-    print('Installed. Dashboard is stopped; ordinary timers are not enabled or started. M10 execution remains disabled.')
+    print('Installed. Dashboard and practice schedules remain stopped until account-specific setup is authorized.')
 
 
 if __name__ == '__main__':

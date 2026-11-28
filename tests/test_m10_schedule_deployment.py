@@ -31,9 +31,10 @@ class ScheduleControlsChecks(unittest.TestCase):
             q.schedule_controls('controller-a',**kwargs)
 
     def test_only_matching_schedule_targets_existing_controller(self):
-        for ordinary in (False,True):
-            for running in (False,True):
-                self.check(self.states(ordinary,running),ordinary=ordinary,running=running)
+        for running in (False,True):
+            self.check(self.states(running=running),running=running)
+        with self.assertRaises(ConfigurationError):
+            self.check(self.states(ordinary=True))
 
     def test_modified_or_competing_schedule_rejected(self):
         states=self.states()
@@ -55,9 +56,9 @@ class ScheduleControlsChecks(unittest.TestCase):
         states['old.timer']['ActiveState']='inactive'
         self.check(states)
 
-    def test_activation_requires_both_schedules_disabled(self):
+    def test_inspection_requires_all_existing_schedules_disabled(self):
         for ordinary in (False,True):
-            with self.assertRaises(ConfigurationError):self.check(self.states(ordinary),ordinary=True,running=False)
+            with self.assertRaises(ConfigurationError):self.check(self.states(ordinary),running=False)
 
 
 class UpgradeChecks(unittest.TestCase):

@@ -69,7 +69,7 @@ access multiple subaccounts, so each request still pins the configured account.
 SQLite WAL and short transactions let the separate reader see committed progress
 without trading privileges. UTC and broker precision are retained at rest;
 New York dates/offsets govern display and sessions. Decimal arithmetic surrounds
-the lab's unchanged numerical calculations. Ordinary candle windows stay in memory.
+the lab's unchanged numerical calculations. Candle windows use no persistent indicator-state store.
 
 Package only the manually selected lab conversions, pure helpers and exact
 transitive dependencies with manifests/provenance. Runtime never imports the
@@ -92,7 +92,7 @@ sessions with New York DST/weekends, not fixed UTC-day subtraction. A valid capt
 continues to supply that stage's actions even if execution later crosses rollover.
 
 Record request/response times, received count, signal start, intended session and
-validation result. Ordinary windows stay in memory; retained qualification candles
+validation result. Calculations stay in memory; retained practice candles
 are separate evidence. Stage 2 receives neither Stage 1's event nor former direction:
 its own fresh C1 determines entry once flat/clear. A broker closure not yet reconciled
 can leave the pair conservatively skipped for this run.
@@ -171,9 +171,9 @@ Plain labels accompany exact issue codes and operator responses.
 
 Use account-first order: name/journal link, freshness/warnings/open-issue count,
 then balance and separate realised profit/loss at the common reporting snapshot.
-Show the reporting period. Before activation label qualification figures and
-leave ordinary figures unavailable; after activation lead with ordinary figures
-and disclose capped qualification results separately. Latest saved-run status
+Show practice results from the original Q0 through the reporting snapshot.
+Historical activation records remain available in notebook details; they neither
+reset nor cap practice totals. Latest saved-run status
 and controller link follow. Keep strategy version, count and indicator names
 visible, with full rules/parameters and exact snapshot identities/times in details.
 
@@ -206,7 +206,7 @@ below the table. Resolve selections only inside the selected notebook. The
 selected record opens as a native disclosure with identifiers, exact broker times,
 original/current protection, final exit evidence, charges and raw reason/stop codes
 beside readable labels. Distinguish still open, not opened, unconfirmed and missing
-values. Explain phases, paired trades, units and filters versus totals in expandable
+values. Explain the reporting period, paired trades, units and filters versus totals in expandable
 help; headings reflect journal sections.
 
 Entry/exit table dates use day, abbreviated month and year on one line; the second
@@ -217,7 +217,7 @@ element, tooltip and expanded record. Browser timezone never alters trading date
 Activity and request outcomes follow trades in disclosures. Show a top warning
 for activity newer than the account snapshot and expand that activity by default;
 uncertain/unsuccessful requests also expand. Posted amounts stay separate from
-informational allocations. Strategy and activation records follow. Presentation
+informational allocations. Strategy, original starting balance and any historical activation records follow. Presentation
 never changes accounting or trading eligibility.
 
 ### Freshness, isolation and accessibility of records

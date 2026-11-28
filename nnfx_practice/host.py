@@ -1,6 +1,6 @@
 """Systemd maintenance exclusion and deployment entry points.
 
-Ordinary execution stays disabled pending completed qualification/activation review.
+One practice execution path retains the established guarded schedule and claims.
 No timer operation enables a timer at boot or changes its calendar.
 """
 
@@ -25,13 +25,13 @@ class SystemdService:
     scope is for broker-free host probes, not a substitute for system deployment.
     """
 
-    def __init__(self, controller_id, *, user=False, prefix='nnfx-practice', runner=subprocess.run, extra_timers=()):
+    def __init__(self, controller_id, *, user=False, prefix='nnfx-practice', runner=subprocess.run, extra_timers=(), timer=None):
         if not all(re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', value)
                    for value in (controller_id, prefix)):
             raise ConfigurationError('Invalid systemd controller identifier')
         self.service = f'{prefix}@{controller_id}.service'
-        self.timer = f'{prefix}@{controller_id}.timer'
-        if any(not re.fullmatch(r'[a-z0-9_-]+@[a-z0-9_-]+\.timer', unit) for unit in extra_timers):
+        self.timer = timer or f'{prefix}@{controller_id}.timer'
+        if any(not re.fullmatch(r'[a-z0-9_-]+@[a-z0-9_-]+\.timer', unit) for unit in (self.timer, *extra_timers)):
             raise ConfigurationError('Invalid additional controller timer')
         self.timers = (self.timer, *extra_timers)
         self._prior_timers = {}
@@ -111,24 +111,24 @@ class SystemdService:
 
 def controller_service(controller):
     from .qualification import qualification_timer
-    # Legacy deployments have no recurring qualification timer yet. Once installed,
-    # every local maintenance action excludes and restores both schedules.
-    extra = (qualification_timer(controller),) if Path('/etc/systemd/system/nnfx-practice-qualification@.timer').exists() else ()
-    return SystemdService(controller, extra_timers=extra)
+    # Keep the installed trigger's identity. Exclude an old disabled trigger too
+    # while upgrading a legacy host; new installations only have the practice timer.
+    if Path('/etc/systemd/system/nnfx-practice-qualification@.timer').exists():
+        legacy = (f'nnfx-practice@{controller}.timer',) if Path('/etc/systemd/system/nnfx-practice@.timer').exists() else ()
+        return SystemdService(controller, timer=qualification_timer(controller), extra_timers=legacy)
+    return SystemdService(controller)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path('/var/lib/nnfx-practice'))
     commands = parser.add_subparsers(dest='command', required=True)
-    ordinary = commands.add_parser('ordinary', help='guarded ordinary service dispatch after activation')
-    ordinary.add_argument('controller_id')
     for name, help_text in (
-        ('dispatch', 'same service: select the protected qualification or ordinary plan'),
-        ('ordinary-activate', 'reviewed A0 under maintenance; never enables scheduling'),
-        ('ordinary-check', 'validate protected ordinary review; never activates or enables'),
-        ('qualification-initialize', 'guarded read-only Q0 initialization under maintenance'),
-        ('qualification-check', 'broker-free protected-plan inspection; never arms execution'),
+        ('dispatch', 'guarded practice trading through the existing service'),
+        ('practice-initialize', 'guarded opening record under maintenance'),
+        ('practice-check', 'broker-free protected-plan inspection; never arms execution'),
+        ('qualification-initialize', 'compatibility alias for practice-initialize'),
+        ('qualification-check', 'compatibility alias for practice-check'),
     ):
         command = commands.add_parser(name, help=help_text)
         command.add_argument('controller_id')
@@ -141,29 +141,16 @@ def main():
     try:
         if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', args.controller_id):
             raise ConfigurationError('Invalid controller identifier')
-        if args.command in ('ordinary', 'ordinary-activate', 'ordinary-check'):
-            from .ordinary import execute, load_permit
-            if args.command == 'ordinary-check':
-                print(json.dumps(load_permit(args.root, args.controller_id, 'inspect')))
-            else:
-                print(json.dumps({'ordinary_result_id': execute(args.root, args.controller_id,
-                    'activate' if args.command == 'ordinary-activate' else 'run'), 'timer_enabled_by_command': False}))
-            return
-        if args.command in ('dispatch', 'qualification-initialize', 'qualification-check'):
+        if args.command in ('dispatch', 'practice-initialize', 'practice-check',
+                            'qualification-initialize', 'qualification-check'):
             from .qualification import execute, load_permit
-            if args.command == 'dispatch':
-                from .qualification import PLAN_DIRECTORY, sealed_bytes, _document
-                plan = _document(sealed_bytes(PLAN_DIRECTORY / (args.controller_id + '.json')))
-                if plan.get('mode') == 'ordinary':
-                    from .ordinary import execute as ordinary_execute
-                    print(json.dumps({'ordinary_result_id': ordinary_execute(args.root, args.controller_id, 'run')}))
-                    return
-            if args.command == 'qualification-check':
+            if args.command in ('practice-check', 'qualification-check'):
                 print(json.dumps(load_permit(args.root, args.controller_id, 'inspect')))
             else:
                 identifier = execute(args.root, args.controller_id,
-                                     'initialize' if args.command == 'qualification-initialize' else 'run')
-                print(json.dumps({'qualification_result_id': identifier, 'ordinary_trading_enabled': False}))
+                                     'run' if args.command == 'dispatch' else 'initialize')
+                print(json.dumps({'practice_result_id': identifier, 'qualification_result_id': identifier,
+                                  'ordinary_trading_enabled': False}))
             return
         from .broker import PracticeBroker
         from .config import load_binding

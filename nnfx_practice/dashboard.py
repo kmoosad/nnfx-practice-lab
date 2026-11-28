@@ -61,8 +61,9 @@ def journal_label(value):
     if not value:
         return 'Not recorded'
     labels = {
-        'ordinary': 'Ordinary trading', 'unclassified': 'Run type not recorded',
-        'before q0': 'Before qualification', 'not_due': 'Not yet due',
+        'qualification': 'Practice trading', 'ordinary': 'Practice trading',
+        'practice': 'Practice trading', 'unclassified': 'Run type not recorded',
+        'before q0': 'Before practice start', 'not_due': 'Not yet due',
         'due': 'Awaiting stop change', 'unknown': 'Unconfirmed',
         'pending': 'Awaiting confirmation', 'prepared': 'Outcome not confirmed',
         'stop_to_entry': 'Move stop to entry', 'signal_close': 'Close trade on signal',
@@ -107,11 +108,9 @@ def _period(transaction_id, binding):
     if transaction_id is None:
         return 'Unclassified'
     key = transaction_key(transaction_id)
-    a0, q0 = binding['activation_transaction_id'], binding['qualification_transaction_id']
-    if a0 is not None and key > transaction_key(a0):
-        return 'Ordinary'
+    q0 = binding['qualification_transaction_id']
     if q0 is not None and key > transaction_key(q0):
-        return 'Qualification'
+        return 'Practice'
     return 'Before Q0' if q0 else 'Unclassified'
 
 
@@ -156,7 +155,7 @@ def _journal(db, binding, boundary):
             item['after_snapshot'] for item in (*leg['fills'], *leg['ledger']))
         opening = next((f['transaction_id'] for f in leg['fills'] if f['effect'] == 'open'), None)
         # Legacy component records may lack an invocation; infer only from actual fills.
-        leg['period'] = row['mode'].title() if row['mode'] else _period(opening, binding)
+        leg['period'] = 'Practice' if row['mode'] in ('qualification', 'ordinary') else _period(opening, binding)
         for category, label in (('financing', 'financing'), ('commission', 'commission'), ('other_charge', 'other_charges')):
             amounts = [Decimal(e['amount']) for e in leg['ledger'] if e['category'] == category]
             leg[label] = sum(amounts, Decimal(0)) if amounts else None
@@ -172,6 +171,8 @@ def journal_table(view, args):
     rows = [leg for group in view['journal_groups'] for leg in group['legs']]
     filters = {key: args.get(key, '').strip() for key in
                ('q', 'pair', 'status', 'direction', 'period', 'entry_from', 'entry_to')}
+    if filters['period'] in ('Qualification', 'Ordinary'):
+        filters['period'] = 'Practice'  # Preserve links using historical spellings.
     pairs = sorted({leg['pair'] for leg in rows})
     periods = sorted({leg['period'] for leg in rows})
     error = None
@@ -282,8 +283,8 @@ def read_view(root, experiment, now, *, detail=False):
                 FROM notebook''').fetchone()
             view['binding'] = dict(binding)
             view['manifest'] = json.loads(binding['manifest_json'])
-            view['reports'] = {p: account_report(db, p) for p in ('ordinary', 'qualification')}
-            report = view['reports']['ordinary'] or view['reports']['qualification']
+            report = account_report(db)
+            view['reports'] = {'practice': report}
             view['report'] = report
             boundary = report.boundary if report else None
             # History contains summary metadata only. Stages, pair reasons and

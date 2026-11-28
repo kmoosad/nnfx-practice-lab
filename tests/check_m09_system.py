@@ -1,6 +1,6 @@
 """Administrator-only, broker-free fixtures under the deployed system manager.
 
-Ordinary units remain inactive/disabled. Uses separate fixture units, synthetic
+Actual controllers remain inactive. Uses separate fixture units, synthetic
 notebooks and a temporary exact-unit sudoers grant, removed in finally cleanup.
 Does not read/provision credentials or initialize/activate actual notebooks.
 Startup without login, wakefulness and intended 16:50 dispatch remain separate.
@@ -161,7 +161,7 @@ def main():
         for identifier in registry:
             for kind in ('service', 'timer'):
                 values = properties(f'nnfx-practice@{identifier}.{kind}')
-                assert values['LoadState'] == 'loaded'
+                assert values['LoadState'] == 'loaded' or (kind == 'timer' and values['LoadState'] == 'not-found')
                 assert values['ActiveState'] in ('inactive', 'failed') and values['Job'] in ('', '0')
                 assert 'enabled' not in values.get('UnitFileState', '')
 
@@ -260,13 +260,19 @@ def main():
                 assert copied.stat().st_uid == installed.stat().st_uid == 0
                 assert not (copied.stat().st_mode | installed.stat().st_mode) & 0o022
                 report['deployed_source_hashes'][str(name)] = expected
-        templates = [(Path('/etc/systemd/system') / name).read_text() for name in UNIT_NAMES]
+        # The unused legacy timer template remains a fixture input only. Updated
+        # hosts retain their original qualification-named practice trigger.
+        templates = [(Path('/etc/systemd/system') / name).read_text()
+                     if name != 'nnfx-practice@.timer' or (Path('/etc/systemd/system') / name).exists()
+                     else (ROOT / 'deploy' / name).read_text() for name in UNIT_NAMES]
         for name, body in zip(UNIT_NAMES, templates):
             assert body == (ROOT / 'deploy' / name).read_text(), 'Installed unit differs; review before testing'
+        practice_timer = 'nnfx-practice-qualification@.timer'
+        assert (Path('/etc/systemd/system') / practice_timer).read_bytes() == (ROOT / 'deploy' / practice_timer).read_bytes()
         report['source_hashes'] = {str(path.relative_to(ROOT)): sha256(path.read_bytes()).hexdigest()
                                    for path in [Path(__file__), ROOT / 'tests/m09_system_worker.py',
                                                 ROOT / 'tests/m09_dashboard_worker.py',
-                                                *(ROOT / 'deploy' / name for name in UNIT_NAMES)]}
+                                                *(ROOT / 'deploy' / name for name in (*UNIT_NAMES, practice_timer))]}
         for directory, mode in ((DATA / 'var/verification', 0o750), (fixture, 0o750),
                                 (fixture / 'var', 0o750), (fixture / 'var/notebooks', 0o2750)):
             if directory == DATA / 'var/verification' and directory.exists():

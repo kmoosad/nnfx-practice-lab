@@ -38,7 +38,7 @@
           <dt>Last transaction included</dt><dd>{{ report.boundary }}</dd>
           <dt>Last successful account update</dt><dd>{{ report.refreshed_at|ny }}</dd>
         </dl>
-      {% else %}<p>{% if period == 'ordinary' and not v.binding.activated_at %}Ordinary trading has not been activated.{% else %}No confirmed account figures for this phase.{% endif %}</p>{% endif %}
+      {% else %}<p>No confirmed account figures for this reporting period.</p>{% endif %}
     </section>
   {% endfor %}
   <dl class="record-grid">

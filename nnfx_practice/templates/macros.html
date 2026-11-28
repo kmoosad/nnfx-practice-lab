@@ -22,7 +22,7 @@
 <section class="panel"><h2>{{ label }}</h2>{% if report %}
 <p>{{ report.period|title }} · Opening {{ report.opening_snapshot_id }} → Snapshot {{ report.snapshot_id }} · Transaction boundary {{ report.boundary }} · {{ report.refreshed_at|ny }}</p>
 <dl class="totals">{% for label, amount in [('Opening balance', report.opening_balance), ('Balance', report.balance), ('Unrealised result', report.unrealised_pl), ('Realised profit', report.realised_profit), ('Realised loss', report.realised_loss), ('Financing', report.financing), ('Commission', report.commission), ('Other charges', report.other_charges), ('Cash adjustments', report.cash_adjustments), ('Net posted result', report.net_posted)] %}<div><dt>{{ label }} ({{ report.home_currency }})</dt><dd>{{ value(amount) }}</dd></div>{% endfor %}</dl>
-{% else %}<p>Unavailable{% if label == 'Ordinary experiment' %} — notebook unactivated; Q0 is not an ordinary opening balance.{% endif %}</p>{% endif %}</section>
+{% else %}<p>Unavailable</p>{% endif %}</section>
 {% endmacro %}
 {% macro issues(v) %}
 <h3>Issues and dispositions</h3><div class="table-wrap"><table><thead><tr><th>Issue</th><th>Pair / set / leg</th><th>Status / code</th><th>Observed / resolved</th><th>Disposition</th></tr></thead><tbody>

@@ -194,18 +194,19 @@ confirmed only the no-argument helper grant and successful unchanged-content use
 retains HTTPS 443/8443 and owner-reported access; local verification used an explicit
 DNS-to-tailnet-IP mapping with normal TLS after MagicDNS failure.
 
-26 November 23:11 Melbourne / 12:11 UTC journal deployment includes the closed-
-protection presentation correction `52fe994`, 74 focused plus 3 targeted checks,
-12 saved trade rows/all amounts/fills matched and live 320/390/716/1280 px checks.
+26 November 23:11 Melbourne / 12:11 UTC: journal `52fe994`; 74 focused/3 targeted
+checks, 12 saved rows/amounts/fills matched; live 320/390/716/1280 px checks.
 [Archived evidence](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/var/verification/journal-production-20261126)
-contains final-host-verification.json, live-data-checks.json, browser-checks.json,
-logs and screenshots. Receipt `20261126T121104461876.json`, release
-`dashboard-deploy-47c54274a23e09eee665c3f0`, matched 47 dashboard files and preserved
-49 qualified trading files, controls and restrictions. No broker/notebook write.
+retains host/data/browser receipts, logs and screenshots. Release
+`dashboard-deploy-47c54274a23e09eee665c3f0` matched 47 dashboard/49 trading files,
+preserving controls/restrictions without broker/notebook writes.
 [Cleanup record](/mnt/nnfx-usb/development/archives/nnfx-practice-lab/deploy-journal-20261126/cleanup-record.json)
-verified all 191 artifact files before archiving/removing the merged worktree.
-The 12 rows are a dated count.
+verified 191 artifacts before archiving/removing the worktree. Row count is dated.
 
-Python 02/03 installation, package and native-host evidence is retained with
-their experiment-specific [Python 02](PYTHON_02.md#recorded-installation-evidence)
-and [Python 03](PYTHON_03.md#recorded-installation-evidence) integration records.
+Earlier installation evidence: [Python 02](PYTHON_02.md#recorded-installation-evidence)
+and [Python 03](PYTHON_03.md#recorded-installation-evidence).
+
+28 November 21:50 Melbourne: single practice mode installed.
+[Verification](/mnt/nnfx-usb/development/data/nnfx-practice-lab/single-practice-mode-0oqfmwj5/evidence/final-verification.json)
+matched 71 files across source/package/dashboard, original schedules and displayed
+history. Administrator fingerprints preserved notebooks/claims; no trading run.

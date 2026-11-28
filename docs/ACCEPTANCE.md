@@ -125,8 +125,8 @@ cursor commit together, with conflict/balance/late-charge failures rolling back.
 Test source-variant retention, strict unknown fields, numeric equivalence and
 qualified conversion disclosures without another debit. Maintenance with an active
 service/unpaused timer defers before reads. Disposition needs fresh broker proof;
-reconciliation alone cannot clear issues. Interrupt/repeat Q0/A0 commits and
-migrations; unresolved sets prevent activation. Other pairs continue only with
+reconciliation alone cannot clear issues. Interrupt/repeat Q0 commits and
+migrations; preserve historical A0 and reject ordinary invocations. Other pairs continue only with
 reliable account state/writes, otherwise visibly fail or remain unfinished.
 Tests: [M02](../tests/test_m02.py), [M05](../tests/test_m05.py),
 [M06](../tests/test_m06.py), [M07](../tests/test_m07.py),
@@ -145,8 +145,8 @@ weighted final exit/final close time; open legs have no final outcome. Test gain
 losses, financing, commission, cash transfers, duplicate delivery and allocation
 versus posting. Every summary component reconciles to the same snapshot S.
 A +100 close after S remains journal-only through failed refresh; the next covering
-snapshot includes it once. Test qualification +100, A0, then ordinary +20 without
-counting +100 twice. Unknown amounts stay unavailable; signs/colours/currency agree.
+snapshot includes it once. For historical +100, A0, then +20, practice profit is +120 once;
+legacy read-only intervals still return +100 and +20 without changing records. Unknown amounts stay unavailable; signs/colours/currency agree.
 Tests: [ledger/import](../tests/test_m02.py), [dashboard](../tests/test_m08.py).
 
 ### A15 observation and freshness
@@ -190,7 +190,7 @@ accountLoss for every required currency. Live matching-quote is required only if
 a permitted pair quotes in home currency. Independently require home accountLoss
 exactly 1 when home appears as base or quote (EUR from EUR/USD for EUR home, while
 USD still sizes that pair). If either case has no permitted pair, record its
-specific not-applicable reason; this alone does not block activation. Controlled
+specific not-applicable reason; this alone does not block practice setup. Controlled
 matching-quote remains mandatory. Missing required factors/non-1 applicable home
 factor block preflight. Compare actual broker margin during execution.
 
@@ -204,8 +204,8 @@ live. [The operating checklist](IMPLEMENTATION_PLAN.md#operating-checklist) owns
 Host proof must include actual dispatch, no restart/replay/overlap, system-user
 permissions and maintenance success/failure with both prior timer states. Calendar
 or user-manager checks do not substitute for installed system-manager evidence.
-Startup/unattended-window evidence and the installed ordinary-mode packet follow
-[operations](OPERATIONS.md#ordinary-review-and-activation).
+Startup/unattended-window evidence follows
+[operations](OPERATIONS.md#host-checks-and-unattended-evidence).
 
 Record a scenario as verified only with its controlled checks and applicable
 observed evidence; otherwise retain its evidence limits. Profitability is an

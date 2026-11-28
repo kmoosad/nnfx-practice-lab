@@ -1,7 +1,7 @@
-"""Read actual qualification records and verify a protected final review packet.
+"""Read-only inspection of historical qualification records and review packets.
 
-No pass flags create broker evidence. The packet pins source artifacts; native
-activation checks them against committed notebook facts before reconciling A0.
+No pass flags create broker evidence. Retained packets pin source artifacts and
+committed notebook facts; this module cannot authorize execution or create A0.
 """
 
 from datetime import datetime, timedelta
