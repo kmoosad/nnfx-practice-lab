@@ -1,476 +1,249 @@
-# NNFX Practice Lab architecture
+# Architecture and presentation
 
-The numbered workflow and the architecture refinements below incorporate
-the owner's decisions. The [project brief](../PROJECT_BRIEF.md) owns the
-trading and operating rules.
-
-```mermaid
-flowchart TD
-    Timer["1. systemd timer per controller"] --> Master["2. Python master starts run"]
-    Master --> OpenAPI
-
-    subgraph Stage1["3. Stage 1 · Manage Open Trades"]
-        OpenAPI["3.1 Read registered open trade sets from the notebook<br/>Reconcile legs with OANDA and apply due stop changes"]
-        OpenAPI -->|Surviving pairs| OpenCandles["3.2 Fetch the configured daily candle window for the next surviving pair"]
-        OpenCandles --> ExitSignals["3.3 Calculate Exit and check for an opposite C1 event"]
-        ExitSignals --> Open["3.4 Submit any required closures for this pair"]
-        Open --> Confirm["3.5 Check and record closure outcome for this pair"]
-        Confirm --> OpenMore{"3.6 More surviving pairs to check?"}
-        OpenMore -->|Yes| OpenCandles
-    end
-
-    OpenAPI -->|No surviving pairs| Balance
-    OpenMore -->|No| Balance
-
-    subgraph Stage2["4. Stage 2 · Manage New Trades"]
-        Balance["4.1 OANDA v20 REST API<br/>Refresh realised account balance"]
-        Balance -->|Balance available| NewCandles["4.2 Check the next pair in the notebook<br/>Fetch the configured daily candle window if eligible"]
-        NewCandles -->|Eligible in notebook| EntrySignals["4.3 Calculate fresh C1 and entry ATR using the candles from 4.2"]
-        NewCandles -->|Open trade or unresolved issue| More
-        EntrySignals -->|Fresh C1 event and valid ATR| New["4.4 Size the set, check margin and place it in the fresh C1 direction if eligible"]
-        EntrySignals -->|No fresh C1 event or invalid inputs| More
-        New --> More{"4.5 More of the 28 pairs to check?"}
-        More -->|Yes| NewCandles
-    end
-
-    Balance -->|Balance unavailable| Finish["5. Record notebook outcome and end run"]
-    More -->|No| Finish
-```
-
-Steps 3.2–3.5 handle one surviving pair at a time. Step 3.3 calculates Exit and
-C1 to determine whether to close the existing trades. Steps 3.4–3.5 submit
-the closures and record the outcome before 3.6 advances to the next pair.
-After Stage 1, step 4.1 requests the balance once regardless of the
-closure outcomes, including when Stage 1 had no surviving pairs. Once the
-balance is available, step 4.2 checks each of the 28 pairs against the notebook
-and requests fresh candles only for eligible pairs. Step 4.3 calculates fresh
-C1 and ATR. Step 4.4 sizes and opens an eligible set in the fresh C1 direction.
-Both stages record progress and errors in SQLite for the dashboard.
+The owner-approved architecture implements the [brief](../PROJECT_BRIEF.md).
+Design and plan reviews completed on 16 November 2026. This document owns runtime
+boundaries, workflow numbering, candle/signal contracts and dashboard presentation; it does not establish
+account support or observed deployment. See [status](STATUS.md) for those facts.
 
 ## Runtime and deployment
 
-The target host is the existing always-on Ubuntu `thinkbook-server`. Deploy a
-Python virtual environment, one systemd oneshot service and timer template instantiated
-per controller, and a separate dashboard service. Manage Open Trades and Manage
-New Trades are modules called in sequence within the same master process.
-The master owns the run identity, account binding and notebook connection.
-Each stage records progress before advancing to the next pair. Independent
-controllers can run concurrently against their own accounts and databases.
-Use a small HTTPS client with connection reuse and request timeouts. Coordinate
-read traffic within OANDA's published limits when qualifying the deployment.
-[OANDA development guide](https://developer.oanda.com/rest-live-v20/development-guide/)
+Use one Python master process per controller, calling Manage Open Trades and
+Manage New Trades sequentially. A child is a recorded stage, not another worker.
+The master owns its run identity, binding, broker client and notebook connection.
+Independent accounts may run concurrently, each with one SQLite notebook and
+one systemd service instance. Avoid queues, a reconciliation daemon and research
+framework dependencies.
 
-Set `OnCalendar=Mon..Fri *-*-* 16:50:00 America/New_York` to trigger the
-controller's systemd service on weekdays at 4:50 pm New York time, including
-daylight-saving changes. `AccuracySec=1s` gives systemd a one-second window
-after the scheduled time to place the timer expiry. With `Persistent=false`,
-the timer skips launches missed while it was inactive.
-Start each account's controller through its single service to prevent
-overlapping instances. The controller records start and finish times and
-elapsed duration for review. Use `Restart=no` so a failed scheduled run ends
-and the next timer launch starts a new run.
-Use observed timings to inform any later schedule change. The dashboard runs
-independently. Confirm the host stays awake through scheduled runs, its clock
-is synchronised and the timer starts without an interactive login. The offline
-calendar check is in [status](STATUS.md).
-[systemd timer documentation](https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html) ·
-[systemd service documentation](https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html)
+The target is Ubuntu `thinkbook-server`: a private Python environment, per-controller
+oneshot service/timer templates and a separate Flask/Jinja/Waitress dashboard.
+The timer owns the brief's New York schedule, DST and missed-launch behaviour;
+[operations](OPERATIONS.md#installed-layout-and-scheduling) owns exact host settings,
+permissions, maintenance and deployment procedures. Clock, dispatch and wakefulness
+need observations, not assumptions from unit files.
 
-Dashboard releases are separate from the qualified trading installation. The
-owner authorized a limited deployment command for `codexdev` on 20 November 2026;
-the dashboard continues to run as `nnfx-view`. The
-[deployment authority contract](DETAILED_DESIGN.md#dashboard-deployment-authority)
-defines the permitted files, protected helper and rollback boundary. The
-[installation status](STATUS.md#scoped-dashboard-deployment-access) distinguishes
-prepared setup from an active host permission.
+A small HTTPS client pins the practice host/account, reuses connections and applies
+bounded timeouts. Account-wide reliable reads and durable notebook writes are
+required to continue mutations. Coordinate read traffic against the broker limits
+when qualifying a deployment; measured run duration informs any later schedule
+review, not an implicit timing change.
 
-## Configuration and storage
+## Numbered workflow
 
-Use one `config.toml` with a record per experiment. It binds a
-stable controller ID, notebook ID and display name, versioned strategy reference
-and a key identifying the account connection in a private `.env`. The `.env` holds
-each practice account ID, token, home currency and candle lookback and has
-owner-only permissions.
-The owner accepts that a practice token may grant access to multiple subaccounts.
-Pin the REST base URL to the practice host. Validate uniqueness of account,
-controller and notebook IDs and match the returned account ID and currency to
-the configuration.
-[OANDA authentication](https://developer.oanda.com/rest-live-v20/authentication/)
-
-Use one local SQLite file at `var/notebooks/<notebook-id>.sqlite3` per notebook.
-A new experiment adds a configuration record, its private connection and a timer
-instance. It uses the same code and creates a new database. Bind each database to
-its original controller, notebook and broker account. The controller owns writes.
-Use WAL, short transactions and a read-only dashboard connection.
-
-The database holds these records:
-
-- Strategy versions and research provenance, account binding, master and child
-  runs, the effective candle lookback per run, durations and per-pair outcomes.
-- Signal results, entry ATR, and sizing decisions linked to the pair, stage,
-  run and strategy version. Record the signal candle timestamp and when it
-  was fetched.
-- Trade sets, legs, their original and current protective levels, order attempts
-  and outcomes, and broker transaction, trade and order identities.
-- Broker transactions and the reconciliation cursor, the 4.1 sizing balance
-  and the latest reconciled account snapshot for the dashboard. Record fills,
-  realised P/L, financing, commissions and other identifiable ledger entries.
-
-Store timestamps in UTC for broker reconciliation. Use New York time for
-scheduling, candle session dates and dashboard display, with the UTC offset
-visible alongside displayed times. Preserve broker decimal strings and use
-decimal arithmetic for prices, units and ledger amounts. Keep the lab's
-numerical types and precision inside its calculations.
-
-Bind each controller, run and trade set to the selected strategy version. A
-strategy or signal rule change requires a new controller with a distinct
-practice account and notebook. The existing controller manages its trades
-under its original rules.
-
-## Indicator reuse and decision inputs
-
-Package a small, versioned copy of the selected lab calculations and their exact
-transitive calculation dependencies with the practice application. Include the
-input/output types, comparison helpers, accepted rule definitions and the pure
-parts of the signal interpreter and ATR function. Record the source research
-result and commit, conversion and dependency hashes, output bindings, accepted
-C1 and Exit rule identities, and parameter values. Import reviewed calculation
-code from this package at runtime. The package is self-contained and independent
-of the lab checkout, operating database and research controllers. Strategy
-selection remains manual.
-
-The inspected implementation uses `assessment.py` for `true_range_and_atr` and
-`interpret_signals`, `signals.py` for directional events, crossings and state
-transitions, `comparisons.py` for numeric normalisation, and `interface.py` for
-aligned calculation inputs and outputs. The lab compares true-range candidates
-at nine decimal places with half-away-from-zero rounding, keeps the first full-
-precision candidate on ties, and computes the simple 14-value mean with
-`math.fsum`. Retain the calculation when lifting the lab's fixed 2,072-row
-assessment guard. Use identical-input comparisons with the lab when qualifying
-each notebook and strategy version. Include signal equality, missing operands,
-ATR ties and initialization. The scheduled run uses the qualified code and
-configured warm-up.
-[Lab ATR standard](../../nnfx-indicator-lab/docs/standards/ASSESSMENT.md) ·
-[Lab signal standard](../../nnfx-indicator-lab/docs/standards/SIGNAL_RULES.md) ·
-[Lab Exit rules](../../nnfx-indicator-lab/docs/standards/EXIT_SIGNAL_RULES.md) ·
-[Lab trade sequencing](../../nnfx-indicator-lab/docs/standards/EXIT_ASSESSMENT.md)
-
-Use one candle-fetching function for both 3.2 and 4.2. Set one
-`LOOKBACK_CANDLES` value per controller in its private `.env`, using the
-connection prefix when controllers share a file, such as
-`PRACTICE_A_LOOKBACK_CANDLES`. It is the total number of daily candles to request,
-including the current partial candle. Set it to the shortest qualified window
-that supports C1 and Exit warm-up, any prior observations their signal rules
-use, and ATR. ATR(14) needs at least 15 total bars, which gives the oldest of
-the 14 true ranges a previous close. Qualify C1 and Exit on that rolling window
-because recursive indicators can depend on where initialization begins.
-
-Bind the qualified candle count to the strategy version alongside the indicator
-parameters and signal rules. At run start, validate the configured count against
-that binding and record the effective count once on the master run. Both stages
-use that count for each eligible pair's candle request. Treat a different count
-as a strategy revision because it can change indicator output.
-
-Evaluate crossings and transitions at the current partial candle. Where the
-accepted rule compares two observations, the partial candle supplies the
-current observation and the preceding completed candle supplies the prior one.
-Use each stage's capture for its own calculations. Historical candles
-initialize the calculation and supply comparison inputs. Evaluate C1 and Exit
-independently. Missing or invalid entry ATR blocks sizing and leaves exits actionable.
-
-Use `GET /v3/accounts/{accountID}/instruments/{instrument}/candles` with
-`granularity=D`, `price=M`, `smooth=false`, `dailyAlignment=17` and
-`alignmentTimezone=America/New_York` and the configured lookback as `count`.
-Stage 1 requests candles for surviving registered pairs. Stage 2 makes a fresh
-request after the notebook eligibility check. The signal candle must have
-`complete=false` and belong to the session due to end at 17:00 New York time
-on the run's local date. Use OANDA's candle start timestamp to identify the
-session. If the response contains only completed candles or a partial candle
-for the next session, record the intended partial candle as unavailable for
-that pair and stage. Use the captured signal through that stage's broker actions.
-
-Keep candle windows in memory for calculation and record the resulting
-signals and decisions. Missing partial data or insufficient history makes
-the affected signal unavailable. During practice qualification, check lookback
-coverage in both stages and measure how many requested pairs yield the intended
-partial candle before 17:00 New York time.
-[OANDA pricing endpoints](https://developer.oanda.com/rest-live-v20/pricing-ep/) ·
-[OANDA candle fields](https://developer.oanda.com/rest-live-v20/instrument-df/) ·
-[OANDA price fields](https://developer.oanda.com/rest-live-v20/pricing-df/)
-
-## Broker workflow
-
-### Stage 1 · Manage Open Trades
-
-Start 3.1 by reading the notebook's registered trade sets with an open leg. Group
-them by pair and load each set's Trade 1 and Trade 2 records, including any
-leg already marked closed. Reconcile these broker trade IDs against OANDA's
-open trades and transactions. Import broker fills, closures and charges before
-making changes.
-
-- If Trade 1 is missing from OANDA's open trades, look up its closure. A
-  confirmed take-profit on Trade 1 and a surviving Trade 2 call for moving
-  Trade 2's stop to its own entry price. Use the same rule when the take-profit
-  closure was already recorded in the notebook. If OANDA confirms the existing
-  stop is already at Trade 2's entry price, record the adjustment as complete.
-  Otherwise submit a due stop change and verify the new stop or an intervening
-  closure. A prior failed or unresolved change remains with the operator.
-- If both registered legs are missing, check each leg's closing transactions
-  for stop-loss execution and record each actual outcome. The two legs may
-  have closed for different reasons.
-- If a missing leg has no confirmed closure, record it as unresolved. The
-  absence of a trade ID from the open list is insufficient to establish when
-  or why it closed.
-
-Break-even stop changes use OANDA's dependent-order endpoint and can proceed
-without candle data.
-
-Process the pairs with surviving trades one at a time, in the brief's order.
-For the current pair, fetch its partial daily candle and required history.
-Calculate Exit and C1 to find any fresh opposite event requiring closure.
-Record the events and surviving set state before any signal close. Use
-`PUT /trades/{tradeSpecifier}/close` with `ALL` for each surviving broker trade ID,
-then verify the actual closes. A trade queued by OANDA to close when tradeable
-still occupies the pair. Record the
-closure outcome for the current pair before advancing, including a confirmed
-close, an unconfirmed close or that no closure was required. Record both reasons
-when C1 and Exit agree on a close.
-[OANDA trade endpoints](https://developer.oanda.com/rest-live-v20/trade-ep/)
-
-### Stage 2 · Balance refresh, entry calculations and Manage New Trades
-
-After Stage 1 finishes, request `GET /v3/accounts/{accountID}/summary` once and
-save the actual account `balance`. Make the request for every completed Stage 1,
-including on the first run and when a closure remains unconfirmed. Start the
-new-entry loop once the balance is available. Use the saved balance for every
-entry and reversal in the run. If the balance request fails, record the failure
-and end the run before new entries.
-[OANDA account summary endpoint](https://developer.oanda.com/rest-live-v20/account-ep/) ·
-[OANDA account fields](https://developer.oanda.com/rest-live-v20/account-df/)
-
-Visit each of the 28 permitted pairs in the brief's order. In 4.2, check the
-reconciled notebook for any open leg or unresolved broker issue on the pair.
-Record a blocked pair as skipped and advance to 4.5 without a pair-specific
-OANDA request. An eligible pair gets a fresh candle window using the configured
-lookback. Step 4.3 uses only the candles from 4.2 and the configured rules to
-calculate C1 and entry ATR. Pass a fresh C1 event and valid ATR to 4.4.
-Missing data, an absent or unavailable event, or invalid ATR advances to 4.5.
-
-Stage 2 uses the notebook's registered trade state after Stage 1 and updates it
-as broker responses confirm activity. This relies on the assigned controller
-being the only source of new entries on the account. Operator intervention on
-existing trades or orders takes place between runs. If a leg closes at the
-broker after Stage 1 and the notebook still shows it open, this run skips the
-pair. Step 4.4 uses the fresh C1 direction regardless of prior trade direction
-or closure reason.
-Use the balance from 4.1 for sizing. Fetch current bid/ask pricing and
-`homeConversions` and confirm that the instrument is tradeable.
-
-```text
-risk budget per leg  = 0.01 × sizing balance
-planned stop loss   = absolute units × executable stop distance × quote-to-home loss factor
+```mermaid
+flowchart TD
+    T[1. Per-controller timer] --> M[2. Master and child records]
+    M --> R[3.1 Reconcile registered sets and due stops]
+    R --> O[3.2–3.6 Surviving pairs: capture, signals, close, confirm]
+    O --> B[4.1 One realised sizing balance]
+    B -->|available| E[4.2 Notebook eligibility for next pair]
+    E -->|eligible| C[4.3 Fresh capture: C1 and ATR]
+    C --> N[4.4 Size, margin check and protected entry]
+    N --> P{4.5 More pairs?}
+    E -->|blocked| P
+    P -->|yes| E
+    P -->|no| F[5. Reconciled reporting and run outcome]
+    B -->|failed| F
 ```
 
-Always use the quote currency's returned `accountLoss` from OANDA
-`homeConversions`, requested with `includeHomeConversions=true`, including when
-quote and home currency match; do not substitute a local factor. Verify the
-expected home-currency factor of 1 under the account-preflight applicability
-rules below.
-Require a present, finite, positive factor and retain its currency, value and
-response time with the sizing decision. The planned loss and risk budget use
-the configured home currency. Order quantities use the traded pair's base
-currency. Retain the raw ATR and quantise the 1.5 × ATR
-stop distance to broker price precision before sizing. Round absolute units down
-at `tradeUnitsPrecision` to stay within each leg's budget. Check instrument size
-limits, executable price precision and the protection constraints. Skip the
-entry if conversion is missing/invalid or allowed units fall below the minimum.
-Record the planned inputs and the actual fills separately.
-[OANDA instrument metadata](https://developer.oanda.com/rest-live-v20/primitives-df/) ·
-[OANDA home conversions](https://developer.oanda.com/rest-live-v20/pricing-df/)
+| Step | Component responsibility |
+| --- | --- |
+| 2 | `master` validates binding and records the run and both stages before account work. |
+| 3.1 | `manage_open` loads registered sets, both expected legs and unresolved evidence; reconciles actual activity and due stop-to-entry actions. |
+| 3.2–3.6 | For each surviving pair in brief order: capture, calculate independent Exit/C1 events, record triggers, close eligible legs and commit outcomes before advancing. |
+| 4.1 | `master` obtains the immutable sizing balance after a finished Stage 1, including isolated unresolved closes. Fatal Stage 1 failure prevents entry. |
+| 4.2–4.5 | `manage_new` visits all 28 pairs in order; blocked pairs skip before pair requests. Eligible pairs use a new capture, fresh C1/ATR and candidate entry, finishing each outcome before the next. |
+| 5 | `master` imports through the final account boundary, records reporting refresh and finishes the run; failed refresh retains the last successful snapshot. |
 
-Fetch current `marginAvailable` from the OANDA account summary before each
-set. Estimate the requirement for both legs from base units, the base-to-home
-`positionValue` conversion (1 when the currencies match), and the instrument
-margin rate with any applicable account override. Recheck remaining margin
-before sending Trade 2. OANDA decides whether to accept each order. OANDA
-marks the `unitsAvailable` pricing field deprecated. The brief sets no
-combined account risk cap.
-[OANDA account fields](https://developer.oanda.com/rest-live-v20/account-df/) ·
-[OANDA v20 margin examples](https://help.oanda.com/us/en/faqs/margin-examples.htm) ·
-[OANDA pricing parameters](https://developer.oanda.com/rest-live-v20/pricing-ep/)
+The [design](DETAILED_DESIGN.md#run-and-commit-contracts) owns commit and failure
+semantics. The diagram abbreviates invalid-input/no-event skips; it does not
+require an entry for every capture or final broker work after a fatal failure.
 
-#### Two-trade entry and protection
+## Configuration and reuse boundaries
 
-1. Commit the local set ID, both expected legs and their required protection
-   before sending the first order. Commit each broker order attempt before
-   sending it. Submit Trade 1 as a market order with `FOK`, `OPEN_ONLY` and a GTC
-   `stopLossOnFill.distance`. Use the documented native v20 order and trade
-   client extensions to identify the attempt. Confirm the newly opened trade,
-   units, actual fill and attached stop from broker records. Commit those
-   confirmed results before requesting the target.
-2. Calculate Trade 1's take-profit price from its actual fill plus one signal ATR
-   for a long or minus one signal ATR for a short. Round to the nearest valid
-   price tick, preserving the correct side, and set the GTC `takeProfit` through
-   `PUT /trades/{tradeSpecifier}/orders`. That request omits `stopLoss` so the
-   existing stop remains active. OANDA's take-profit details expose a price field
-   only, so there is a brief interval with a stop and no target. Verify the actual
-   target before proceeding. A move through the desired target during that
-   interval is a protection setup failure if OANDA rejects the target. Commit
-   the confirmed target before sending Trade 2.
-3. Check that Trade 1 still survives with both orders, then submit Trade 2 with
-   the same market/stop mechanism and no target. Use the broker transaction
-   sequence and current trade records to confirm both distinct fills, their
-   initial stops and Trade 1's target. Commit the confirmed results before
-   advancing to the next pair. If both legs and their protection were
-   established, a later broker price exit is normal trade management. If a
-   leg closes before the two-trade set is established, record the incomplete
-   set and the actual fill and closure.
+The public registry binds stable controller/notebook IDs, display name, strategy
+version and private connection key. Private fields and immutable validation are
+specified in [design](DETAILED_DESIGN.md#configuration-and-records). One account has
+one entry controller; new strategies use new accounts and notebooks. A token may
+access multiple subaccounts, so each request still pins the configured account.
 
-These are documented API mechanisms. In particular, `StopLossDetails.distance`
-is documented relative to the trade open price, and the resulting stop must be
-verified at executable precision. Qualification must prove this, target placement
-and replacement, targeted closures and the intended account's two-leg behaviour.
-[OANDA order requests](https://developer.oanda.com/rest-live-v20/order-df/) ·
-[OANDA order responses](https://developer.oanda.com/rest-live-v20/order-ep/) ·
-[OANDA protection details](https://developer.oanda.com/rest-live-v20/transaction-df/) ·
-[OANDA trade endpoints](https://developer.oanda.com/rest-live-v20/trade-ep/)
+SQLite WAL and short transactions let the separate reader see committed progress
+without trading privileges. UTC and broker precision are retained at rest;
+New York dates/offsets govern display and sessions. Decimal arithmetic surrounds
+the lab's unchanged numerical calculations. Ordinary candle windows stay in memory.
 
-### Scheduled reconciliation and failure reporting
+Package only the manually selected lab conversions, pure helpers and exact
+transitive dependencies with manifests/provenance. Runtime never imports the
+sibling checkout or operating database. Offline identical-input comparison may
+read them. [Calculation contracts](#candle-and-signal-inputs) own
+ATR/event/history details; [Python 02](PYTHON_02.md) and [Python 03](PYTHON_03.md)
+own experiment-specific integration decisions.
 
-Record an account snapshot and transaction baseline when activating the dedicated
-practice account. After loading the notebook's open trade sets in 3.1, read
-current broker trades and pending orders and import broker activity with
-`/transactions/sinceid`. Use transaction pages or ID ranges for
-larger reads. Apply transactions by broker ID and advance the cursor only through
-activity committed to SQLite in the same transaction. Reconcile through the
-snapshot's transaction ID before using it for trade management. Use actual trade
-IDs to manage each registered leg. Record unexpected broker trades or orders
-as unresolved issues on their pairs and leave them for the operator.
-[OANDA account endpoints](https://developer.oanda.com/rest-live-v20/account-ep/) ·
-[OANDA transaction endpoints](https://developer.oanda.com/rest-live-v20/transaction-ep/)
+## Candle and signal inputs
 
-Before a request that changes an order or trade, commit an attempt with its
-purpose, requested values, and available broker or client IDs. Save the outcome
-and response `RequestID` when available before issuing the next broker change.
-An order is unresolved when the
-controller lacks a confirmed outcome. A connection timeout after sending an
-entry request can leave it unclear whether OANDA received, filled or rejected
-it. Another order could duplicate a fill that already occurred. An attempt
-left unfinished after a crash can have the same uncertainty. A 2xx response
-can describe a cancellation or an order awaiting fill. Use broker evidence
-to report the status of the request and trade.
-[OANDA order responses](https://developer.oanda.com/rest-live-v20/order-ep/) ·
-[OANDA transaction definitions](https://developer.oanda.com/rest-live-v20/transaction-df/)
+Qualify the shortest sufficient rolling count for warm-up, prior events and ATR,
+including sensitivity to recursive initialization. Anchored mode follows its bound origin.
+Both stages use one capture function: daily mid prices, `smooth=false`,
+`dailyAlignment=17`, `alignmentTimezone=America/New_York`, exact bound `count`.
+Require ordered, nonduplicate, aligned valid OHLC; all preceding bars completed;
+final candle incomplete and due to end at 17:00 on the run's New York date.
+A response at/after rollover, completed-only/next-session response or wrong count
+is unavailable; no padding, shortened window or older-candle fallback. Resolve
+sessions with New York DST/weekends, not fixed UTC-day subtraction. A valid capture
+continues to supply that stage's actions even if execution later crosses rollover.
 
-Record each pair's outcome before advancing. Missing candle or pricing inputs,
-an occupied pair and insufficient margin produce a skip with its reason. A
-rejected order or an unresolved close, entry or protection change produces a
-failure with the available evidence. Continue with the other pairs when
-account-wide reads and notebook writes remain usable. If the controller loses
-reliable account state or cannot write the notebook, end the run and surface
-the failure. An abrupt stop can leave the master, child or broker attempt
-unfinished.
+Record request/response times, received count, signal start, intended session and
+validation result. Ordinary windows stay in memory; retained qualification candles
+are separate evidence. Stage 2 receives neither Stage 1's event nor former direction:
+its own fresh C1 determines entry once flat/clear. A broker closure not yet reconciled
+can leave the pair conservatively skipped for this run.
 
-An interrupted entry with a confirmed fill and outstanding legs or protection
-remains incomplete even if the controller stopped between requests. The saved
-set identifies what was expected, and the confirmed broker records identify
-what happened. The pair stays blocked for new entries pending operator
-disposition.
+Results distinguish `long`, `short`, `no_event`, `unavailable` and errors. Save
+current/prior operands and rule IDs. Preserve lab equality/missing-value/transition
+helpers and reject invalid simultaneous directions without invented precedence.
+Evaluate C1/Exit independently; one valid opposite event remains actionable when
+the other or ATR is unavailable. Retain true-range candidate order, nine-decimal
+half-away-from-zero comparisons, first full-precision winner on ties and `math.fsum`
+simple ATR(14). Lift only the research fixed-length guard. ATR needs at least 15
+bars; use a round-trippable decimal string only at the sizing boundary.
 
-The operator resolves uncertain orders, incomplete sets and failed protection
-changes in OANDA. A local notebook maintenance action records the disposition
-and its broker evidence before clearing the entry block for that pair. Later
-scheduled runs read and record broker activity normally. Automatic retries,
-repair orders and replacement legs are outside this release.
+The optional manifest `history_initialization` has `mode=anchored`, exact UTC
+`start`, `calendar=new_york_weekdays`. Raw capture still requires the exact count.
+Only this mode accepts completed Friday/Saturday-start bars in raw history; remove
+them from the indicator suffix starting at the mandatory origin. Require at least
+15 retained bars; the final partial never receives that exception. Record
+`indicator_history_start`, `indicator_candle_count`, `excluded_non_session_candles`.
+C1, Exit and sizing ATR use the same suffix. Missing origin fails; no persistent
+candle/state store is introduced. Other strategies retain rolling initialization.
 
-### Step 5 · Finish the run
-
-On normal completion, read the final broker account state and reconcile
-transactions through its transaction ID. Save the resulting balance, unrealised
-P/L and refresh time for the notebook alongside the final master and child
-outcomes. The end-of-run snapshot is for reporting. Step 4.1's sizing balance
-stays attached to the run and its entry decisions. If the final read fails,
-show the refresh failure and the last successful snapshot with its timestamp.
-Persisted order outcomes are still available for the dashboard.
-[OANDA account endpoints](https://developer.oanda.com/rest-live-v20/account-ep/) ·
-[OANDA transaction endpoints](https://developer.oanda.com/rest-live-v20/transaction-ep/)
+[Lab ATR standard](../../nnfx-indicator-lab/docs/standards/ASSESSMENT.md#true-range-and-atr)
+and [signal helpers](../../nnfx-indicator-lab/nnfx/signals.py) are source references;
+selected manifests pin the exact versions used at runtime.
 
 ## Notebook dashboard
 
-Use a small Flask/Jinja application with GET views over read-only notebook files.
-Deploy it on a separate port on the trusted LAN, following the reference lab's
-server-rendered navigation, progress counts, status labels and tables. Read
-the ordinary controller/notebook registry and SQLite. The controller service
-owns OANDA access and loads the private `.env`. The dashboard reads committed
-records. [Indicator lab dashboard reference](http://192.168.51.10:8877/)
+This is the authoritative presentation contract, moved from detailed design.
+The brief owns required [journal fields and pip rules](../PROJECT_BRIEF.md#notebook-and-observational-dashboard);
+[design accounting](DETAILED_DESIGN.md#monetary-records) owns totals and cutoffs.
+The reference is the existing [indicator lab dashboard](http://192.168.51.10:8877/).
+Use simple server-rendered navigation, labels, tables and native disclosures.
 
-- **Controller** shows master runs and both stages with duration, outcomes,
-  skips and outstanding failures. Stage 1 reports reconciliation and the
-  surviving pairs handled. Stage 2 reports pairs processed out of 28. A pair
-  counts as processed once its outcome is recorded, including a skip or failure.
-  An unfinished master or child stays visible after an abrupt stop.
-- **Notebooks** shows the configured notebook, linked controller, strategy and
-  signal rules, account balance, and realised profit and loss separately.
-- **Notebook detail** shows the latest reconciled balance, unrealised result,
-  strategy and broker refresh time. The trade table includes every field in
-  the brief. Use per-trade broker fill prices and timestamps. For broker
-  reductions, retain each fill and
-  use the weighted exit price and final closing time for the completed trade.
-  Calculate signed pips with `10 ** pipLocation`. Open trades have no realised exit
-  outcome. Apply green/red to positive/negative values alongside signed text.
-- Use realised amounts in the account's home currency from broker fills.
-  Reconcile daily financing, commissions, other charges and cash adjustments as
-  distinct ledger entries. Attribute amounts where the broker supplies an allocation.
-  Use posted amounts once, with spread already reflected in execution prices.
-  Display the last successful broker refresh and flag stale data if the latest
-  run failed to refresh it.
-  [OANDA transaction definitions](https://developer.oanda.com/rest-live-v20/transaction-df/)
+| GET view | Contract |
+| --- | --- |
+| `/controllers` | Account freshness/issues, latest master and two stages, committed progress and metadata-only previous history. |
+| `/controllers/<controller_id>/runs/<run_id>` | Details loaded on demand from that registered controller's notebook; unknown IDs cannot select another notebook. |
+| `/notebooks` | Notebook/journal link, account figures at one reporting snapshot, linked controller and immutable strategy/rules. |
+| `/notebooks/<id>` | Account figures, every recorded trade leg in one filtered table, full selected records/fills, issues, requests, activity and strategy/lifecycle details. |
 
-## Integration evidence and review items
+### Controller presentation
 
-- **Documentation checked.** OANDA publishes the v20 practice REST host, bearer
-  authentication, account instrument discovery, candle parameters, trade-level
-  orders and changes, and transaction history. Account details expose currency,
-  balances, margin and `hedgingEnabled`. The latter alone does not prove this
-  strategy's same-direction two-leg execution. OANDA also says MT4-associated
-  accounts should avoid client extensions, and documents a unique-size rule for
-  protected trades at OANDA Corporation, including demo accounts. If that rule
-  applies, review using one permitted unit increment less on Trade 2 within the
-  per-leg budget. Confirm both legs can still be protected and closed by ID.
-  [OANDA development guide](https://developer.oanda.com/rest-live-v20/development-guide/) ·
-  [OANDA account fields](https://developer.oanda.com/rest-live-v20/account-df/) ·
-  [OANDA order definitions](https://developer.oanda.com/rest-live-v20/order-df/) ·
-  [OANDA FIFO guidance](https://help.oanda.com/us/en/faqs/fifo-requirement.htm)
-- **Account evidence pending.** Identify the intended dedicated v20 practice
-  account, OANDA division and private connection. Prefer a native v20 account
-  that supports the proposed client extensions. Read-only preflight should verify
-  authentication, account identity, configured home currency, actual balance,
-  existing trades and orders, instrument metadata for all 28 pairs, pricing,
-  conversions and the weekday 16:50 candle captures. Retain pricing responses
-  requested with `includeHomeConversions=true` for permitted pairs, including
-  cross-currency quotes: verify each requested quote currency's `accountLoss`
-  is present, finite and positive. Require a live matching-quote case only when
-  a permitted pair has the home currency as its quote; otherwise record that
-  case as not applicable with the account currency and reason. Verify the home
-  currency's returned `accountLoss` is exactly 1 whenever it appears as base or
-  quote in a permitted pair (for example, the EUR entry from EUR/USD for an EUR
-  account). If it appears in none, record that live identity-factor check as
-  not applicable too. These applicability records do not block activation;
-  missing/invalid required conversions or a non-1 home-currency factor where
-  expected do. Retain the controlled matching-quote test for every configuration.
-  Keep qualification activity identifiable separately.
-- **Execution evidence pending.** On the intended account, observe two separately
-  identified same-direction trades, fill-relative stops, Trade 1's fill-relative
-  target, a move of Trade 2's stop to its own entry, targeted closes and ledger
-  reconciliation. Exercise long and short paths and a cross-currency pair.
-  Compare estimated margin with broker margin and verify account-specific price
-  precision, protected-size and close restrictions. Any incompatibility with
-  the brief goes to review before activation.
-- **Strategy qualification pending.** Select the first C1/Exit combination
-  manually before activation. Qualify its warm-up and calculation equivalence.
+The owner accepted the account-first layout and wording changes on 20 November.
+Lead with notebook name, secondary controller identity, account freshness and open
+issues, then latest run and two stacked stages. Empty issues use one line. Keep
+failed/stale refreshes, latest failed checks and unfinished decisions visible.
 
-The [acceptance checklist](ACCEPTANCE.md) covers timing and signals in A01–A03,
-sizing and sequencing in A04–A10, broker records and failures in A11–A14, and the
-dashboard and account isolation in A15–A16. Controlled checks and an observed
-practice run remain required. See [project status](STATUS.md) for completed checks
-and the stage review.
+Stage 1 separates reconciliation from surviving-pair progress; Stage 2 reports
+outcomes out of 28. Counts derive from committed final pair outcomes, including
+failed/unavailable checks and excluding unfinished decisions. Label progress
+“checked”. Entry `skipped` means “with no entry”, with its recorded reason;
+management `skipped` means “exit check(s) unavailable”, never an invented absence
+of required action. Completed empty management says “No open trades to manage”
+and omits a zero-only outcome line.
+
+“No new entries” requires a completed entry stage, all expected pairs skipped and
+no set recorded for that run. “Account records matched to broker” requires the
+stage's referenced snapshot to be reconciled. These labels describe saved records,
+not current service liveness. Show actual skip reasons rather than assuming no signal.
+
+Place “Previous run history” immediately after latest “Run and reconciliation
+details”, before account-data details. Exclude the latest run, show the prior-run
+count and an empty message where applicable. Older rows contain dates, status,
+duration, invocation mode and error/unfinished indicators. Expand the history
+list by default when it contains problems. Each link opens a separate tab/window
+according to browser preference. Do not embed or prefetch historical stages,
+decision reasons or reconciliation records in the controller request.
+
+Latest and historical details retain full IDs, exact timestamps/durations,
+current/last steps and pairs, reconciliation and resolved issues in native
+expandable sections. Readable duration rounding never changes stored values.
+Plain labels accompany exact issue codes and operator responses.
+
+### Notebook overview and journal
+
+Use account-first order: name/journal link, freshness/warnings/open-issue count,
+then balance and separate realised profit/loss at the common reporting snapshot.
+Show the reporting period. Before activation label qualification figures and
+leave ordinary figures unavailable; after activation lead with ordinary figures
+and disclose capped qualification results separately. Latest saved-run status
+and controller link follow. Keep strategy version, count and indicator names
+visible, with full rules/parameters and exact snapshot identities/times in details.
+
+Balance is neutral, without a profit-style plus sign. Signed result text uses
+green/red for positive/negative, neutral zero and thousands separators without
+dropping recorded monetary precision. Journal summary adds unrealised result;
+financing, other charges and balance components remain distinguishable disclosures.
+Missing amounts stay unavailable rather than zero.
+
+The owner specified one trade table and filters on 25 November. Include open,
+closed, confirmed-not-opened and unconfirmed/planned legs. Default to newest sets
+first, adjacent Trade 1/Trade 2 rows with their shared set ID. Preserve all brief
+fields plus initial/current units, stop-to-entry status, distinct charges and
+original/current protection evidence. Planned legs have no invented fills or IDs.
+
+Read-only GET filters combine search, pair, status, direction, reporting period
+and inclusive New York entry dates. Show matching/total counts; clear restores
+all records. Invalid choices/ranges show an error, not unfiltered output. Filters
+never recalculate account summaries. Search understands displayed exit labels
+and original broker codes. Stored and searched text is escaped.
+
+Table columns show prices, units, protection, outcomes, charges and IDs. Allow
+horizontal scrolling on all screen sizes, pin pair/leg identity horizontally and
+headers vertically. Closed protection is inactive; it must not be labelled as a
+missing active stop or an unconfirmed planned target. Open/unconfirmed protection
+and failed/unknown stop-to-entry outcomes retain warnings.
+
+Each row links, with selected filters preserved, to its full record and fills
+below the table. Resolve selections only inside the selected notebook. The
+selected record opens as a native disclosure with identifiers, exact broker times,
+original/current protection, final exit evidence, charges and raw reason/stop codes
+beside readable labels. Distinguish still open, not opened, unconfirmed and missing
+values. Explain phases, paired trades, units and filters versus totals in expandable
+help; headings reflect journal sections.
+
+Entry/exit table dates use day, abbreviated month and year on one line; the second
+shows 24-hour New York time, timezone abbreviation and UTC offset. Omit fractional
+seconds from table text only: preserve the full broker timestamp in the time
+element, tooltip and expanded record. Browser timezone never alters trading dates.
+
+Activity and request outcomes follow trades in disclosures. Show a top warning
+for activity newer than the account snapshot and expand that activity by default;
+uncertain/unsuccessful requests also expand. Posted amounts stay separate from
+informational allocations. Strategy and activation records follow. Presentation
+never changes accounting or trading eligibility.
+
+### Freshness, isolation and accessibility of records
+
+All summary amounts share the last successful reconciled snapshot and refresh
+time. Newer confirmed journal activity stays visible and explicitly labelled,
+without entering summary totals until covered. Missing snapshots show unavailable
+figures. Display refresh age, latest run and failed/unfinished refresh. A scheduled
+weekday launch passed without a later snapshot makes the view stale; this causes
+no catch-up run or broker polling.
+
+Use short consistent read transactions, read-only SQLite with committed WAL
+visibility, registry-allowlisted notebook IDs and a trusted-LAN listener. GETs
+never create/migrate notebooks; missing, incompatible or unreadable notebooks show
+an explicit error. The service has no private `.env`, broker client,
+write connection, controller invocation or trading/configuration/disposition route.
+Deployment permissions are separate from its runtime identity; the full
+[deployment authority contract](OPERATIONS.md#dashboard-deployment-authority)
+remains restricted to the reviewed dashboard allowlist.
+
+## Integration evidence boundary
+
+OANDA's documented requests support a candidate path, not proof for an account.
+The design owns [sizing/order contracts](DETAILED_DESIGN.md#sizing-and-two-leg-entry);
+[acceptance](ACCEPTANCE.md#account-and-execution-evidence) owns profile, conversion,
+restrictions and actual execution checks. Native v20 client extensions, netting,
+protected-size/FIFO rules and historical fill-relative protection need intended-account
+evidence. Read-only preflight and strategy selection have dated results in
+[verification](VERIFICATION.md); comprehensive M10 execution remains open.

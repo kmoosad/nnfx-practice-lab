@@ -9,105 +9,97 @@ on the USB drive.
 
 Before creating a worktree or its development data, verify that `/mnt/nnfx-usb`
 is mounted. Stop if the drive is unavailable; do not fall back to internal storage.
+Reuse a suitable existing checkout and preserve existing work and data.
 
-## Purpose
+## Purpose and boundaries
 
-Build the NNFX practice trading application defined in [PROJECT_BRIEF.md](PROJECT_BRIEF.md).
-Keep this file at or below 300 lines. Put detailed requirements in their owning
-documents and link to them here.
+Build the practice trading application in [PROJECT_BRIEF.md](PROJECT_BRIEF.md).
+Prefer the smallest solution meeting an accepted requirement: simple architecture,
+reusable independent account/controller/notebook bindings, correct trading and
+understandable records. Do not add automatic strategy selection or reproduce the
+indicator lab's research framework. Simplicity must not hide uncertainty,
+duplicate trades or missing protection.
 
-## Principles
-
-1. Extreme simplicity across architecture, code, configuration and operation.
-2. Reusable account/controller/notebook configuration for independent experiments.
-3. Correct trading behaviour, broker reconciliation and understandable records.
-
-Prefer the smallest solution that meets an accepted requirement. Do not reproduce
-the indicator lab's whole research framework, add speculative infrastructure or
-introduce automatic strategy selection. Simplicity must not conceal uncertain
-order outcomes, duplicate trades or missing protection.
+Practice accounts are the scope. The dashboard is observational: it cannot place
+orders, modify strategies or start trading runs. Keep credentials in private
+configuration, outside version control, logs and notebooks; examples contain no
+real credentials. Match broker checks to the intended account.
 
 ## Read for the task
 
-Start with [project status](docs/STATUS.md) and the relevant document below.
-Read only the material needed for the task; follow references across boundaries.
+Start with the short [status](docs/STATUS.md), then only the relevant route below.
+The [README component map](README.md#code-and-test-map) links requirements, code
+and tests; its [development guidance](README.md#development-and-verification)
+provides commands. Follow cross-boundary links only as needed.
 
 | Task | Read |
 | --- | --- |
-| Understand scope or change trading behaviour | [Project brief](PROJECT_BRIEF.md) |
-| Understand project contents and delivery sequence | [README](README.md) |
-| Work through architecture or OANDA integration | [Architecture](docs/ARCHITECTURE.md) |
-| Review component, record and reconciliation contracts | [Detailed design](docs/DETAILED_DESIGN.md) |
-| Define or verify acceptance | [Acceptance checklist](docs/ACCEPTANCE.md) |
-| Determine current delivery state and next work | [Status](docs/STATUS.md) |
-| Plan implementation milestones and dependencies | [Implementation plan](docs/IMPLEMENTATION_PLAN.md) |
+| Trading behaviour or scope | [Brief](PROJECT_BRIEF.md#trading-sequence), then the affected [design contract](docs/DETAILED_DESIGN.md) |
+| Persistence or reconciliation | [Design state and import rules](docs/DETAILED_DESIGN.md#state-rules) |
+| Dashboard | [Presentation contract](docs/ARCHITECTURE.md#notebook-dashboard) |
+| Deployment, scheduling or maintenance | [Operations](docs/OPERATIONS.md) |
+| Strategy integration | [Calculation contract](docs/ARCHITECTURE.md#candle-and-signal-inputs), selected manifest and experiment setup |
+| Acceptance or retained evidence | Relevant [acceptance scenario](docs/ACCEPTANCE.md); [verification references](docs/VERIFICATION.md) only when needed |
+| Delivery dependencies or feature planning | [Implementation plan](docs/IMPLEMENTATION_PLAN.md) |
 
 ## Document ownership
 
-- `PROJECT_BRIEF.md` owns accepted scope, trading rules and operating rules.
-- `AGENTS.md` owns working guidance and task-based reading.
-- `README.md` owns orientation and navigation; add real setup/run commands when available.
-- `docs/STATUS.md` owns current delivery state, verification evidence and next work.
-- `docs/ARCHITECTURE.md` owns architecture work and its unresolved decisions.
-- `docs/DETAILED_DESIGN.md` owns detailed component and data contracts and their review status.
-- `docs/ACCEPTANCE.md` owns verification scenarios derived from the brief.
-- `docs/IMPLEMENTATION_PLAN.md` owns delivery milestones, dependencies, verification order and plan review status.
+| Document | Authoritative purpose |
+| --- | --- |
+| `PROJECT_BRIEF.md` | Accepted scope, trading and operating rules |
+| `AGENTS.md` | Durable working instructions and reading routes |
+| `README.md` | Orientation, component/test map and development commands |
+| `docs/STATUS.md` | Current delivery state, blockers and one current handoff |
+| `docs/ARCHITECTURE.md` | Runtime/workflow, candle/signal contracts and dashboard presentation |
+| `docs/DETAILED_DESIGN.md` | Persistence, sizing, broker, reconciliation and accounting contracts |
+| `docs/IMPLEMENTATION_PLAN.md` | Milestone dependencies, qualification lifecycle, remaining work and feature template |
+| `docs/ACCEPTANCE.md` | A01–A16 scenarios, controlled variations and required evidence |
+| `docs/OPERATIONS.md` | Host procedures, deployment authority and ordinary-review packet |
+| `docs/VERIFICATION.md` | Dated evidence references, consequential findings and their limits |
+| `docs/PYTHON_02.md`, `docs/PYTHON_03.md` | Experiment selection, immutable bindings and integration constraints |
 
-Keep one authoritative home per rule. Supporting summaries must agree with the
-brief. Distinguish accepted requirements, proposals and observed verification.
-Create detailed-design and implementation-plan documents when those stages begin;
-do not fill them with speculative decisions in advance.
+When behaviour changes, update its authoritative document and replace the
+superseded statement. Link to that home instead of repeating its rules.
 
-## Working sequence and authority
+## Authority and proportionate work
 
-Follow the accepted delivery sequence: architecture and integration, detailed
-design, implementation planning, then implementation. Use the user's existing
-instructions and decisions; do not seek permission again for work already
-authorised. Continue useful work within the current stage and agreed scope.
+The architecture, design and implementation plan are approved; implementation
+exists. Preserve the [remaining milestone and activation gates](docs/IMPLEMENTATION_PLAN.md#remaining-work).
+Use existing user decisions and authority without requesting them again. The
+owner's milestone-per-chat review boundary remains applicable to milestone work.
+User instructions take precedence over project guidance.
+For routine fixes use brief planning and focused checks; deepen review when
+trading behaviour, persistence, broker interactions or component contracts change.
+Clarify material unresolved behaviour before implementing it. Code alone does
+not change an accepted requirement or establish deployment or acceptance.
 
-User instructions take precedence over project guidance. Update the owning
-document when the user changes an accepted rule. Do not silently change strategy
-behaviour while resolving an implementation detail. Clarify a material unresolved
-behaviour before implementing it, and record the decision once.
+Use the selected lab implementations and exact signal/ATR semantics. Inspect
+original rules and code when integration needs them; do not substitute a library
+ATR or treat persistent state as a fresh signal. The brief governs its explicit
+differences from the lab and owns the partial
+candle, balance, entry direction, margin and risk rules. The sibling
+`nnfx-indicator-lab` is a reference; changing it requires separate task scope.
+Runtime reuse is through the packaged strategy, never its checkout or database.
 
-## Preserve the agreed trading behaviour
+Use actual OANDA fills, status and transactions for notebook facts. Requested
+closes or stop changes are not confirmation. Retain broker IDs, signal operands,
+sizing and failed/uncertain outcomes for reconciliation and operator investigation.
+Offline simulations cannot establish broker support. Preserve required
+account-specific checks and distinguish offline, host, read-only account and
+actual execution evidence.
 
-The brief uses the still-forming daily candle at the 4:50 pm New York run.
-The scheduler owns timing and each run uses its own candle.
-Keep the agreed balance snapshot and use the fresh entry-stage C1 event to
-select direction on eligible flat pairs. Check current margin for each new
-trade set. The brief sets no combined account risk cap.
+## Documentation maintenance
 
-Use the selected indicator lab implementations and exact accepted signal/ATR
-semantics. Inspect the original rules and code when integration requires them;
-do not substitute a library's default ATR or reinterpret a persistent state as a
-fresh signal. The practice brief governs its explicit differences from the lab.
+Project-specific budgets (physical lines / UTF-8 bytes, including blank lines):
+AGENTS 300 / 16 KiB, README 200 / 16 KiB, STATUS 150 / 16 KiB, other maintained
+prose 250 / 16 KiB each; 1 KiB = 1,024 bytes. Prefer shorter guidance. Remove
+superseded duplication before considering a new document; report essential
+exceptions explicitly. Raw evidence, third-party and legal files are separate.
 
-Research simulation assumptions are not broker execution evidence. Use actual
-OANDA status, fills and transactions for the notebook. A requested close or stop
-change is not a confirmed one. Keep broker identifiers, signal results and
-sizing decisions for reconciliation and operator investigation of failures.
-
-The dashboard is observational. It must not place orders, modify strategies or
-start trading runs. Practice accounts are the scope of this project.
-
-## Changes and verification
-
-Preserve existing work and data. Treat the sibling `nnfx-indicator-lab` project as
-a reference; changes to that application require their own task scope. Choose a
-simple documented reuse boundary instead of assuming a runtime dependency on its
-checkout or operating database.
-
-Keep credentials in private configuration, outside version control, logs and
-notebooks. Never include real credentials in examples. Match broker checks to the
-intended practice account and do not assume account capabilities from documentation
-alone.
-
-Use focused checks appropriate to a change. Verify trading logic with controlled
-cases and compare inherited calculations against the selected lab implementation.
-Distinguish offline checks from actual OANDA practice execution; never describe a
-simulated result as broker verification.
-
-For documentation changes, check links, consistency, approval status and this
-file's line limit. Do not add tests that merely mirror prose. When runtime work
-exists, record meaningful verification and outstanding limitations in `docs/STATUS.md`.
+Keep the README map to 10 rows/400 words and its command guide to 8 entries/400
+words of explanation. Update affected mappings when ownership or paths change.
+Keep one STATUS handoff and the plan's feature template to 15 lines/200 words each.
+Record only findings that affect future work; replace state instead of appending
+progress narratives. Check links, anchors, sizes, consistency and approval status
+for prose changes. Do not run application tests solely for prose. Runtime changes
+need meaningful focused verification, with evidence and limits linked from status.
